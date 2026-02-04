@@ -12,6 +12,7 @@ import {
   CarouselPrevious,
   CarouselNext,
 } from '@/components/ui/carousel'
+import { useAppForm } from '@/hooks/Form'
 
 const ANIMAL_TYPES = ['dog', 'cat', 'bird', 'rabbit', 'other'] as const
 const STATUSES = ['available', 'adopted', 'pending', 'medical'] as const
@@ -32,8 +33,6 @@ interface ImgFile {
   file: File
   url: string
 }
-
-import { useAppForm } from '@/hooks/demo.form'
 
 export default function AnimalEditTab({
   animal,
