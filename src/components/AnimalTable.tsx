@@ -4,20 +4,10 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { mockAnimalApi } from '@/data/animal-data'
-
-import type { ColumnDef } from '@tanstack/react-table'
-import type { Animal } from '@/data/animal-data'
-
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Skeleton } from '@/components/ui/skeleton'
-
+import { Eye, Pencil, Stethoscope } from 'lucide-react'
 import AnimalViewTab from './tabs/AnimalViewTab'
 import AnimalEditTab from './tabs/AnimalEditTab'
 import AnimalMedicalNotesTab from './tabs/AnimalMedicalNotesTab'
-import { Eye, Pencil, Stethoscope } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -26,14 +16,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from './ui/select'
+import type { ColumnDef } from '@tanstack/react-table'
+import type { Animal } from '@/data/animal-data'
+import { mockAnimalApi } from '@/data/animal-data'
+
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface AnimalTableProps {
-  onGetSelectedIds?: (ids: number[]) => void
+  onGetSelectedIds?: (ids: Array<number>) => void
 }
 
 function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
   // MOCK API PAGINATION DATA STATE
-  const [pageData, setPageData] = React.useState<Animal[]>([])
+  const [pageData, setPageData] = React.useState<Array<Animal>>([])
   const [total, setTotal] = React.useState(0)
   const [loading, setLoading] = React.useState(false)
   const [pageIndex, setPageIndex] = React.useState(0)
@@ -48,7 +46,7 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
   const [openEditModal, setOpenEditModal] = React.useState(false)
   const [openMedicalModal, setOpenMedicalModal] = React.useState(false)
 
-  const columns = React.useMemo<ColumnDef<Animal, any>[]>(
+  const columns = React.useMemo<Array<ColumnDef<Animal, any>>>(
     () => [
       {
         id: 'select',
@@ -235,7 +233,7 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <Input
           placeholder="Szukaj zwierząt..."
-          value={globalFilter ?? ''}
+          value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
           className="max-w-sm md:text-xl h-12"
         />
@@ -289,7 +287,7 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
             ))}
           </thead>
           <tbody>
-            {table.getRowModel().rows?.length ? (
+            {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
                 <tr
                   key={row.id}
