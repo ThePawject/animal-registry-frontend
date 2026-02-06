@@ -1,17 +1,17 @@
+import { useEffect, useState } from 'react'
+import { XIcon } from 'lucide-react'
 import type { Animal } from '@/data/animal-data'
+import type { CarouselApi } from '@/components/ui/carousel'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
   Carousel,
-  CarouselApi,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel'
-import { useEffect, useState } from 'react'
-import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog'
-import { XIcon } from 'lucide-react'
+import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog'
 
 const STATUS_COLOR: Record<string, string> = {
   available: 'bg-green-100 text-green-800',

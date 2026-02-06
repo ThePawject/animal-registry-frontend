@@ -1,16 +1,16 @@
 import React from 'react'
+import { XIcon } from 'lucide-react'
 import type { Animal } from '@/data/animal-data'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog'
-import { XIcon } from 'lucide-react'
+import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselPrevious,
   CarouselNext,
+  CarouselPrevious,
 } from '@/components/ui/carousel'
 import { useAppForm } from '@/hooks/Form'
 
@@ -46,20 +46,23 @@ export default function AnimalEditTab({
   const form = useAppForm({
     defaultValues: {
       name: animal.name || '',
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       type: animal.type || ANIMAL_TYPES[0],
       breed: animal.breed || '',
-      age: animal.age?.toString() || '0',
+
+      age: animal.age.toString() || '0',
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       status: animal.status || STATUSES[0],
       admissionDate: formatDate(animal.admissionDate),
     },
-    onSubmit: async ({ value }) => {
+    onSubmit: ({ value }) => {
       alert(`Zwierze dodano:  ${JSON.stringify(value, null, 2)}`)
       // Optionally: onClose();
     },
   })
 
   // Image state
-  const [images, setImages] = React.useState<ImgFile[]>([])
+  const [images, setImages] = React.useState<Array<ImgFile>>([])
   const [mainImageId, setMainImageId] = React.useState(0)
 
   // File input hidden ref
@@ -69,7 +72,7 @@ export default function AnimalEditTab({
     const files = Array.from(e.target.files || [])
     if (!files.length) return
     // append new files
-    const newImgs: ImgFile[] = files.map((file) => ({
+    const newImgs: Array<ImgFile> = files.map((file) => ({
       file,
       url: URL.createObjectURL(file),
     }))

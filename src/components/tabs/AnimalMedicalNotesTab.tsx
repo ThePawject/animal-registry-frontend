@@ -3,20 +3,20 @@ import {
   flexRender,
   getCoreRowModel,
   useReactTable,
-  type ColumnDef,
 } from '@tanstack/react-table'
+import { XIcon } from 'lucide-react'
+import type { ColumnDef } from '@tanstack/react-table'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+
+import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog'
+import { Card } from '@/components/ui/card'
 
 interface Note {
   id: number
   note: string
   date: string
 }
-
-import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog'
-import { Card } from '@/components/ui/card'
-import { XIcon } from 'lucide-react'
 
 export default function AnimalMedicalNotesTab({
   animalId: _animalId,
@@ -27,7 +27,7 @@ export default function AnimalMedicalNotesTab({
   open: boolean
   onClose: () => void
 }) {
-  const [notes, setNotes] = React.useState<Note[]>([])
+  const [notes, setNotes] = React.useState<Array<Note>>([])
   const [newNote, setNewNote] = React.useState('')
   const [newDate, setNewDate] = React.useState('')
 
@@ -40,7 +40,7 @@ export default function AnimalMedicalNotesTab({
   const handleRemove = (id: number) =>
     setNotes((ns) => ns.filter((n) => n.id !== id))
 
-  const columns = React.useMemo<ColumnDef<Note, any>[]>(
+  const columns = React.useMemo<Array<ColumnDef<Note, any>>>(
     () => [
       {
         accessorKey: 'id',

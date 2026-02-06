@@ -11,22 +11,28 @@ export type Animal = {
 }
 
 const range = (len: number) => {
-  const arr: number[] = []
+  const arr: Array<number> = []
   for (let i = 0; i < len; i++) {
     arr.push(i)
   }
   return arr
 }
 
-const animalTypes: Animal['type'][] = ['dog', 'cat', 'bird', 'rabbit', 'other']
-const animalStatuses: Animal['status'][] = [
+const animalTypes: Array<Animal['type']> = [
+  'dog',
+  'cat',
+  'bird',
+  'rabbit',
+  'other',
+]
+const animalStatuses: Array<Animal['status']> = [
   'available',
   'adopted',
   'pending',
   'medical',
 ]
 
-const animalBreeds: Record<Animal['type'], string[]> = {
+const animalBreeds: Record<Animal['type'], Array<string>> = {
   dog: [
     'Labrador',
     'German Shepherd',
@@ -75,7 +81,7 @@ export function makeAnimalData(len: number) {
 }
 
 // --- Persistent dataset for mock API:
-const PERSISTENT_ANIMAL_DATA: Animal[] = makeAnimalData(5000)
+const PERSISTENT_ANIMAL_DATA: Array<Animal> = makeAnimalData(5000)
 
 // --- Mock API with search/pagination ---
 
