@@ -15,8 +15,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint_and_check:
-    name: Lint and Check
+  build_and_lint:
+    name: Build and Lint
     runs-on: self-hosted
     steps:
       - name: Checkout
@@ -43,6 +43,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm run build
 
       - name: Lint
         run: pnpm run lint
