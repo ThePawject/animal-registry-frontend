@@ -9,6 +9,9 @@ import tailwindcss from '@tailwindcss/vite'
 import { cloudflare } from '@cloudflare/vite-plugin'
 
 const config = defineConfig({
+  build: {
+    ssr: false,
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -16,7 +19,7 @@ const config = defineConfig({
   },
   plugins: [
     devtools(),
-    cloudflare({ viteEnvironment: { name: 'ssr' } }),
+    ...(process.env.TANSTACK_START_SSR !== 'false' ? [cloudflare({ viteEnvironment: { name: 'ssr' } })] : []),
     viteTsConfigPaths({
       projects: ['./tsconfig.json'],
     }),
