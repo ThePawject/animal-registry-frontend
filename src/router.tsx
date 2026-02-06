@@ -10,6 +10,7 @@ export const getRouter = () => {
 
   const router = createRouter({
     routeTree,
+    basepath: '/animal-registry-frontend',
     context: {
       ...rqContext,
     },
