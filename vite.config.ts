@@ -1,3 +1,4 @@
+import { resolve } from 'node:path'
 import { URL, fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import { devtools } from '@tanstack/devtools-vite'
@@ -20,6 +21,14 @@ const config = defineConfig({
     tailwindcss(),
     viteReact(),
   ],
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        404: resolve(__dirname, 'index.html'),
+      },
+    },
+  },
 })
 
 export default config
