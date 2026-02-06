@@ -49,7 +49,7 @@ export default function AnimalEditTab({
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       type: animal.type || ANIMAL_TYPES[0],
       breed: animal.breed || '',
-       
+
       age: animal.age.toString() || '0',
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       status: animal.status || STATUSES[0],
