@@ -10,7 +10,6 @@
     "lint": "eslint",
     "format": "prettier",
     "check": "prettier --write . && eslint --fix",
-    "deploy": "pnpm run build && wrangler deploy",
     "pre-commit": "pnpm run lint && pnpm exec tsc --noEmit && pnpm exec prettier --check . && pnpm run build"
   },
   "dependencies": {
