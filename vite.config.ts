@@ -8,6 +8,7 @@ import viteTsConfigPaths from 'vite-tsconfig-paths'
 import tailwindcss from '@tailwindcss/vite'
 
 const config = defineConfig({
+  base: '/animal-registry-frontend/',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
