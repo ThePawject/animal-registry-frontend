@@ -9,7 +9,7 @@ export default function Header() {
           <h1 className="ml-4 text-xl font-semibold">
             <Link to="/" className="flex gap-2 items-center">
               <img
-                src="/animal-shelter-logo.png"
+                src="./animal-shelter-logo.png"
                 alt="Schronisko dla zwierząt"
                 className="h-10"
               />
