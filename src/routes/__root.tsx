@@ -1,8 +1,13 @@
-import { Outlet, createRootRouteWithContext } from '@tanstack/react-router'
+import {
+  HeadContent,
+  Outlet,
+  Scripts,
+  createRootRouteWithContext,
+} from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 
-import Header from '../components/Header'
+import { Auth0Provider } from '@auth0/auth0-react'
 
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 
@@ -33,6 +38,10 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         rel: 'stylesheet',
         href: appCss,
       },
+      {
+        rel: 'icon',
+        href: './favicon.ico',
+      },
     ],
   }),
   component: RootLayout,
@@ -41,20 +50,31 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 function RootLayout() {
   return (
     <>
-      <Header />
-      <Outlet />
-      <TanStackDevtools
-        config={{
-          position: 'bottom-right',
+      <HeadContent />
+      <Auth0Provider
+        domain={import.meta.env.VITE_AUTH0_DOMAIN || ''}
+        clientId={import.meta.env.VITE_AUTH0_CLIENT_ID || ''}
+        authorizationParams={{
+          redirect_uri: import.meta.env.VITE_AUTH0_REDIRECT_URI || '',
         }}
-        plugins={[
-          {
-            name: 'Tanstack Router',
-            render: <TanStackRouterDevtools />,
-          },
-          TanStackQueryDevtools,
-        ]}
-      />
+        useRefreshTokens={true}
+        cacheLocation="localstorage"
+      >
+        <Outlet />
+        <TanStackDevtools
+          config={{
+            position: 'bottom-right',
+          }}
+          plugins={[
+            {
+              name: 'Tanstack Router',
+              render: <TanStackRouterDevtools />,
+            },
+            TanStackQueryDevtools,
+          ]}
+        />
+        <Scripts />
+      </Auth0Provider>
     </>
   )
 }

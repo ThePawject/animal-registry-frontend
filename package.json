@@ -13,6 +13,7 @@
     "pre-commit": "pnpm run lint && pnpm exec tsc --noEmit && pnpm exec prettier --check . && pnpm run build"
   },
   "dependencies": {
+    "@auth0/auth0-react": "^2.13.0",
     "@cloudflare/vite-plugin": "^1.13.8",
     "@faker-js/faker": "^10.0.0",
     "@radix-ui/react-checkbox": "^1.2.2",
