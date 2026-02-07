@@ -1,9 +1,10 @@
 import {
   HeadContent,
+  Outlet,
   Scripts,
   createRootRouteWithContext,
 } from '@tanstack/react-router'
-import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 
 import { Auth0Provider } from '@auth0/auth0-react'
@@ -29,7 +30,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'Animal Shelter',
       },
     ],
     links: [
@@ -39,42 +40,37 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
     ],
   }),
-  ssr: false,
-  shellComponent: RootDocument,
+  component: RootLayout,
 })
 
-function RootDocument({ children }: { children: React.ReactNode }) {
+function RootLayout() {
   return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <Auth0Provider
-          domain={import.meta.env.VITE_AUTH0_DOMAIN || ''}
-          clientId={import.meta.env.VITE_AUTH0_CLIENT_ID || ''}
-          authorizationParams={{
-            redirect_uri: import.meta.env.VITE_AUTH0_REDIRECT_URI || '',
+    <>
+      <HeadContent />
+      <Auth0Provider
+        domain={import.meta.env.VITE_AUTH0_DOMAIN || ''}
+        clientId={import.meta.env.VITE_AUTH0_CLIENT_ID || ''}
+        authorizationParams={{
+          redirect_uri: import.meta.env.VITE_AUTH0_REDIRECT_URI || '',
+        }}
+        useRefreshTokens={true}
+        cacheLocation="localstorage"
+      >
+        <Outlet />
+        <TanStackDevtools
+          config={{
+            position: 'bottom-right',
           }}
-          useRefreshTokens={true}
-          cacheLocation="localstorage"
-        >
-          {children}
-          <TanStackDevtools
-            config={{
-              position: 'bottom-right',
-            }}
-            plugins={[
-              {
-                name: 'Tanstack Router',
-                render: <TanStackRouterDevtoolsPanel />,
-              },
-              TanStackQueryDevtools,
-            ]}
-          />
-        </Auth0Provider>
+          plugins={[
+            {
+              name: 'Tanstack Router',
+              render: <TanStackRouterDevtools />,
+            },
+            TanStackQueryDevtools,
+          ]}
+        />
         <Scripts />
-      </body>
-    </html>
+      </Auth0Provider>
+    </>
   )
 }
