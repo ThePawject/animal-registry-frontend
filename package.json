@@ -10,8 +10,7 @@
     "lint": "eslint",
     "format": "prettier",
     "check": "prettier --write . && eslint --fix",
-    "pre-commit": "pnpm run lint && pnpm exec tsc --noEmit && pnpm exec prettier --check . && pnpm run build",
-    "postbuild": "mv public/client/_shell.html public/index.html"
+    "pre-commit": "pnpm run lint && pnpm exec tsc --noEmit && pnpm exec prettier --check . && pnpm run build"
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.13.0",

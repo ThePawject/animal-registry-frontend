@@ -8,14 +8,18 @@ import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import tailwindcss from '@tailwindcss/vite'
 
 const config = defineConfig({
-  base: '/client',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
   plugins: [
-    tanstackStart({ spa: { enabled: true }, prerender: { crawlLinks: true } }),
+    tanstackStart({
+      spa: {
+        enabled: true,
+        prerender: { crawlLinks: true, outputPath: 'index.html' },
+      },
+    }),
     devtools(),
     viteTsConfigPaths({
       projects: ['./tsconfig.json'],
@@ -24,7 +28,7 @@ const config = defineConfig({
     viteReact(),
   ],
   build: {
-    outDir: 'public',
+    outDir: 'dist',
   },
 })
 
