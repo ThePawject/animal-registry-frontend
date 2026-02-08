@@ -2,18 +2,21 @@ import { Link } from '@tanstack/react-router'
 import { useAuth0 } from '@auth0/auth0-react'
 import { useEffect, useState } from 'react'
 import { Button } from './ui/button'
+import LoginModal from './LoginModal'
 import { decodeJwt, getShelterName } from '@/lib/utils'
 
 export default function Header() {
   const {
     logout,
     getAccessTokenSilently,
+    getAccessTokenWithPopup,
     isLoading,
     error,
     isAuthenticated,
     loginWithRedirect,
   } = useAuth0()
   const [shelterName, setShelterName] = useState<string | null>(null)
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
 
   const origin =
     typeof window !== 'undefined' ? window.location.origin : undefined
@@ -33,9 +36,13 @@ export default function Header() {
         const shelterName = getShelterName(decodeJwt(token || ''))
         setShelterName(shelterName)
       } catch (e) {
-        // Handle errors such as `login_required` and `consent_required` by re-prompting for a login
-        // :)
-        console.error(e)
+        if (e instanceof Error) {
+          if (e.message.includes('Missing Refresh Token')) {
+            setIsLoginModalOpen(true)
+          }
+        } else {
+          console.error('Unexpected error:', e)
+        }
       }
     })()
   }, [getAccessTokenSilently, isAuthenticated])
@@ -106,6 +113,19 @@ export default function Header() {
           </div>
         </div>
       </header>
+      <LoginModal
+        open={isLoginModalOpen}
+        onOpenChange={setIsLoginModalOpen}
+        onClick={() => {
+          getAccessTokenWithPopup({
+            authorizationParams: {
+              scope: 'openid offline_access',
+              audience: 'https://dev-ThePawject/',
+            },
+          }).then(() => setIsLoginModalOpen(false))
+        }}
+        loading={isLoading}
+      />
     </>
   )
 }
