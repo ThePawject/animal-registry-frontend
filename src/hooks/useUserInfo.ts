@@ -17,6 +17,7 @@ export function useUserInfo({
   setRoles,
 }: UseUserInfoProps) {
   const [shelterName, setShelterName] = useState<string | null>(null)
+  const [isLoadingRoles, setIsLoadingRoles] = useState(false)
   const { getAccessTokenSilently, isAuthenticated } = useAuth0()
   useEffect(() => {
     if (!isAuthenticated) {
@@ -25,13 +26,16 @@ export function useUserInfo({
     }
     ;(async () => {
       try {
+        setIsLoadingRoles(true)
         const token = await getAccessTokenSilently({
           authorizationParams: getAuthorizationParams(),
         })
         setShelterName(getShelterName(decodeJwt(token || '')))
         const roles = getRoles(decodeJwt(token || ''))
         setRoles(roles)
+        setIsLoadingRoles(false)
       } catch (e) {
+        setIsLoadingRoles(false)
         if (e instanceof Error) {
           if (e.message.includes('Missing Refresh Token')) {
             setIsLoginModalOpen(true)
@@ -42,5 +46,5 @@ export function useUserInfo({
       }
     })()
   }, [getAccessTokenSilently, isAuthenticated])
-  return { shelterName }
+  return { shelterName, isLoadingRoles }
 }

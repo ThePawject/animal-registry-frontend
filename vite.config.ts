@@ -23,11 +23,6 @@ const config = defineConfig({
     tailwindcss(),
     viteReact(),
   ],
-  build: {
-    rollupOptions: {
-      input: 'index.html',
-    },
-  },
 })
 
 export default config

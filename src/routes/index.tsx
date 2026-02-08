@@ -23,13 +23,18 @@ function App() {
     alert(`Ready to send ${ids.length} animal IDs to API: ${ids.join(', ')}`)
   }
 
-  const { shelterName } = useUserInfo({ setIsLoginModalOpen, setRoles })
+  const { shelterName, isLoadingRoles } = useUserInfo({
+    setIsLoginModalOpen,
+    setRoles,
+  })
+
+  const userHasNoRoles = !isLoadingRoles && roles.length === 0
 
   return (
     <div className="">
       {!isAuthenticated ? (
         <LoginPage />
-      ) : roles.length === 0 ? (
+      ) : userHasNoRoles ? (
         <NoAccess />
       ) : (
         <div className="flex flex-col gap-16">

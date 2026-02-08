@@ -1,3 +1,4 @@
+// @ts-ignore poasidfjsapdoifjsapofijsa
 import React from 'react'
 import {
   flexRender,
@@ -33,10 +34,10 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
   const [pageIndex, setPageIndex] = React.useState(0)
   const [pageSize, setPageSize] = React.useState(10)
 
-  const {
-    data: animalsPage,
-    isLoading,
-  } = useAnimals({ page: pageIndex, pageSize })
+  const { data: animalsPage, isLoading } = useAnimals({
+    page: pageIndex,
+    pageSize,
+  })
 
   console.log('Fetched animals:', animalsPage)
 
