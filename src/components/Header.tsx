@@ -19,7 +19,10 @@ export default function Header() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
 
   const origin =
-    typeof window !== 'undefined' ? window.location.origin : undefined
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/animal-registry-frontend/`
+      : undefined
+
   useEffect(() => {
     if (!isAuthenticated) {
       setShelterName(null)
