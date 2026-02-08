@@ -8,6 +8,7 @@ import { useUserInfo } from '@/hooks/useUserInfo'
 import LoginModal from '@/components/LoginModal'
 import { NoAccess } from '@/components/NoAccess'
 import { getAuthorizationParams } from '@/lib/utils'
+import { useAxiosWithAuth } from '@/api/useAxiosWithAuth'
 
 export const Route = createFileRoute('/')({
   component: App,
@@ -15,6 +16,7 @@ export const Route = createFileRoute('/')({
 })
 
 function App() {
+  useAxiosWithAuth()
   const { isAuthenticated, getAccessTokenWithPopup, isLoading } = useAuth0()
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [roles, setRoles] = useState<Array<string>>([])

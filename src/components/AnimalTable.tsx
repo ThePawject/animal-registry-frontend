@@ -1,4 +1,3 @@
-// @ts-ignore poasidfjsapdoifjsapofijsa
 import React from 'react'
 import {
   flexRender,
@@ -31,14 +30,15 @@ interface AnimalTableProps {
 }
 
 function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
-  const [pageIndex, setPageIndex] = React.useState(0)
+  const [page, setPage] = React.useState(1)
   const [pageSize, setPageSize] = React.useState(10)
 
   const { data: animalsPage, isLoading } = useAnimals({
-    page: pageIndex,
+    page: page,
     pageSize,
   })
 
+  console.log('page:', page, 'pageSize:', pageSize)
   console.log('Fetched animals:', animalsPage)
 
   const [globalFilter, setGlobalFilter] = React.useState('')
@@ -182,7 +182,7 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
 
   // Reset to first page on search change
   React.useEffect(() => {
-    setPageIndex(0)
+    setPage(1)
   }, [globalFilter])
 
   const table = useReactTable({
@@ -332,15 +332,15 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setPageIndex((i) => Math.max(0, i - 1))}
-            disabled={pageIndex === 0 || isLoading}
+            onClick={() => setPage((i) => Math.max(0, i - 1))}
+            disabled={page === 0 || isLoading}
           >
             Poprzednia
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setPageIndex((i) => i + 1)}
+            onClick={() => setPage((i) => i + 1)}
             disabled={pageSize === animalsPage?.totalCount}
           >
             Następna

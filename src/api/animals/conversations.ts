@@ -1,21 +1,16 @@
 import axios from 'axios'
+import { apiClient } from '../useAxiosWithAuth'
 import type { AnimalResponse, FetchAnimalsParams } from './types'
-
-const ANIMALS_ENDPOINT_PATH = 'animals'
 
 export const animalsService = {
   async getAnimals(params: FetchAnimalsParams): Promise<AnimalResponse> {
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}${ANIMALS_ENDPOINT_PATH}`,
-        params,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          withCredentials: true,
+      const response = await apiClient.get('animals', {
+        params: {
+          page: params.page,
+          pageSize: params.pageSize,
         },
-      )
+      })
       return response.data
     } catch (error) {
       if (axios.isAxiosError(error)) {
