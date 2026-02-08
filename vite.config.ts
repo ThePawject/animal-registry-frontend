@@ -15,7 +15,7 @@ const config = defineConfig({
     },
   },
   plugins: [
-    tanstackStart(),
+    tanstackStart({ spa: { enabled: true }, prerender: { crawlLinks: true } }),
     devtools(),
     viteTsConfigPaths({
       projects: ['./tsconfig.json'],
@@ -23,6 +23,9 @@ const config = defineConfig({
     tailwindcss(),
     viteReact(),
   ],
+  build: {
+    outDir: 'dist',
+  },
 })
 
 export default config
