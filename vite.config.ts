@@ -24,7 +24,7 @@ const config = defineConfig({
     viteReact(),
   ],
   build: {
-    outDir: 'dist',
+    outDir: 'public',
   },
 })
 
