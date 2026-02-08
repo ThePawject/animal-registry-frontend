@@ -15,3 +15,5 @@ count.txt
 .vinxi
 todos.json
 .idea
+*.md
+!README.md

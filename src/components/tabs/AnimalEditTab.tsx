@@ -1,6 +1,6 @@
 import React from 'react'
 import { XIcon } from 'lucide-react'
-import type { Animal } from '@/data/animal-data'
+import type { Animal } from '@/api/animals/types'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog'
@@ -14,8 +14,17 @@ import {
 } from '@/components/ui/carousel'
 import { useAppForm } from '@/hooks/Form'
 
-const ANIMAL_TYPES = ['dog', 'cat', 'bird', 'rabbit', 'other'] as const
-const STATUSES = ['available', 'adopted', 'pending', 'medical'] as const
+const SPECIES_OPTIONS = [
+  { label: 'Brak', value: '0' },
+  { label: 'Pies', value: '1' },
+  { label: 'Kot', value: '2' },
+] as const
+
+const SEX_OPTIONS = [
+  { label: 'Brak', value: '0' },
+  { label: 'Samiec', value: '1' },
+  { label: 'Samica', value: '2' },
+] as const
 
 function formatDate(date: any) {
   if (!date) return ''
@@ -46,17 +55,16 @@ export default function AnimalEditTab({
   const form = useAppForm({
     defaultValues: {
       name: animal.name || '',
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      type: animal.type || ANIMAL_TYPES[0],
-      breed: animal.breed || '',
-
-      age: animal.age.toString() || '0',
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      status: animal.status || STATUSES[0],
-      admissionDate: formatDate(animal.admissionDate),
+      signature: animal.signature || '',
+      transponderCode: animal.transponderCode || '',
+      color: animal.color || '',
+      species: animal.species.toString(),
+      sex: animal.sex.toString(),
+      birthDate: formatDate(animal.birthDate),
+      isActive: animal.isActive,
     },
     onSubmit: ({ value }) => {
-      alert(`Zwierze dodano:  ${JSON.stringify(value, null, 2)}`)
+      alert(`Zwierze zaktualizowano:  ${JSON.stringify(value, null, 2)}`)
       // Optionally: onClose();
     },
   })
@@ -151,41 +159,52 @@ export default function AnimalEditTab({
                 >
                   {(field) => <field.TextField label="Imię" />}
                 </form.AppField>
-                <form.AppField name="type">
+                <form.AppField name="signature">
+                  {(field) => <field.TextField label="Oznaczenie" />}
+                </form.AppField>
+                <form.AppField name="transponderCode">
+                  {(field) => (
+                    <field.TextField label="Kod transpondera (chip)" />
+                  )}
+                </form.AppField>
+                <form.AppField name="species">
                   {(field) => (
                     <field.Select
                       label="Gatunek"
-                      values={ANIMAL_TYPES.map((t) => ({
-                        label: t.charAt(0).toUpperCase() + t.slice(1),
-                        value: t,
-                      }))}
+                      values={[...SPECIES_OPTIONS]}
                       placeholder="Wybierz gatunek"
                     />
                   )}
                 </form.AppField>
-                <form.AppField name="breed">
-                  {(field) => <field.TextField label="Rasa" />}
-                </form.AppField>
-                <form.AppField name="age">
-                  {(field) => <field.TextField label="Wiek" placeholder="0" />}
-                </form.AppField>
-                <form.AppField name="status">
+                <form.AppField name="sex">
                   {(field) => (
                     <field.Select
-                      label="Status" // zgodność
-                      values={STATUSES.map((s) => ({
-                        label: s.charAt(0).toUpperCase() + s.slice(1),
-                        value: s,
-                      }))}
-                      placeholder="Wybierz status"
+                      label="Płeć"
+                      values={[...SEX_OPTIONS]}
+                      placeholder="Wybierz płeć"
                     />
                   )}
                 </form.AppField>
-                <form.AppField name="admissionDate">
+                <form.AppField name="color">
+                  {(field) => <field.TextField label="Umaszczenie" />}
+                </form.AppField>
+                <form.AppField name="birthDate">
                   {(field) => (
                     <field.TextField
-                      label="Data przyjęcia"
+                      label="Data urodzenia"
                       placeholder="RRRR-MM-DD"
+                    />
+                  )}
+                </form.AppField>
+                <form.AppField name="isActive">
+                  {(field) => (
+                    <field.Select
+                      label="Status"
+                      values={[
+                        { label: 'Aktywny', value: 'true' },
+                        { label: 'Nieaktywny', value: 'false' },
+                      ]}
+                      placeholder="Wybierz status"
                     />
                   )}
                 </form.AppField>

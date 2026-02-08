@@ -23,7 +23,7 @@ export default function AnimalMedicalNotesTab({
   open,
   onClose,
 }: {
-  animalId: number
+  animalId: string
   open: boolean
   onClose: () => void
 }) {

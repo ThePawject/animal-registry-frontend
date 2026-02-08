@@ -30,13 +30,17 @@ function App() {
     setRoles,
   })
 
-  const userHasNoRoles = !isLoadingRoles && roles.length === 0
+  const showNoAccessPage =
+    !isLoadingRoles && roles.length === 0 && !isLoginModalOpen && !isLoading
+
+  console.log('User roles:', roles)
+  console.log('isauthenticated', isAuthenticated)
 
   return (
     <div className="">
       {!isAuthenticated ? (
         <LoginPage />
-      ) : userHasNoRoles ? (
+      ) : showNoAccessPage ? (
         <NoAccess />
       ) : (
         <div className="flex flex-col gap-16">

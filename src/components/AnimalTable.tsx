@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from './ui/select'
 import type { ColumnDef } from '@tanstack/react-table'
-import type { Animal } from '@/data/animal-data'
+import type { Animal } from '@/api/animals/types'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -37,9 +37,6 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
     page: page,
     pageSize,
   })
-
-  console.log('page:', page, 'pageSize:', pageSize)
-  console.log('Fetched animals:', animalsPage)
 
   const [globalFilter, setGlobalFilter] = React.useState('')
   const [rowSelection, setRowSelection] = React.useState({})
@@ -69,62 +66,79 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
         enableHiding: false,
       },
       {
-        accessorKey: 'id',
-        header: 'ID',
-        cell: (info) => info.row.original.animalId,
+        accessorKey: 'signature',
+        header: 'Oznaczenie',
+        cell: (info) => info.getValue(),
       },
       {
         accessorKey: 'name',
         header: 'Imię',
         cell: (info) => (
-          <a href={`/animal/${info.row.original.animalId}`}>
-            {info.getValue()}
-          </a>
+          <a href={`/animal/${info.row.original.id}`}>{info.getValue()}</a>
         ),
       },
       {
-        accessorKey: 'type',
+        accessorKey: 'species',
         header: 'Gatunek',
+        cell: (info) => {
+          const speciesMap: Record<number, string> = {
+            0: 'Brak',
+            1: 'Pies',
+            2: 'Kot',
+          }
+          return speciesMap[info.getValue() as number] || 'Nieznany'
+        },
+      },
+      {
+        accessorKey: 'sex',
+        header: 'Płeć',
+        cell: (info) => {
+          const sexMap: Record<number, string> = {
+            0: 'Brak',
+            1: 'Samiec',
+            2: 'Samica',
+          }
+          return sexMap[info.getValue() as number] || 'Nieznana'
+        },
+      },
+      {
+        accessorKey: 'color',
+        header: 'Umaszczenie',
         cell: (info) => info.getValue(),
       },
       {
-        accessorKey: 'breed',
-        header: 'Rasa',
-        cell: (info) => info.getValue(),
-      },
-      {
-        accessorKey: 'age',
+        accessorKey: 'birthDate',
         header: 'Wiek',
-        cell: (info) => `${info.getValue()} lat`,
+        cell: (info) => {
+          const birthDate = new Date(info.getValue() as string)
+          const age = Math.floor(
+            (Date.now() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000),
+          )
+          return `${age} lat`
+        },
         filterFn: 'includesString',
       },
       {
-        accessorKey: 'status',
+        accessorKey: 'isActive',
         header: 'Status',
         cell: (info) => {
-          const status = info.getValue() as string
-          const statusColors = {
-            available:
-              'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
-            adopted:
-              'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100',
-            pending:
-              'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
-            medical:
-              'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
-          }
+          const isActive = info.getValue() as boolean
           return (
             <span
-              className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[status as keyof typeof statusColors]}`}
+              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                isActive
+                  ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
+                  : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
+              }`}
             >
-              {status}
+              {isActive ? 'Aktywny' : 'Nieaktywny'}
             </span>
           )
         },
         filterFn: 'includesString',
       },
       {
-        accessorKey: 'admissionDate',
+        accessorKey: 'createdOn',
         header: 'Data przyjęcia',
         cell: (info) => {
           const date = new Date(info.getValue() as string)
@@ -314,6 +328,7 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
           <Select
             value={pageSize.toString()}
             onValueChange={(value) => {
+              setPage(1)
               setPageSize(Number(value))
               window.scrollTo({ top: 0, behavior: 'instant' })
             }}
@@ -332,8 +347,8 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setPage((i) => Math.max(0, i - 1))}
-            disabled={page === 0 || isLoading}
+            onClick={() => setPage((i) => Math.max(1, i - 1))}
+            disabled={page === 1 || isLoading}
           >
             Poprzednia
           </Button>
@@ -350,7 +365,7 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
       {/* View Modal */}
       {selectedAnimal && (
         <AnimalViewTab
-          animal={selectedAnimal}
+          animalId={selectedAnimal.id}
           open={openViewModal && !!selectedAnimal}
           onClose={() => setOpenViewModal(false)}
         />
@@ -368,7 +383,7 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
       {/* Medical Modal */}
       {selectedAnimal && (
         <AnimalMedicalNotesTab
-          animalId={selectedAnimal.animalId}
+          animalId={selectedAnimal.id}
           open={openMedicalModal && !!selectedAnimal}
           onClose={() => setOpenMedicalModal(false)}
         />

@@ -54,3 +54,11 @@ export function getAuthorizationParams() {
     audience: 'https://dev-ThePawject/',
   }
 }
+
+export function transformBlobUrl(blobUrl: string): string {
+  const newBlobUrl = blobUrl.replace(
+    'kundelek-azurite-1:10000',
+    '91.189.217.30:10000',
+  )
+  return newBlobUrl
+}

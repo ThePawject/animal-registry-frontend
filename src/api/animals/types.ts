@@ -14,6 +14,10 @@ export type Animal = {
   mainPhoto: Photo | null
 }
 
+export type AnimalById = Omit<Animal, 'mainPhoto'> & {
+  photos: Array<Photo>
+}
+
 export type Photo = {
   id: string
   blobUrl: string
