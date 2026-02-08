@@ -26,3 +26,31 @@ export function getShelterName(
   )
   return shelterName ? shelterName.replace('Shelter_Access_', '') : null
 }
+
+export function getRoles(decodedToken: Record<string, any>): Array<string> {
+  return decodedToken['https://ThePawject/roles'] || []
+}
+
+export function hasAtLeastOneRole(roles: Array<string>): boolean {
+  return !Array.isArray(roles) || roles.length === 0
+}
+
+export const origin =
+  typeof window !== 'undefined' ? window.location.origin : null
+
+export function getOriginHomePage() {
+  if (!origin) return null
+  return `${origin}/animal-registry-frontend/`
+}
+
+export function getOriginNoAccessPage() {
+  if (!origin) return null
+  return `${origin}/animal-registry-frontend/no-access`
+}
+
+export function getAuthorizationParams() {
+  return {
+    scope: 'openid offline_access',
+    audience: 'https://dev-ThePawject/',
+  }
+}

@@ -1,54 +1,14 @@
 import { Link } from '@tanstack/react-router'
 import { useAuth0 } from '@auth0/auth0-react'
-import { useEffect, useState } from 'react'
 import { Button } from './ui/button'
-import LoginModal from './LoginModal'
-import { decodeJwt, getShelterName } from '@/lib/utils'
+import { getAuthorizationParams, getOriginHomePage } from '@/lib/utils'
 
-export default function Header() {
-  const {
-    logout,
-    getAccessTokenSilently,
-    getAccessTokenWithPopup,
-    isLoading,
-    error,
-    isAuthenticated,
-    loginWithRedirect,
-  } = useAuth0()
-  const [shelterName, setShelterName] = useState<string | null>(null)
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
-
-  const origin =
-    typeof window !== 'undefined'
-      ? `${window.location.origin}/animal-registry-frontend/`
-      : undefined
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setShelterName(null)
-      return
-    }
-    ;(async () => {
-      try {
-        const token = await getAccessTokenSilently({
-          authorizationParams: {
-            scope: 'openid offline_access',
-            audience: 'https://dev-ThePawject/',
-          },
-        })
-        const shelterName = getShelterName(decodeJwt(token || ''))
-        setShelterName(shelterName)
-      } catch (e) {
-        if (e instanceof Error) {
-          if (e.message.includes('Missing Refresh Token')) {
-            setIsLoginModalOpen(true)
-          }
-        } else {
-          console.error('Unexpected error:', e)
-        }
-      }
-    })()
-  }, [getAccessTokenSilently, isAuthenticated])
+type HeaderProps = {
+  shelterName: string | null
+}
+export default function Header({ shelterName }: HeaderProps) {
+  const { logout, isLoading, error, isAuthenticated, loginWithRedirect } =
+    useAuth0()
 
   if (error) {
     return <div>Error: {error.message}</div>
@@ -94,7 +54,9 @@ export default function Header() {
                 variant="secondary"
                 className="cursor-pointer"
                 onClick={() => {
-                  logout({ logoutParams: { returnTo: origin } })
+                  logout({
+                    logoutParams: { returnTo: getOriginHomePage() || '' },
+                  })
                 }}
               >
                 Wyloguj się
@@ -103,10 +65,7 @@ export default function Header() {
               <Button
                 onClick={() =>
                   loginWithRedirect({
-                    authorizationParams: {
-                      scope: 'openid offline_access',
-                      audience: 'https://dev-ThePawject/',
-                    },
+                    authorizationParams: getAuthorizationParams(),
                   })
                 }
               >
@@ -116,19 +75,6 @@ export default function Header() {
           </div>
         </div>
       </header>
-      <LoginModal
-        open={isLoginModalOpen}
-        onOpenChange={setIsLoginModalOpen}
-        onClick={() => {
-          getAccessTokenWithPopup({
-            authorizationParams: {
-              scope: 'openid offline_access',
-              audience: 'https://dev-ThePawject/',
-            },
-          }).then(() => setIsLoginModalOpen(false))
-        }}
-        loading={isLoading}
-      />
     </>
   )
 }
