@@ -58,7 +58,7 @@ jobs:
         run: pnpm run build
 
       - name: Create 404.html
-        run: cp dist/index.html dist/404.html
+        run: cp public/index.html public/404.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
