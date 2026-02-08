@@ -18,24 +18,27 @@ import {
 } from './ui/select'
 import type { ColumnDef } from '@tanstack/react-table'
 import type { Animal } from '@/data/animal-data'
-import { mockAnimalApi } from '@/data/animal-data'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useAnimals } from '@/api/animals/queries'
 
 interface AnimalTableProps {
   onGetSelectedIds?: (ids: Array<number>) => void
 }
 
 function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
-  // MOCK API PAGINATION DATA STATE
-  const [pageData, setPageData] = React.useState<Array<Animal>>([])
-  const [total, setTotal] = React.useState(0)
-  const [loading, setLoading] = React.useState(false)
   const [pageIndex, setPageIndex] = React.useState(0)
   const [pageSize, setPageSize] = React.useState(10)
+
+  const {
+    data: animalsPage,
+    isLoading,
+  } = useAnimals({ page: pageIndex, pageSize })
+
+  console.log('Fetched animals:', animalsPage)
 
   const [globalFilter, setGlobalFilter] = React.useState('')
   const [rowSelection, setRowSelection] = React.useState({})
@@ -176,31 +179,13 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
     [],
   )
 
-  // FETCH EFFECT for mock api
-  React.useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    mockAnimalApi({ page: pageIndex, pageSize, search: globalFilter }).then(
-      (res) => {
-        if (!cancelled) {
-          setPageData(res.data)
-          setTotal(res.total)
-          setLoading(false)
-        }
-      },
-    )
-    return () => {
-      cancelled = true
-    }
-  }, [globalFilter, pageIndex, pageSize])
-
   // Reset to first page on search change
   React.useEffect(() => {
     setPageIndex(0)
   }, [globalFilter])
 
   const table = useReactTable({
-    data: pageData,
+    data: animalsPage?.items || [],
     columns,
     state: {
       globalFilter,
@@ -208,11 +193,11 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
     },
     enableMultiRowSelection: true,
     onGlobalFilterChange: setGlobalFilter,
-    getRowId: (row) => row.animalId.toString(),
+    getRowId: (row) => row.id.toString(),
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
-    pageCount: Math.ceil(total / pageSize),
+    pageCount: Math.ceil(animalsPage?.totalCount || 9999),
   })
 
   const handleGetSelectedIds = () => {
@@ -299,7 +284,7 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
                       key={cell.id}
                       className="px-4 py-3 align-middle [&:has([role=checkbox])]:pr-0"
                     >
-                      {!loading ? (
+                      {!isLoading ? (
                         flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext(),
@@ -347,19 +332,15 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
             variant="outline"
             size="sm"
             onClick={() => setPageIndex((i) => Math.max(0, i - 1))}
-            disabled={pageIndex === 0 || loading}
+            disabled={pageIndex === 0 || isLoading}
           >
             Poprzednia
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() =>
-              setPageIndex((i) =>
-                Math.min(Math.ceil(total / pageSize) - 1, i + 1),
-              )
-            }
-            disabled={pageIndex >= Math.ceil(total / pageSize) - 1 || loading}
+            onClick={() => setPageIndex((i) => i + 1)}
+            disabled={pageSize === animalsPage?.totalCount}
           >
             Następna
           </Button>
