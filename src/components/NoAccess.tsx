@@ -1,9 +1,8 @@
 import { useAuth0 } from '@auth0/auth0-react'
 import { Button } from './ui/button'
-import { getAuthorizationParams } from '@/lib/utils'
 
-export default function LoginPage() {
-  const { loginWithRedirect, isLoading } = useAuth0()
+export function NoAccess() {
+  const { isLoading, logout } = useAuth0()
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-emerald-100 w-full">
@@ -15,24 +14,27 @@ export default function LoginPage() {
         />
         <div className="flex items-center justify-center w-full">
           <div className="max-w-md w-full p-8 bg-white rounded-md shadow-lg flex flex-col items-center">
-            <h2 className="text-2xl font-semibold mb-4 text-emerald-800">
-              Witaj w Panelu Schroniska!
+            <h2 className="text-2xl font-semibold mb-4 text-red-700">
+              Nie masz przypisanej roli
             </h2>
-            <p className="text-lg mb-8 text-emerald-700">
-              Zaloguj się, aby otrzymać dostęp do systemu schroniska dla
-              zwierząt.
+            <p className="text-lg mb-4 text-gray-700 text-center">
+              Twoje konto nie posiada jeszcze przypisanej roli. To typowa
+              sytuacja zaraz po założeniu nowego konta. Musisz poczekać, aż
+              administrator nada Ci odpowiednią rolę.
+            </p>
+            <p className="text-md mb-8 text-gray-600 text-center">
+              Możesz spróbować zalogować się ponownie później, gdy uzyskasz
+              dostęp.
             </p>
             <Button
               className="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
               size="lg"
-              onClick={() =>
-                loginWithRedirect({
-                  authorizationParams: getAuthorizationParams(),
-                })
-              }
+              onClick={() => {
+                logout()
+              }}
               disabled={isLoading}
             >
-              Zaloguj się
+              Przejdź do strony logowania
             </Button>
           </div>
         </div>

@@ -1,9 +1,9 @@
-import { resolve } from 'node:path'
 import { URL, fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import { devtools } from '@tanstack/devtools-vite'
 import viteReact from '@vitejs/plugin-react'
 import viteTsConfigPaths from 'vite-tsconfig-paths'
+import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 
 import tailwindcss from '@tailwindcss/vite'
 
@@ -15,6 +15,7 @@ const config = defineConfig({
     },
   },
   plugins: [
+    tanstackStart(),
     devtools(),
     viteTsConfigPaths({
       projects: ['./tsconfig.json'],
@@ -24,10 +25,7 @@ const config = defineConfig({
   ],
   build: {
     rollupOptions: {
-      input: {
-        main: resolve(__dirname, 'index.html'),
-        404: resolve(__dirname, 'index.html'),
-      },
+      input: 'index.html',
     },
   },
 })
