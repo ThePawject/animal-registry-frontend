@@ -8,7 +8,7 @@ import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import tailwindcss from '@tailwindcss/vite'
 
 const config = defineConfig({
-  base: '/animal-registry-frontend/',
+  base: '/client',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
