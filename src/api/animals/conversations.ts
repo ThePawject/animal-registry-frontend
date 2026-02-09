@@ -3,6 +3,7 @@ import { apiClient } from '../useAxiosWithAuth'
 import type {
   AddAnimal,
   AnimalById,
+  AnimalEvent,
   AnimalResponse,
   FetchAnimalsParams,
 } from './types'
@@ -62,6 +63,42 @@ export const animalsService = {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         throw new Error(`Failed to add animal: ${error.message}`)
+      }
+      throw error
+    }
+  },
+  addAnimalEvent: async (id: string, data: AnimalEvent) => {
+    try {
+      const response = await apiClient.post(`animals/${id}/events`, data)
+      return response.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to add animal event: ${error.message}`)
+      }
+      throw error
+    }
+  },
+  editAnimalEvent: async (id: string, eventId: string, data: AnimalEvent) => {
+    try {
+      const response = await apiClient.put(
+        `animals/${id}/events/${eventId}`,
+        data,
+      )
+      return response.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to edit animal event: ${error.message}`)
+      }
+      throw error
+    }
+  },
+  deleteAnimalEvent: async (id: string, eventId: string) => {
+    try {
+      const response = await apiClient.delete(`animals/${id}/events/${eventId}`)
+      return response.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to delete animal event: ${error.message}`)
       }
       throw error
     }

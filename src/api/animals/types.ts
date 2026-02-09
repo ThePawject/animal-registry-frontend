@@ -16,6 +16,7 @@ export type Animal = {
 
 export type AnimalById = Omit<Animal, 'mainPhoto'> & {
   photos: Array<Photo>
+  events: Array<AnimalEvent>
 }
 
 export type Photo = {
@@ -36,6 +37,35 @@ export type AnimalResponse = {
 export type FetchAnimalsParams = {
   page: number
   pageSize: number
+}
+
+export const ANIMAL_EVENT_TYPE_MAP = {
+  0: 'Brak',
+  1: 'Przyjęcie do schroniska',
+  2: 'Początek kwarantanny',
+  3: 'Koniec kwarantanny',
+  4: 'Szczepienie przeciw chorobom zakaźnym',
+  5: 'Odrobaczenie',
+  6: 'Odpluskwienie',
+  7: 'Sterylizacja/Kastracja',
+  8: 'Szczepienie przeciw wściekliźnie',
+  9: 'Adopcja',
+  10: 'Spacer',
+  11: 'Nowy numer kennel',
+  12: 'Odbiór przez właściciela',
+  13: 'Ważenie',
+  14: 'Eutanazja',
+  15: 'Zgon',
+} as const
+
+export type AnimalEventType = keyof typeof ANIMAL_EVENT_TYPE_MAP
+
+export type AnimalEvent = {
+  id: string
+  type: AnimalEventType
+  occurredOn: string
+  description: string
+  performedBy: string
 }
 
 export type AddAnimal = {

@@ -4,10 +4,11 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { Eye, Pencil, Plus, Stethoscope } from 'lucide-react'
+import { Calendar, Eye, Pencil, Plus, Stethoscope } from 'lucide-react'
 import AnimalViewTab from './tabs/AnimalViewTab'
 import AnimalEditTab from './tabs/AnimalEditTab'
 import AnimalMedicalNotesTab from './tabs/AnimalMedicalNotesTab'
+import AnimalEventsTab from './tabs/AnimalEventsTab'
 import AddAnimalModal from './AddAnimalModal'
 import {
   Select,
@@ -41,9 +42,12 @@ function AnimalTable() {
   const [selectedAnimal, setSelectedAnimal] = React.useState<Animal | null>(
     null,
   )
+
+  console.log('selectedAnimal', selectedAnimal)
   const [openViewModal, setOpenViewModal] = React.useState(false)
   const [openEditModal, setOpenEditModal] = React.useState(false)
   const [openMedicalModal, setOpenMedicalModal] = React.useState(false)
+  const [openEventsModal, setOpenEventsModal] = React.useState(false)
   const [openAddModal, setOpenAddModal] = React.useState(false)
 
   const columns = React.useMemo<Array<ColumnDef<Animal, any>>>(
@@ -206,6 +210,17 @@ function AnimalTable() {
             >
               <Stethoscope className="w-4 h-4 mr-1" /> Medyczne
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                setSelectedAnimal(row.original)
+                setOpenEventsModal(true)
+              }}
+            >
+              <Calendar className="w-4 h-4 mr-1" /> Wydarzenia
+            </Button>
           </div>
         ),
         enableSorting: false,
@@ -240,11 +255,8 @@ function AnimalTable() {
     const selectedRows = table.getState().rowSelection
     const selectedIds = Object.keys(selectedRows).map((key) => Number(key))
 
-    // if (onGetSelectedIds) {
-    //   onGetSelectedIds(selectedIds)
-    // } else {
-    //   alert(`Selected animal IDs: ${selectedIds.join(', ')}`)
-    // }
+    // TODO: Implement selected IDs action
+    console.log('Selected animal IDs:', selectedIds)
   }
 
   const selectedCount = Object.keys(table.getState().rowSelection).length
@@ -413,6 +425,15 @@ function AnimalTable() {
           animalId={selectedAnimal.id}
           open={openMedicalModal && !!selectedAnimal}
           onClose={() => setOpenMedicalModal(false)}
+        />
+      )}
+
+      {/* Events Modal */}
+      {selectedAnimal && (
+        <AnimalEventsTab
+          animalId={selectedAnimal.id}
+          open={openEventsModal && !!selectedAnimal}
+          onClose={() => setOpenEventsModal(false)}
         />
       )}
 
