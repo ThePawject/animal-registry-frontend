@@ -1,7 +1,7 @@
 import React from 'react'
 import { Calendar, Dog, Hash, Tag, User, XIcon } from 'lucide-react'
 import { useForm, useStore } from '@tanstack/react-form'
-import type { AddAnimal, Animal, Sexes, Species } from '@/api/animals/types'
+import type { AddAnimal, Sexes, Species } from '@/api/animals/types'
 import { SEX_MAP, SPECIES_MAP } from '@/api/animals/types'
 import { useAddAnimal } from '@/api/animals/queries'
 import { Card } from '@/components/ui/card'
@@ -69,12 +69,10 @@ function FormField({ icon: Icon, label, children, error }: FormFieldProps) {
   )
 }
 
-export default function AnimalEditTab({
-  animal,
+export default function AddAnimalModal({
   open,
   onClose,
 }: {
-  animal: Animal
   open: boolean
   onClose: () => void
 }) {
@@ -86,6 +84,17 @@ export default function AnimalEditTab({
       await mutateAsync(value)
       onClose()
     },
+    // validators: {
+    //   onChange({ value }) {
+    //     if (!value.name) return { name: 'Imię jest wymagane' }
+    //     if (!value.signature) return { signature: 'Oznaczenie jest wymagane' }
+    //     if (!value.transponderCode)
+    //       return { transponderCode: 'Numer chipa jest wymagany' }
+    //     if (!value.birthDate)
+    //       return { birthDate: 'Data urodzenia jest wymagana' }
+    //     return {}
+    //   },
+    // },
   })
 
   const isDirty = useStore(form.store, (state) => state.isDirty)
@@ -157,9 +166,7 @@ export default function AnimalEditTab({
 
           <Card className="overflow-hidden py-0 gap-0">
             <div className="flex-1 p-4 shadow-md">
-              <h2 className="text-2xl font-semibold">
-                Edytuj: {animal.name || '(imię)'}
-              </h2>
+              <h2 className="text-2xl font-semibold">Dodaj zwierzaka</h2>
             </div>
 
             <form
@@ -173,12 +180,19 @@ export default function AnimalEditTab({
                 <div className="space-y-6 py-6">
                   <form.Field
                     name="name"
+                    validators={{
+                      onChange: ({ value }) => {
+                        return !value || value.trim().length < 2
+                          ? 'Imię musi mieć conajmniej 2 znaki'
+                          : undefined
+                      },
+                    }}
                     children={(field) => {
                       return (
                         <FormField
                           icon={Dog}
                           label="Imię"
-                          error={field.state.meta.errors[0]}
+                          error={field.state.meta.errors.join(', ')}
                         >
                           <Input
                             id="Imię"
@@ -193,6 +207,11 @@ export default function AnimalEditTab({
                   />
                   <form.Field
                     name="signature"
+                    validators={{
+                      onChange: ({ value }) => {
+                        return !value ? 'Oznaczenie jest wymagane' : undefined
+                      },
+                    }}
                     children={(field) => {
                       return (
                         <FormField
@@ -214,6 +233,11 @@ export default function AnimalEditTab({
 
                   <form.Field
                     name="transponderCode"
+                    validators={{
+                      onChange: ({ value }) => {
+                        return !value ? 'Numer chipa jest wymagany' : undefined
+                      },
+                    }}
                     children={(field) => {
                       return (
                         <FormField
@@ -235,6 +259,11 @@ export default function AnimalEditTab({
 
                   <form.Field
                     name="species"
+                    validators={{
+                      onChange: ({ value }) => {
+                        return value === 0 ? 'Gatunek jest wymagany' : undefined
+                      },
+                    }}
                     children={(field) => {
                       return (
                         <FormField
@@ -266,6 +295,11 @@ export default function AnimalEditTab({
 
                   <form.Field
                     name="sex"
+                    validators={{
+                      onChange: ({ value }) => {
+                        return value === 0 ? 'Płeć jest wymagana' : undefined
+                      },
+                    }}
                     children={(field) => {
                       return (
                         <FormField
@@ -280,7 +314,7 @@ export default function AnimalEditTab({
                             }
                           >
                             <SelectTrigger className="bg-background w-full">
-                              <SelectValue placeholder="Wybierz gatunek" />
+                              <SelectValue placeholder="Wybierz płeć" />
                             </SelectTrigger>
                             <SelectContent>
                               {SEX_OPTIONS.map((opt) => (
@@ -296,6 +330,11 @@ export default function AnimalEditTab({
                   />
                   <form.Field
                     name="color"
+                    validators={{
+                      onChange: ({ value }) => {
+                        return !value ? 'Umaszczenie jest wymagane' : undefined
+                      },
+                    }}
                     children={(field) => {
                       return (
                         <FormField
@@ -317,6 +356,16 @@ export default function AnimalEditTab({
 
                   <form.Field
                     name="birthDate"
+                    validators={{
+                      onChange: ({ value }) => {
+                        if (!value) return 'Data urodzenia jest wymagana'
+                        const birthDate = new Date(value)
+                        const today = new Date()
+                        if (birthDate > today)
+                          return 'Data urodzenia nie może być z przyszłości'
+                        return undefined
+                      },
+                    }}
                     children={(field) => {
                       return (
                         <FormField
@@ -430,7 +479,7 @@ export default function AnimalEditTab({
                   className="flex-1 h-12 text-lg font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
                   disabled={isPending}
                 >
-                  {isPending ? 'Zapisywanie...' : 'Zapisz zmiany'}
+                  {isPending ? 'Zapisywanie...' : 'Dodaj zwierzaka'}
                 </Button>
               </div>
             </form>

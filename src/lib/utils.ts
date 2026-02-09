@@ -62,3 +62,12 @@ export function transformBlobUrl(blobUrl: string): string {
   )
   return newBlobUrl
 }
+
+export function formatDate(dateString: string): string {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('pl-PL', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}

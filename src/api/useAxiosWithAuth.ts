@@ -8,7 +8,13 @@ const apiClient = axios.create({
   withCredentials: true,
 })
 
-export const useAxiosWithAuth = () => {
+type UseAxiosWithAuthProps = {
+  setIsLoginModalOpen: (isOpen: boolean) => void
+}
+
+export const useAxiosWithAuth = ({
+  setIsLoginModalOpen,
+}: UseAxiosWithAuthProps) => {
   const { getAccessTokenSilently, isAuthenticated } = useAuth0()
 
   useEffect(() => {
@@ -20,7 +26,13 @@ export const useAxiosWithAuth = () => {
           })
           config.headers.Authorization = `Bearer ${token}`
         } catch (error) {
-          console.error('Failed to get access token:', error)
+          if (error instanceof Error) {
+            if (error.message.includes('Missing Refresh Token')) {
+              setIsLoginModalOpen(true)
+            }
+          } else {
+            console.error('Failed to get access token:', error)
+          }
         }
       }
       return config

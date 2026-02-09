@@ -4,8 +4,8 @@ export type Animal = {
   transponderCode: string
   name: string
   color: string
-  species: number
-  sex: number
+  species: Species
+  sex: Sexes
   birthDate: string
   createdOn: string
   modifiedOn: string
@@ -37,3 +37,31 @@ export type FetchAnimalsParams = {
   page: number
   pageSize: number
 }
+
+export type AddAnimal = {
+  birthDate: string
+  color: string
+  mainPhotoIndex: number
+  name: string
+  photos: Array<File>
+  sex: Sexes
+  signature: string
+  species: Species
+  transponderCode: string
+}
+
+export const SPECIES_MAP = {
+  0: 'Brak',
+  1: 'Pies',
+  2: 'Kot',
+}
+
+export type Species = keyof typeof SPECIES_MAP
+
+export const SEX_MAP = {
+  0: 'Brak',
+  1: 'Samiec',
+  2: 'Samica',
+}
+
+export type Sexes = keyof typeof SEX_MAP

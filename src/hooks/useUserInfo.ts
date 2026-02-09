@@ -18,7 +18,7 @@ export function useUserInfo({
 }: UseUserInfoProps) {
   const [shelterName, setShelterName] = useState<string | null>(null)
   const [isLoadingRoles, setIsLoadingRoles] = useState(false)
-  const { getAccessTokenSilently, isAuthenticated } = useAuth0()
+  const { getAccessTokenSilently, isAuthenticated, isLoading } = useAuth0()
   useEffect(() => {
     if (!isAuthenticated) {
       setShelterName(null)
@@ -45,6 +45,6 @@ export function useUserInfo({
         }
       }
     })()
-  }, [getAccessTokenSilently, isAuthenticated])
+  }, [getAccessTokenSilently, isAuthenticated, isLoading])
   return { shelterName, isLoadingRoles }
 }

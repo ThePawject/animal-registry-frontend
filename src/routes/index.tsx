@@ -16,25 +16,18 @@ export const Route = createFileRoute('/')({
 })
 
 function App() {
-  useAxiosWithAuth()
   const { isAuthenticated, getAccessTokenWithPopup, isLoading } = useAuth0()
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [roles, setRoles] = useState<Array<string>>([])
-  const handleGetSelectedIds = (ids: Array<number>) => {
-    // Here you would make your future API call
-    alert(`Ready to send ${ids.length} animal IDs to API: ${ids.join(', ')}`)
-  }
 
   const { shelterName, isLoadingRoles } = useUserInfo({
     setIsLoginModalOpen,
     setRoles,
   })
+  useAxiosWithAuth({ setIsLoginModalOpen })
 
   const showNoAccessPage =
     !isLoadingRoles && roles.length === 0 && !isLoginModalOpen && !isLoading
-
-  console.log('User roles:', roles)
-  console.log('isauthenticated', isAuthenticated)
 
   return (
     <div className="">
@@ -46,7 +39,7 @@ function App() {
         <div className="flex flex-col gap-16">
           <Header shelterName={shelterName} />
           <div className="container mx-auto">
-            <AnimalTable onGetSelectedIds={handleGetSelectedIds} />
+            <AnimalTable />
           </div>
         </div>
       )}
@@ -56,7 +49,10 @@ function App() {
         onClick={() => {
           getAccessTokenWithPopup({
             authorizationParams: getAuthorizationParams(),
-          }).then(() => setIsLoginModalOpen(false))
+          }).then((test) => {
+            console.log('response', test)
+            setIsLoginModalOpen(false)
+          })
         }}
         loading={isLoading}
       />

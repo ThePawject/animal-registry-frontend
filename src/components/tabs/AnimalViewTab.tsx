@@ -1,38 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Calendar, Dog, Hash, Tag, User, XIcon } from 'lucide-react'
-import type { CarouselApi } from '@/components/ui/carousel'
 import { useAnimalById } from '@/api/animals/queries'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from '@/components/ui/carousel'
 import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
-import { transformBlobUrl } from '@/lib/utils'
-
-const SPECIES_MAP: Record<number, string> = {
-  0: 'Brak',
-  1: 'Pies',
-  2: 'Kot',
-}
-
-const SEX_MAP: Record<number, string> = {
-  0: 'Brak',
-  1: 'Samiec',
-  2: 'Samica',
-}
-
-const SEX_ICON: Record<number, string> = {
-  0: '',
-  1: '♂️',
-  2: '♀️',
-}
+import { cn, transformBlobUrl } from '@/lib/utils'
+import { SEX_MAP, SPECIES_MAP } from '@/api/animals/types'
 
 function formatDate(date: string | Date | null | undefined): string {
   if (!date) return '-'
@@ -86,19 +60,7 @@ export default function AnimalViewTab({
   onClose: () => void
 }) {
   const { data: animal, isLoading } = useAnimalById(animalId)
-
-  const [api, setApi] = useState<CarouselApi>()
-  const [current, setCurrent] = useState(0)
-  const [count, setCount] = useState(0)
-
-  useEffect(() => {
-    if (!api) return
-    setCount(api.scrollSnapList().length)
-    setCurrent(api.selectedScrollSnap() + 1)
-    api.on('select', () => {
-      setCurrent(api.selectedScrollSnap() + 1)
-    })
-  }, [api])
+  const [selectedIdx, setSelectedIdx] = useState(0)
 
   if (isLoading || !animal) {
     return (
@@ -123,8 +85,11 @@ export default function AnimalViewTab({
   }
 
   let imageUrls = animal.photos.map((photo) => transformBlobUrl(photo.blobUrl))
+  if (!imageUrls.length) {
+    imageUrls = ['https://placehold.co/400x400?text=Brak+zdjecia']
+  }
 
-  imageUrls = [...imageUrls, ...imageUrls] // Duplicate for better looping
+  imageUrls = [...imageUrls, ...imageUrls, ...imageUrls]
 
   return (
     <Dialog
@@ -135,48 +100,34 @@ export default function AnimalViewTab({
     >
       <DialogContent
         showCloseButton={false}
-        className="p-0 bg-transparent shadow-none border-none max-w-4xl"
+        className="p-0 bg-transparent shadow-none border-none max-w-4xl max-h-[90vh]"
       >
         <div className="relative">
           <DialogClose asChild>
             <button
               onClick={onClose}
-              className="absolute z-10 top-4 right-4 rounded-full opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:outline-none bg-background p-2 shadow-md"
+              className="absolute z-20 top-4 right-4 rounded-full opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:outline-none bg-background p-2 shadow-md"
               aria-label="Close"
             >
               <XIcon className="w-5 h-5" />
             </button>
           </DialogClose>
 
-          <Card className="overflow-hidden">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-6 border-b">
+          <Card className="overflow-hidden max-h-[90vh] py-0">
+            <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-6 border-b flex-shrink-0">
               <div className="flex items-center gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h2 className="text-3xl font-bold">{animal.name}</h2>
-                    <span className="text-2xl">{SEX_ICON[animal.sex]}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant={animal.isActive ? 'default' : 'secondary'}
-                      className="text-sm px-3 py-1"
-                    >
-                      {animal.isActive ? 'Aktywny' : 'Nieaktywny'}
-                    </Badge>
-                    <span className="text-sm text-muted-foreground font-mono">
-                      ID: {animal.id.slice(0, 8)}...
-                    </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="p-6">
+            <div className="p-6 pt-0 pb-2 overflow-y-auto">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Left column - Info */}
                 <div className="space-y-6">
-                  {/* Basic Info */}
+                  {/* Info */}
                   <div>
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                       <Dog className="w-5 h-5 text-primary" />
@@ -211,10 +162,7 @@ export default function AnimalViewTab({
                       />
                     </div>
                   </div>
-
                   <Separator />
-
-                  {/* Dates */}
                   <div>
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                       <Calendar className="w-5 h-5 text-primary" />
@@ -239,42 +187,44 @@ export default function AnimalViewTab({
                     </div>
                   </div>
                 </div>
-
-                {/* Right column - Photo */}
                 <div className="flex flex-col items-center">
-                  <div className="w-full max-w-sm">
-                    <Carousel
-                      setApi={setApi}
-                      opts={{ align: 'center', loop: true }}
-                      className="w-full"
-                    >
-                      <CarouselContent>
-                        {imageUrls.map((url, idx) => (
-                          <CarouselItem
-                            key={idx}
-                            className="flex justify-center items-center"
-                          >
-                            <img
-                              src={url}
-                              alt={`${animal.name} - zdjęcie ${idx + 1}`}
-                              className="rounded-xl shadow-lg object-cover w-full aspect-square"
-                            />
-                          </CarouselItem>
-                        ))}
-                      </CarouselContent>
-                      {imageUrls.length > 1 && (
-                        <>
-                          <CarouselPrevious className="left-2" />
-                          <CarouselNext className="right-2" />
-                        </>
-                      )}
-                    </Carousel>
-                    {imageUrls.length > 1 && (
-                      <div className="text-muted-foreground py-2 text-center text-sm">
-                        Zdjęcie {current} z {count}
-                      </div>
-                    )}
+                  <div className="flex gap-2 mb-4 justify-center overflow-x-auto max-w-sm">
+                    {imageUrls.map((url, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setSelectedIdx(idx)}
+                        className={cn(
+                          'w-16 h-16 rounded border-2 flex-shrink-0 overflow-hidden p-0 transition-all',
+                          selectedIdx === idx
+                            ? 'border-primary shadow-lg'
+                            : 'border-muted',
+                        )}
+                        aria-label={`Miniatura zdjęcia ${idx + 1}`}
+                        tabIndex={0}
+                        type="button"
+                      >
+                        <img
+                          src={url}
+                          alt={`Miniatura ${animal.name} - zdjęcie ${idx + 1}`}
+                          className="object-cover w-full h-full"
+                          draggable={false}
+                        />
+                      </button>
+                    ))}
                   </div>
+                  <div className="w-full max-w-sm flex justify-center items-center">
+                    <img
+                      src={imageUrls[selectedIdx]}
+                      alt={`${animal.name} - zdjęcie główne`}
+                      className="rounded-xl shadow-lg w-full h-auto max-h-[70vh]"
+                      draggable={false}
+                    />
+                  </div>
+                  {imageUrls.length > 1 && (
+                    <div className="text-muted-foreground py-2 text-center text-sm">
+                      Zdjęcie {selectedIdx + 1} z {imageUrls.length}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

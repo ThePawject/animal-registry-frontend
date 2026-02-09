@@ -52,7 +52,6 @@ export default function Header({ shelterName }: HeaderProps) {
             ) : isAuthenticated ? (
               <Button
                 variant="secondary"
-                className="cursor-pointer"
                 onClick={() => {
                   logout({
                     logoutParams: { returnTo: getOriginHomePage() || '' },
