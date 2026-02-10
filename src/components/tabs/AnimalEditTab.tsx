@@ -24,7 +24,7 @@ import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { cn } from '@/lib/utils'
+import { cn, genericErrorMessage } from '@/lib/utils'
 import {
   Select,
   SelectContent,
@@ -145,7 +145,7 @@ export function AnimalEditTabWrapper({
 function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
   const [submittedSuccessfully, setSubmittedSuccessfully] =
     React.useState(false)
-  const { mutateAsync, isPending } = useEditAnimal(() => {
+  const { mutateAsync, isPending, error } = useEditAnimal(() => {
     setSubmittedSuccessfully(true)
   })
   // TODO: add error handling, show errors in UI
@@ -634,7 +634,7 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
                 </div>
               </div>
 
-              <div className="flex gap-4 shadow-2xl p-5 w-full">
+              <div className="flex gap-4 p-5 w-full">
                 <Button
                   type="button"
                   variant="outline"
@@ -654,6 +654,11 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
                   {isPending ? 'Zapisywanie...' : 'Zapisz zmiany'}
                 </Button>
               </div>
+              {error && (
+                <p className="text-sm text-red-500 font-medium p-4">
+                  {genericErrorMessage}
+                </p>
+              )}
             </form>
           </Card>
         </div>

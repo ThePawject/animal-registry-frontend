@@ -149,19 +149,19 @@ function AnimalTable() {
         filterFn: 'includesString',
       },
       {
-        accessorKey: 'isActive',
+        accessorKey: 'isInShelter',
         header: 'Status',
         cell: (info) => {
-          const isActive = info.getValue() as boolean
+          const isInShelter = info.getValue() as boolean
           return (
             <span
               className={`px-2 py-1 rounded-full text-xs font-medium ${
-                isActive
+                isInShelter
                   ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
                   : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
               }`}
             >
-              {isActive ? 'Aktywny' : 'Nieaktywny'}
+              {isInShelter ? 'Aktywny' : 'Nieaktywny'}
             </span>
           )
         },

@@ -9,7 +9,7 @@ export type Animal = {
   birthDate: string
   createdOn: string
   modifiedOn: string
-  isActive: boolean
+  isInShelter: boolean
   shelterId: string
   mainPhoto: Photo | null
 }
@@ -67,14 +67,14 @@ export type AnimalEvent = {
   type: AnimalEventType
   occurredOn: string
   description: string
-  performedBy: string
+  performedBy?: string
 }
 
 export type AnimalHealthRecord = {
   id: string
   occurredOn: string
   description: string
-  performedBy: string
+  performedBy?: string
 }
 
 export type AddAnimal = {

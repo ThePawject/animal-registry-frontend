@@ -1,29 +1,17 @@
 import React from 'react'
 import { Calendar, FileText, XIcon } from 'lucide-react'
 import { useForm, useStore } from '@tanstack/react-form'
-import type { AnimalEvent, AnimalEventType } from '@/api/animals/types'
-import { ANIMAL_EVENT_TYPE_MAP } from '@/api/animals/types'
-import { useAddAnimalEvent, useEditAnimalEvent } from '@/api/animals/queries'
+import type { AnimalHealthRecord } from '@/api/animals/types'
+import {
+  useAddAnimalHealthRecord,
+  useEditAnimalHealthRecord,
+} from '@/api/animals/queries'
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { genericErrorMessage } from '@/lib/utils'
-
-const EVENT_TYPE_OPTIONS = Object.entries(ANIMAL_EVENT_TYPE_MAP).map(
-  ([value, label]) => ({
-    value: Number(value) as AnimalEventType,
-    label,
-  }),
-)
 
 interface FormFieldProps {
   icon: React.ElementType
@@ -49,62 +37,60 @@ function FormField({ icon: Icon, label, children, error }: FormFieldProps) {
   )
 }
 
-const defaultEventFormData: Omit<AnimalEvent, 'id'> = {
-  type: 0,
+const defaultHealthRecordFormData: Omit<AnimalHealthRecord, 'id'> = {
   occurredOn: new Date().toISOString().split('T')[0],
   description: '',
+  performedBy: '',
 }
 
-interface AnimalEventFormModalProps {
+interface AnimalHealthRecordFormModalProps {
   open: boolean
   onClose: () => void
   animalId: string
-  event?: AnimalEvent | null
+  record?: AnimalHealthRecord | null
 }
 
-export default function AnimalEventFormModal({
+export default function AnimalHealthRecordFormModal({
   open,
   onClose,
   animalId,
-  event,
-}: AnimalEventFormModalProps) {
-  const isEdit = !!event
+  record,
+}: AnimalHealthRecordFormModalProps) {
+  const isEdit = !!record
   const {
-    mutateAsync: addEvent,
+    mutateAsync: addRecord,
     isPending: isAdding,
     error: addError,
-  } = useAddAnimalEvent()
+  } = useAddAnimalHealthRecord()
   const {
-    mutateAsync: editEvent,
+    mutateAsync: editRecord,
     isPending: isEditing,
     error: editError,
-  } = useEditAnimalEvent()
+  } = useEditAnimalHealthRecord()
   const isPending = isAdding || isEditing
 
   const form = useForm({
-    defaultValues: event
+    defaultValues: record
       ? {
-          type: event.type,
-          occurredOn: event.occurredOn.split('T')[0],
-          description: event.description,
+          occurredOn: record.occurredOn.split('T')[0],
+          description: record.description,
         }
-      : defaultEventFormData,
+      : defaultHealthRecordFormData,
     onSubmit: async ({ value }) => {
-      const eventData: AnimalEvent = {
-        id: event?.id || '',
-        type: value.type,
+      const recordData: AnimalHealthRecord = {
+        id: record?.id || '',
         occurredOn: value.occurredOn,
         description: value.description,
       }
 
       if (isEdit) {
-        await editEvent({
+        await editRecord({
           animalId,
-          eventId: event.id,
-          data: eventData,
+          recordId: record.id,
+          data: recordData,
         })
       } else {
-        await addEvent({ animalId, data: eventData })
+        await addRecord({ animalId, data: recordData })
       }
 
       form.reset()
@@ -158,7 +144,7 @@ export default function AnimalEventFormModal({
           <Card className="overflow-hidden py-0 gap-0">
             <div className="flex-1 p-4 shadow-md">
               <h2 className="text-2xl font-semibold">
-                {isEdit ? 'Edytuj wydarzenie' : 'Dodaj wydarzenie'}
+                {isEdit ? 'Edytuj kartę zdrowia' : 'Dodaj kartę zdrowia'}
               </h2>
             </div>
 
@@ -171,57 +157,14 @@ export default function AnimalEventFormModal({
               className="p-6 space-y-4"
             >
               <form.Field
-                name="type"
-                validators={{
-                  onChange: ({ value }) => {
-                    return value === 0
-                      ? 'Typ wydarzenia jest wymagany'
-                      : undefined
-                  },
-                }}
-                children={(field) => {
-                  return (
-                    <FormField
-                      icon={FileText}
-                      label="Typ wydarzenia"
-                      error={field.state.meta.errors[0]}
-                    >
-                      <Select
-                        value={String(field.state.value)}
-                        onValueChange={(value) =>
-                          field.handleChange(Number(value) as AnimalEventType)
-                        }
-                      >
-                        <SelectTrigger className="bg-background w-full">
-                          <SelectValue placeholder="Wybierz typ wydarzenia" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {EVENT_TYPE_OPTIONS.filter(
-                            (opt) => opt.value !== 0,
-                          ).map((opt) => (
-                            <SelectItem
-                              key={opt.value}
-                              value={String(opt.value)}
-                            >
-                              {opt.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormField>
-                  )
-                }}
-              />
-
-              <form.Field
                 name="occurredOn"
                 validators={{
                   onChange: ({ value }) => {
-                    if (!value) return 'Data wydarzenia jest wymagana'
-                    const eventDate = new Date(value)
+                    if (!value) return 'Data jest wymagana'
+                    const recordDate = new Date(value)
                     const today = new Date()
-                    if (eventDate > today)
-                      return 'Data wydarzenia nie może być z przyszłości'
+                    if (recordDate > today)
+                      return 'Data nie może być z przyszłości'
                     return undefined
                   },
                 }}
@@ -229,14 +172,14 @@ export default function AnimalEventFormModal({
                   return (
                     <FormField
                       icon={Calendar}
-                      label="Data wydarzenia"
+                      label="Data"
                       error={field.state.meta.errors[0]}
                     >
                       <Input
                         type="date"
                         value={field.state.value}
                         onChange={(e) => field.handleChange(e.target.value)}
-                        id="Data wydarzenia"
+                        id="Data"
                         className="bg-background"
                       />
                     </FormField>
@@ -265,7 +208,7 @@ export default function AnimalEventFormModal({
                         onChange={(e) => field.handleChange(e.target.value)}
                         id="Opis"
                         className="bg-background"
-                        placeholder="Wpisz opis wydarzenia"
+                        placeholder="Wpisz opis"
                       />
                     </FormField>
                   )
@@ -291,7 +234,7 @@ export default function AnimalEventFormModal({
                     ? 'Zapisywanie...'
                     : isEdit
                       ? 'Zapisz zmiany'
-                      : 'Dodaj wydarzenie'}
+                      : 'Dodaj kartę zdrowia'}
                 </Button>
               </div>
               {(addError || editError) && (

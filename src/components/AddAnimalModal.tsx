@@ -9,7 +9,7 @@ import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { cn } from '@/lib/utils'
+import { cn, genericErrorMessage } from '@/lib/utils'
 import {
   Select,
   SelectContent,
@@ -76,7 +76,7 @@ export default function AddAnimalModal({
   open: boolean
   onClose: () => void
 }) {
-  const { mutateAsync, isPending } = useAddAnimal()
+  const { mutateAsync, isPending, error } = useAddAnimal()
 
   const form = useForm({
     defaultValues: defaultAnimalFormData,
@@ -464,7 +464,7 @@ export default function AddAnimalModal({
                 </div>
               </div>
 
-              <div className="flex gap-4 shadow-2xl p-5 w-full">
+              <div className="flex gap-4 p-5 w-full">
                 <Button
                   type="button"
                   variant="outline"
@@ -482,6 +482,11 @@ export default function AddAnimalModal({
                   {isPending ? 'Zapisywanie...' : 'Dodaj zwierzaka'}
                 </Button>
               </div>
+              {error && (
+                <p className="text-sm text-red-500 font-medium p-4">
+                  {genericErrorMessage}
+                </p>
+              )}
             </form>
           </Card>
         </div>
