@@ -8,6 +8,7 @@ import { animalsService } from './conversations'
 import type {
   AddAnimal,
   AnimalEvent,
+  AnimalHealthRecord,
   EditAnimal,
   FetchAnimalsParams,
 } from './types'
@@ -112,6 +113,71 @@ export const useDeleteAnimalEvent = () => {
   return useMutation({
     mutationFn: async ({ animalId, eventId }: DeleteAnimalEventVariables) =>
       animalsService.deleteAnimalEvent(animalId, eventId),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: animalsKeys.one(String(variables.animalId)),
+      })
+    },
+  })
+}
+
+type AddAnimalHealthRecordVariables = {
+  animalId: string
+  data: AnimalHealthRecord
+}
+
+export const useAddAnimalHealthRecord = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ animalId, data }: AddAnimalHealthRecordVariables) =>
+      animalsService.addAnimalHealthRecord(animalId, data),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: animalsKeys.one(String(variables.animalId)),
+      })
+    },
+  })
+}
+
+type EditAnimalHealthRecordVariables = {
+  animalId: string
+  recordId: string
+  data: AnimalHealthRecord
+}
+
+export const useEditAnimalHealthRecord = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      animalId,
+      recordId,
+      data,
+    }: EditAnimalHealthRecordVariables) =>
+      animalsService.editAnimalHealthRecord(animalId, recordId, data),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: animalsKeys.one(String(variables.animalId)),
+      })
+    },
+  })
+}
+
+type DeleteAnimalHealthRecordVariables = {
+  animalId: string
+  recordId: string
+}
+
+export const useDeleteAnimalHealthRecord = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      animalId,
+      recordId,
+    }: DeleteAnimalHealthRecordVariables) =>
+      animalsService.deleteAnimalHealthRecord(animalId, recordId),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: animalsKeys.one(String(variables.animalId)),

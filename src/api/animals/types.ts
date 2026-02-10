@@ -17,6 +17,7 @@ export type Animal = {
 export type AnimalById = Omit<Animal, 'mainPhoto'> & {
   photos: Array<Photo>
   events: Array<AnimalEvent>
+  healthRecords: Array<AnimalHealthRecord>
   mainPhotoId: string | null
 }
 
@@ -64,6 +65,13 @@ export type AnimalEventType = keyof typeof ANIMAL_EVENT_TYPE_MAP
 export type AnimalEvent = {
   id: string
   type: AnimalEventType
+  occurredOn: string
+  description: string
+  performedBy: string
+}
+
+export type AnimalHealthRecord = {
+  id: string
   occurredOn: string
   description: string
   performedBy: string

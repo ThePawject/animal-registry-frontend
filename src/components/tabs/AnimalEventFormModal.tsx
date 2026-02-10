@@ -100,11 +100,13 @@ export default function AnimalEventFormModal({
       } else {
         await addEvent({ animalId, data: eventData })
       }
+
+      form.reset()
       onClose()
     },
   })
 
-  const isDirty = useStore(form.store, (state) => state.isDirty)
+  const isDirty = useStore(form.store, (state) => !state.isPristine)
 
   const handleOpenChange = (openState: boolean) => {
     if (!openState && isDirty) {
@@ -113,7 +115,10 @@ export default function AnimalEventFormModal({
       )
       if (!confirmed) return
     }
-    if (!openState) onClose()
+    if (!openState) {
+      form.reset()
+      onClose()
+    }
   }
 
   const handleCancel = () => {
@@ -123,6 +128,7 @@ export default function AnimalEventFormModal({
       )
       if (!confirmed) return
     }
+    form.reset()
     onClose()
   }
 

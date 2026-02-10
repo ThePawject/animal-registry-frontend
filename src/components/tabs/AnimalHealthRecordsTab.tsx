@@ -5,11 +5,13 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { Pencil, Trash2, XIcon } from 'lucide-react'
-import AnimalEventFormModal from './AnimalEventFormModal'
+import AnimalHealthRecordFormModal from './AnimalHealthRecordFormModal'
 import type { ColumnDef } from '@tanstack/react-table'
-import type { AnimalEvent } from '@/api/animals/types'
-import { ANIMAL_EVENT_TYPE_MAP } from '@/api/animals/types'
-import { useAnimalById, useDeleteAnimalEvent } from '@/api/animals/queries'
+import type { AnimalHealthRecord } from '@/api/animals/types'
+import {
+  useAnimalById,
+  useDeleteAnimalHealthRecord,
+} from '@/api/animals/queries'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -21,69 +23,58 @@ import {
 } from '@/components/ui/dialog'
 import { Card } from '@/components/ui/card'
 
-interface AnimalEventsTabProps {
+interface AnimalHealthRecordsTabProps {
   animalId: string
   open: boolean
   onClose: () => void
 }
 
-export default function AnimalEventsTab({
+export default function AnimalHealthRecordsTab({
   animalId,
   open,
   onClose,
-}: AnimalEventsTabProps) {
+}: AnimalHealthRecordsTabProps) {
   const { data: animal, isLoading } = useAnimalById(animalId)
-  const { mutate: deleteEvent, isPending: isDeleting } = useDeleteAnimalEvent()
+  const { mutate: deleteRecord, isPending: isDeleting } =
+    useDeleteAnimalHealthRecord()
 
   const [isFormModalOpen, setIsFormModalOpen] = React.useState(false)
-  const [selectedEvent, setSelectedEvent] = React.useState<AnimalEvent | null>(
-    null,
-  )
-  const [eventToDelete, setEventToDelete] = React.useState<AnimalEvent | null>(
-    null,
-  )
+  const [selectedRecord, setSelectedRecord] =
+    React.useState<AnimalHealthRecord | null>(null)
+  const [recordToDelete, setRecordToDelete] =
+    React.useState<AnimalHealthRecord | null>(null)
 
-  const events = animal?.events || []
+  const healthRecords = animal?.healthRecords || []
 
-  const handleEdit = (event: AnimalEvent) => {
-    setSelectedEvent(event)
+  const handleEdit = (record: AnimalHealthRecord) => {
+    setSelectedRecord(record)
     setIsFormModalOpen(true)
   }
 
   const handleAdd = () => {
-    setSelectedEvent(null)
+    setSelectedRecord(null)
     setIsFormModalOpen(true)
   }
 
-  const handleDeleteClick = (event: AnimalEvent) => {
-    setEventToDelete(event)
+  const handleDeleteClick = (record: AnimalHealthRecord) => {
+    setRecordToDelete(record)
   }
 
   const handleConfirmDelete = () => {
-    if (eventToDelete) {
-      deleteEvent({
+    if (recordToDelete) {
+      deleteRecord({
         animalId: animalId,
-        eventId: eventToDelete.id,
+        recordId: recordToDelete.id,
       })
-      setEventToDelete(null)
+      setRecordToDelete(null)
     }
   }
 
-  const columns = React.useMemo<Array<ColumnDef<AnimalEvent, any>>>(
+  const columns = React.useMemo<Array<ColumnDef<AnimalHealthRecord, any>>>(
     () => [
       {
-        accessorKey: 'type',
-        header: 'Typ wydarzenia',
-        cell: (info) => {
-          const type = info.getValue() as number
-          return ANIMAL_EVENT_TYPE_MAP[
-            type as keyof typeof ANIMAL_EVENT_TYPE_MAP
-          ]
-        },
-      },
-      {
         accessorKey: 'occurredOn',
-        header: 'Data wydarzenia',
+        header: 'Data',
         cell: (info) => {
           const value = info.getValue() as string
           return value ? new Date(value).toLocaleDateString('pl-PL') : ''
@@ -135,7 +126,7 @@ export default function AnimalEventsTab({
   )
 
   const table = useReactTable({
-    data: events,
+    data: healthRecords,
     columns,
     getCoreRowModel: getCoreRowModel(),
   })
@@ -150,7 +141,7 @@ export default function AnimalEventsTab({
       >
         <DialogContent
           showCloseButton={false}
-          className="p-0 bg-transparent shadow-none border-none max-w-4xl"
+          className="bg-transparent shadow-none border-none max-w-fit p-4 md:min-w-[800px]"
         >
           <div className="relative">
             <DialogClose asChild>
@@ -163,20 +154,20 @@ export default function AnimalEventsTab({
               </button>
             </DialogClose>
 
-            <Card className="max-w-full w-full p-8 rounded-2xl shadow-md bg-white dark:bg-zinc-900">
+            <Card className="max-w-5xl w-full p-8 rounded-2xl shadow-md bg-white dark:bg-zinc-900">
               <div className="mb-8 flex items-center justify-between">
-                <h2 className="text-2xl font-bold">Wydarzenia</h2>
+                <h2 className="text-2xl font-bold">Karty zdrowia</h2>
               </div>
 
-              <div className="space-y-6 w-max">
+              <div className="space-y-6 max-w-full w-full">
                 <Button
                   onClick={handleAdd}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white ml-auto block"
                 >
-                  Dodaj wydarzenie
+                  Dodaj kartę zdrowia
                 </Button>
-                <div className="rounded-md border bg-white dark:bg-black/30 overflow-x-auto max-w-[700px]">
-                  <table className="text-sm min-w-[600px]">
+                <div className="rounded-md border bg-white dark:bg-black/30 overflow-x-auto">
+                  <table className="w-full text-sm">
                     <thead>
                       {table.getHeaderGroups().map((headerGroup) => (
                         <tr key={headerGroup.id}>
@@ -206,13 +197,13 @@ export default function AnimalEventsTab({
                             Ładowanie...
                           </td>
                         </tr>
-                      ) : events.length === 0 ? (
+                      ) : healthRecords.length === 0 ? (
                         <tr>
                           <td
                             colSpan={columns.length}
                             className="h-20 text-center text-muted-foreground"
                           >
-                            Brak wydarzeń.
+                            Brak kart zdrowia.
                           </td>
                         </tr>
                       ) : (
@@ -245,35 +236,35 @@ export default function AnimalEventsTab({
       </Dialog>
 
       {/* Form Modal for Add/Edit */}
-      <AnimalEventFormModal
+      <AnimalHealthRecordFormModal
         open={isFormModalOpen}
         onClose={() => {
           setIsFormModalOpen(false)
-          setSelectedEvent(null)
+          setSelectedRecord(null)
         }}
         animalId={animalId}
-        event={selectedEvent}
+        record={selectedRecord}
       />
 
       {/* Delete Confirmation Dialog */}
       <Dialog
-        open={!!eventToDelete}
-        onOpenChange={(open) => {
-          if (!open) setEventToDelete(null)
+        open={!!recordToDelete}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setRecordToDelete(null)
         }}
       >
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Potwierdź usunięcie</DialogTitle>
             <DialogDescription>
-              Czy na pewno chcesz usunąć to wydarzenie? Tej operacji nie można
-              cofnąć.
+              Czy na pewno chcesz usunąć tę kartę zdrowia? Tej operacji nie
+              można cofnąć.
             </DialogDescription>
           </DialogHeader>
           <div className="flex gap-4 justify-end mt-4">
             <Button
               variant="outline"
-              onClick={() => setEventToDelete(null)}
+              onClick={() => setRecordToDelete(null)}
               disabled={isDeleting}
             >
               Anuluj

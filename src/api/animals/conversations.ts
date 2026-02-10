@@ -4,6 +4,7 @@ import type {
   AddAnimal,
   AnimalById,
   AnimalEvent,
+  AnimalHealthRecord,
   AnimalResponse,
   EditAnimal,
   FetchAnimalsParams,
@@ -134,6 +135,50 @@ export const animalsService = {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         throw new Error(`Failed to delete animal event: ${error.message}`)
+      }
+      throw error
+    }
+  },
+  addAnimalHealthRecord: async (id: string, data: AnimalHealthRecord) => {
+    try {
+      const response = await apiClient.post(`animals/${id}/health`, data)
+      return response.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to add animal health record: ${error.message}`)
+      }
+      throw error
+    }
+  },
+  editAnimalHealthRecord: async (
+    id: string,
+    recordId: string,
+    data: AnimalHealthRecord,
+  ) => {
+    try {
+      const response = await apiClient.put(
+        `animals/${id}/health/${recordId}`,
+        data,
+      )
+      return response.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to edit animal health record: ${error.message}`)
+      }
+      throw error
+    }
+  },
+  deleteAnimalHealthRecord: async (id: string, recordId: string) => {
+    try {
+      const response = await apiClient.delete(
+        `animals/${id}/health/${recordId}`,
+      )
+      return response.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(
+          `Failed to delete animal health record: ${error.message}`,
+        )
       }
       throw error
     }

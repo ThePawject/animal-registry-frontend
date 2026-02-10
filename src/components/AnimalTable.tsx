@@ -7,7 +7,6 @@ import {
 import { Calendar, Eye, Pencil, Plus, Stethoscope } from 'lucide-react'
 import { useDebouncedValue } from '@tanstack/react-pacer'
 import AnimalViewTab from './tabs/AnimalViewTab'
-import AnimalMedicalNotesTab from './tabs/AnimalMedicalNotesTab'
 import AnimalEventsTab from './tabs/AnimalEventsTab'
 import AddAnimalModal from './AddAnimalModal'
 import {
@@ -19,6 +18,7 @@ import {
   SelectValue,
 } from './ui/select'
 import { AnimalEditTabWrapper } from './tabs/AnimalEditTab'
+import AnimalHealthRecordsTab from './tabs/AnimalHealthRecordsTab'
 import type { ColumnDef } from '@tanstack/react-table'
 import type { Animal } from '@/api/animals/types'
 
@@ -426,7 +426,7 @@ function AnimalTable() {
 
       {/* Medical Modal */}
       {selectedAnimal && (
-        <AnimalMedicalNotesTab
+        <AnimalHealthRecordsTab
           animalId={selectedAnimal.id}
           open={openMedicalModal && !!selectedAnimal}
           onClose={() => setOpenMedicalModal(false)}
