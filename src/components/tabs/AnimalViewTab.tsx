@@ -89,8 +89,6 @@ export default function AnimalViewTab({
     imageUrls = ['https://placehold.co/400x400?text=Brak+zdjecia']
   }
 
-  imageUrls = [...imageUrls, ...imageUrls, ...imageUrls]
-
   return (
     <Dialog
       open={open}

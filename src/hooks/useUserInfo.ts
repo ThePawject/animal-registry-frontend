@@ -10,11 +10,13 @@ import {
 type UseUserInfoProps = {
   setIsLoginModalOpen: (isOpen: boolean) => void
   setRoles: (roles: Array<string>) => void
+  isLoginModalOpen: boolean
 }
 
 export function useUserInfo({
   setIsLoginModalOpen,
   setRoles,
+  isLoginModalOpen,
 }: UseUserInfoProps) {
   const [shelterName, setShelterName] = useState<string | null>(null)
   const [isLoadingRoles, setIsLoadingRoles] = useState(false)
@@ -45,6 +47,6 @@ export function useUserInfo({
         }
       }
     })()
-  }, [getAccessTokenSilently, isAuthenticated, isLoading])
+  }, [getAccessTokenSilently, isAuthenticated, isLoading, isLoginModalOpen])
   return { shelterName, isLoadingRoles }
 }
