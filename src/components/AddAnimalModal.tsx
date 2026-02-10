@@ -1,5 +1,5 @@
 import React from 'react'
-import { Calendar, Dog, Hash, Tag, User, XIcon } from 'lucide-react'
+import { Calendar, Dog, Hash, Tag, Trash2Icon, User, XIcon } from 'lucide-react'
 import { useForm, useStore } from '@tanstack/react-form'
 import type { AddAnimal, Sexes, Species } from '@/api/animals/types'
 import { SEX_MAP, SPECIES_MAP } from '@/api/animals/types'
@@ -18,10 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-interface ImgFile {
-  file: File
-  url: string
-}
+const inputUploadAccept = '.jpg,.jpeg,.png,.webp'
 
 const SPECIES_OPTIONS = Object.entries(SPECIES_MAP).map(([value, label]) => ({
   value,
@@ -98,33 +95,33 @@ export default function AddAnimalModal({
   })
 
   const isDirty = useStore(form.store, (state) => state.isDirty)
-  const [images, setImages] = React.useState<Array<ImgFile>>([])
-  const [mainImageId, setMainImageId] = React.useState(0)
-  const hasImages = images.length > 0
+  const images = useStore(form.store, (state) => state.values.photos)
+  const mainPhotoIndex = useStore(
+    form.store,
+    (state) => state.values.mainPhotoIndex,
+  )
+  const [displayedImageId, setDisplayedImageId] = React.useState<number | null>(
+    images.length > 0 ? 0 : null,
+  )
 
   const uploadInputRef = React.useRef<HTMLInputElement>(null)
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
+    if (files.length + images.length > 10) {
+      alert(`Możesz dodać maksymalnie 10 zdjęć.`)
+      e.target.value = ''
+      return
+    }
     if (!files.length) return
-    const newImgs: Array<ImgFile> = files.map((file) => ({
-      file,
-      url: URL.createObjectURL(file),
-    }))
-    setImages((prev) => [...prev, ...newImgs])
-    if (images.length === 0 && newImgs.length > 0) setMainImageId(0)
+    form.setFieldValue('photos', [...images, ...files])
+    if (images.length === 0 && files.length > 0) {
+      form.setFieldValue('mainPhotoIndex', 0)
+    }
     e.target.value = ''
-  }
-
-  const removeImage = (idx: number) => {
-    setImages((imgs) => {
-      const imgsCopy = imgs.slice()
-      URL.revokeObjectURL(imgsCopy[idx].url)
-      imgsCopy.splice(idx, 1)
-      if (mainImageId >= imgsCopy.length)
-        setMainImageId(Math.max(0, imgsCopy.length - 1))
-      return imgsCopy
-    })
+    if (displayedImageId === null) {
+      setDisplayedImageId(images.length)
+    }
   }
 
   const handleOpenChange = (openState: boolean) => {
@@ -137,6 +134,8 @@ export default function AddAnimalModal({
     if (!openState) onClose()
   }
 
+  const hasImages = images.length > 0
+
   const handleCancel = () => {
     if (isDirty || hasImages) {
       const confirmed = window.confirm(
@@ -145,6 +144,12 @@ export default function AddAnimalModal({
       if (!confirmed) return
     }
     onClose()
+  }
+
+  const getDisplayedImageUrl = () => {
+    if (displayedImageId === null) return null
+    const image = images[displayedImageId]
+    return URL.createObjectURL(image)
   }
 
   return (
@@ -388,59 +393,117 @@ export default function AddAnimalModal({
 
                 <div className="flex flex-col items-center">
                   <div className="w-full h-full flex flex-col items-center justify-between py-4">
-                    <div className="flex gap-2 mb-4 justify-center overflow-x-auto">
+                    <div className="flex gap-2 mb-4 overflow-x-auto max-w-[535px]">
                       {images.map((img, idx) => (
                         <button
                           key={idx}
-                          onClick={() => setMainImageId(idx)}
+                          onClick={() => setDisplayedImageId(idx)}
                           className={cn(
-                            'w-16 h-16 rounded-lg border-2 flex-shrink-0 overflow-hidden transition-all',
-                            mainImageId === idx
-                              ? 'border-emerald-600 shadow-lg'
-                              : 'border-muted hover:border-muted-foreground',
+                            'relative w-16 h-16 outline-2 -outline-offset-2 rounded-md min-w-16',
+                            idx === displayedImageId
+                              ? 'outline-emerald-600 shadow-lg'
+                              : 'outline-muted hover:outline-muted-foreground',
                           )}
                           type="button"
                         >
+                          {mainPhotoIndex === idx && (
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                              className="size-6 text-yellow-400 absolute top-0.5 right-0.5 opacity-80"
+                            >
+                              <path
+                                fill-rule="evenodd"
+                                d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z"
+                                clip-rule="evenodd"
+                              />
+                            </svg>
+                          )}
                           <img
-                            src={img.url}
+                            src={URL.createObjectURL(img)}
                             alt={`Miniatura ${idx + 1}`}
-                            className="object-cover w-full h-full"
+                            className="object-cover w-full h-full p-0.5"
                           />
                         </button>
                       ))}
                     </div>
 
                     {images.length > 0 ? (
-                      <div className="relative flex flex-col gap-2 justify-center">
-                        <div className="flex gap-2 items-center justify-between">
-                          <p className="text-sm text-muted-foreground">
-                            Główne zdjęcie (kliknij miniaturę, aby zmienić)
-                          </p>
-
+                      <Card className="relative flex flex-col gap-2 p-0 pt-4 rounded-none w-full items-center h-120">
+                        <div className="w-full flex justify-between px-4 items-center">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              if (displayedImageId === null) return
+                              form.setFieldValue(
+                                'mainPhotoIndex',
+                                displayedImageId,
+                              )
+                            }}
+                          >
+                            Ustaw jako główne
+                          </Button>
                           <Button
                             type="button"
                             variant="destructive"
                             size="sm"
-                            onClick={() => removeImage(mainImageId)}
+                            onClick={() => {
+                              if (displayedImageId === null) return
+                              const newImages = images.filter(
+                                (_, idx) => idx !== displayedImageId,
+                              )
+
+                              if (mainPhotoIndex === displayedImageId) {
+                                if (newImages.length > 0) {
+                                  form.setFieldValue('mainPhotoIndex', 0)
+                                } else {
+                                  form.setFieldValue('mainPhotoIndex', 0)
+                                }
+                              } else if (mainPhotoIndex > displayedImageId) {
+                                form.setFieldValue(
+                                  'mainPhotoIndex',
+                                  mainPhotoIndex - 1,
+                                )
+                              }
+
+                              form.setFieldValue('photos', newImages)
+
+                              if (newImages.length > 0) {
+                                setDisplayedImageId(
+                                  Math.min(
+                                    displayedImageId,
+                                    newImages.length - 1,
+                                  ),
+                                )
+                              } else {
+                                setDisplayedImageId(null)
+                              }
+                            }}
                           >
-                            Usuń
+                            Usuń zdjęcie
+                            <Trash2Icon className="w-4 h-4 text-white" />
                           </Button>
                         </div>
-                        <img
-                          src={images[mainImageId].url}
-                          alt="Główne zdjęcie"
-                          className="rounded-xl shadow-lg w-full max-w-sm h-auto max-h-[70vh] object-cover"
-                        />
-                      </div>
+                        <div className="flex flex-1 items-center justify-center p-4 min-h-0">
+                          <img
+                            src={getDisplayedImageUrl() || undefined}
+                            alt="Główne zdjęcie"
+                            className="object-contain max-w-full max-h-full rounded-lg"
+                          />
+                        </div>
+                      </Card>
                     ) : (
                       <div className="w-full max-w-sm aspect-square rounded-xl flex items-center justify-center bg-muted text-muted-foreground text-lg">
                         Brak zdjęcia
                       </div>
                     )}
                     <div className="w-full flex flex-col items-center gap-2">
-                      {images.length > 1 && (
+                      {images.length > 0 && (
                         <div className="px-3 py-1 rounded-full text-sm">
-                          {mainImageId + 1} / {images.length}
+                          {(displayedImageId ?? 0) + 1} / {images.length}
                         </div>
                       )}
                       <Button
@@ -454,7 +517,8 @@ export default function AddAnimalModal({
                       <input
                         type="file"
                         multiple
-                        accept="image/*"
+                        accept={inputUploadAccept}
+                        max={10 - images.length}
                         hidden
                         ref={uploadInputRef}
                         onChange={handleUpload}
