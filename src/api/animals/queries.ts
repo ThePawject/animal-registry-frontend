@@ -78,6 +78,7 @@ export const useAddAnimalEvent = () => {
       queryClient.invalidateQueries({
         queryKey: animalsKeys.one(String(variables.animalId)),
       })
+      queryClient.invalidateQueries({ queryKey: animalsKeys.all })
     },
   })
 }
@@ -98,6 +99,7 @@ export const useEditAnimalEvent = () => {
       queryClient.invalidateQueries({
         queryKey: animalsKeys.one(String(variables.animalId)),
       })
+      queryClient.invalidateQueries({ queryKey: animalsKeys.all })
     },
   })
 }
@@ -117,6 +119,7 @@ export const useDeleteAnimalEvent = () => {
       queryClient.invalidateQueries({
         queryKey: animalsKeys.one(String(variables.animalId)),
       })
+      queryClient.invalidateQueries({ queryKey: animalsKeys.all })
     },
   })
 }
@@ -136,6 +139,7 @@ export const useAddAnimalHealthRecord = () => {
       queryClient.invalidateQueries({
         queryKey: animalsKeys.one(String(variables.animalId)),
       })
+      queryClient.invalidateQueries({ queryKey: animalsKeys.all })
     },
   })
 }
@@ -160,6 +164,7 @@ export const useEditAnimalHealthRecord = () => {
       queryClient.invalidateQueries({
         queryKey: animalsKeys.one(String(variables.animalId)),
       })
+      queryClient.invalidateQueries({ queryKey: animalsKeys.all })
     },
   })
 }
@@ -182,6 +187,7 @@ export const useDeleteAnimalHealthRecord = () => {
       queryClient.invalidateQueries({
         queryKey: animalsKeys.one(String(variables.animalId)),
       })
+      queryClient.invalidateQueries({ queryKey: animalsKeys.all })
     },
   })
 }

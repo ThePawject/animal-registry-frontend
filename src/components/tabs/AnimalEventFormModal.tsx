@@ -50,7 +50,7 @@ function FormField({ icon: Icon, label, children, error }: FormFieldProps) {
 }
 
 const defaultEventFormData: Omit<AnimalEvent, 'id'> = {
-  type: 0,
+  type: 1,
   occurredOn: new Date().toISOString().split('T')[0],
   description: '',
 }

@@ -168,7 +168,7 @@ export default function AnimalEventsTab({
                 <h2 className="text-2xl font-bold">Wydarzenia</h2>
               </div>
 
-              <div className="space-y-6 w-max">
+              <div className="space-y-6 w-max mx-auto">
                 <Button
                   onClick={handleAdd}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white ml-auto block"
