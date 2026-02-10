@@ -84,7 +84,7 @@ export default function AnimalViewTab({
     )
   }
 
-  let imageUrls = animal.photos.map((photo) => transformBlobUrl(photo.blobUrl))
+  let imageUrls = animal.photos.map((photo) => transformBlobUrl(photo.url))
   if (!imageUrls.length) {
     imageUrls = ['https://placehold.co/400x400?text=Brak+zdjecia']
   }

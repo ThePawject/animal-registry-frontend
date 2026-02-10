@@ -3,7 +3,6 @@ import {
   Calendar,
   Dog,
   Hash,
-  LoaderPinwheel,
   LucideLoaderCircle,
   Tag,
   Trash2Icon,
@@ -146,7 +145,7 @@ export function AnimalEditTabWrapper({
 function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
   const [submittedSuccessfully, setSubmittedSuccessfully] =
     React.useState(false)
-  const { mutateAsync, isPending, error } = useEditAnimal(() => {
+  const { mutateAsync, isPending } = useEditAnimal(() => {
     setSubmittedSuccessfully(true)
   })
   // TODO: add error handling, show errors in UI

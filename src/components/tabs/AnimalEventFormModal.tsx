@@ -91,7 +91,7 @@ export default function AnimalEventFormModal({
         performedBy: value.performedBy,
       }
 
-      if (isEdit && event) {
+      if (isEdit) {
         await editEvent({
           animalId,
           eventId: event.id,

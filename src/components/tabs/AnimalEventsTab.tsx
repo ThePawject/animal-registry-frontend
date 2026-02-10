@@ -82,10 +82,9 @@ export default function AnimalEventsTab({
         header: 'Typ wydarzenia',
         cell: (info) => {
           const type = info.getValue() as number
-          return (
-            ANIMAL_EVENT_TYPE_MAP[type as keyof typeof ANIMAL_EVENT_TYPE_MAP] ||
-            'Nieznany'
-          )
+          return ANIMAL_EVENT_TYPE_MAP[
+            type as keyof typeof ANIMAL_EVENT_TYPE_MAP
+          ]
         },
       },
       {
