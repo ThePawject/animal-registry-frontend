@@ -5,6 +5,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { Calendar, Eye, Pencil, Plus, Stethoscope } from 'lucide-react'
+import { useDebouncedValue } from '@tanstack/react-pacer'
 import AnimalViewTab from './tabs/AnimalViewTab'
 import AnimalMedicalNotesTab from './tabs/AnimalMedicalNotesTab'
 import AnimalEventsTab from './tabs/AnimalEventsTab'
@@ -30,20 +31,24 @@ import { formatDate } from '@/lib/utils'
 
 function AnimalTable() {
   const [page, setPage] = React.useState(1)
+  const [globalFilter, setGlobalFilter] = React.useState('')
   const [pageSize, setPageSize] = React.useState(10)
 
+  const [debouncedGlobalFilter] = useDebouncedValue(globalFilter, {
+    wait: 500,
+  })
+
   const { data: animalsPage, isLoading } = useAnimals({
+    keyWordSearch: debouncedGlobalFilter,
     page: page,
     pageSize,
   })
 
-  const [globalFilter, setGlobalFilter] = React.useState('')
   const [rowSelection, setRowSelection] = React.useState({})
   const [selectedAnimal, setSelectedAnimal] = React.useState<Animal | null>(
     null,
   )
 
-  console.log('selectedAnimal', selectedAnimal)
   const [openViewModal, setOpenViewModal] = React.useState(false)
   const [openEditModal, setOpenEditModal] = React.useState(false)
   const [openMedicalModal, setOpenMedicalModal] = React.useState(false)

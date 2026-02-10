@@ -36,6 +36,7 @@ export type AnimalResponse = {
 
 export type FetchAnimalsParams = {
   page: number
+  keyWordSearch: string | null
   pageSize: number
 }
 

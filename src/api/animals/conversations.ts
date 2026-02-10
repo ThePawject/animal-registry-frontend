@@ -13,10 +13,7 @@ export const animalsService = {
   async getAnimals(params: FetchAnimalsParams): Promise<AnimalResponse> {
     try {
       const response = await apiClient.get('animals', {
-        params: {
-          page: params.page,
-          pageSize: params.pageSize,
-        },
+        params,
       })
       return response.data
     } catch (error) {
