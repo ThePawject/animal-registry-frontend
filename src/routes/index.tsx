@@ -22,6 +22,7 @@ function App() {
 
   const { shelterName, isLoadingRoles } = useUserInfo({
     setIsLoginModalOpen,
+    isLoginModalOpen,
     setRoles,
   })
   useAxiosWithAuth({ setIsLoginModalOpen })
