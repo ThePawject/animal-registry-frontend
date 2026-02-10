@@ -6,7 +6,6 @@ import {
 } from '@tanstack/react-table'
 import { Calendar, Eye, Pencil, Plus, Stethoscope } from 'lucide-react'
 import AnimalViewTab from './tabs/AnimalViewTab'
-import AnimalEditTab from './tabs/AnimalEditTab'
 import AnimalMedicalNotesTab from './tabs/AnimalMedicalNotesTab'
 import AnimalEventsTab from './tabs/AnimalEventsTab'
 import AddAnimalModal from './AddAnimalModal'
@@ -18,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from './ui/select'
+import { AnimalEditTabWrapper } from './tabs/AnimalEditTab'
 import type { ColumnDef } from '@tanstack/react-table'
 import type { Animal } from '@/api/animals/types'
 
@@ -73,10 +73,10 @@ function AnimalTable() {
         header: 'Zdjęcie',
         cell: (info) => {
           const mainPhoto = info.row.original.mainPhoto
-          if (mainPhoto?.blobUrl) {
+          if (mainPhoto?.url) {
             return (
               <img
-                src={mainPhoto.blobUrl}
+                src={mainPhoto.url}
                 alt={info.row.original.name}
                 className="w-12 h-12 object-cover rounded-lg"
               />
@@ -412,8 +412,8 @@ function AnimalTable() {
 
       {/* Edit Modal */}
       {selectedAnimal && (
-        <AnimalEditTab
-          animal={selectedAnimal}
+        <AnimalEditTabWrapper
+          animalId={selectedAnimal.id}
           open={openEditModal && !!selectedAnimal}
           onClose={() => setOpenEditModal(false)}
         />

@@ -5,7 +5,12 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 import { animalsService } from './conversations'
-import type { AddAnimal, AnimalEvent, FetchAnimalsParams } from './types'
+import type {
+  AddAnimal,
+  AnimalEvent,
+  EditAnimal,
+  FetchAnimalsParams,
+} from './types'
 
 export const animalsKeys = {
   one: (id: string) => ['animals', id] as const,
@@ -24,7 +29,7 @@ export const useAnimals = (params: FetchAnimalsParams) =>
 export const useAnimalById = (id: string) =>
   useQuery({
     queryKey: animalsKeys.one(id),
-    queryFn: async () => animalsService.getAnimalById(id),
+    queryFn: () => animalsService.getAnimalById(id),
   })
 
 export const useAddAnimal = () => {
@@ -38,11 +43,30 @@ export const useAddAnimal = () => {
   })
 }
 
+type EditAnimalVariables = {
+  animalId: string
+  data: EditAnimal
+}
+export const useEditAnimal = (onSuccess: () => void) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ animalId, data }: EditAnimalVariables) =>
+      animalsService.editAnimal(animalId, data),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: animalsKeys.one(String(variables.animalId)),
+      })
+      queryClient.invalidateQueries({ queryKey: animalsKeys.all })
+      onSuccess()
+    },
+  })
+}
+
 type AddAnimalEventVariables = {
   animalId: string
   data: AnimalEvent
 }
-
 export const useAddAnimalEvent = () => {
   const queryClient = useQueryClient()
 

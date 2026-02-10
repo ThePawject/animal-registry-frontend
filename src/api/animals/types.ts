@@ -17,13 +17,13 @@ export type Animal = {
 export type AnimalById = Omit<Animal, 'mainPhoto'> & {
   photos: Array<Photo>
   events: Array<AnimalEvent>
+  mainPhotoId: string | null
 }
 
 export type Photo = {
   id: string
-  blobUrl: string
+  url: string
   fileName: string
-  isMain: boolean
   uploadedOn: string
 }
 
@@ -78,6 +78,28 @@ export type AddAnimal = {
   signature: string
   species: Species
   transponderCode: string
+}
+
+export type EditAnimal = {
+  birthDate: string
+  color: string
+  existingPhotoIds: Array<string>
+  id: string
+  mainPhotoId: string | null
+  mainPhotoIndex: number | null
+  name: string
+  newPhotos: Array<File>
+  sex: Sexes
+  signature: string
+  species: Species
+  transponderCode: string
+}
+
+export type EditAnimalForm = Omit<
+  EditAnimal,
+  'existingPhotoIds' | 'newPhotos'
+> & {
+  photos: Array<Photo | File>
 }
 
 export const SPECIES_MAP = {

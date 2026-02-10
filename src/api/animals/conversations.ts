@@ -5,6 +5,7 @@ import type {
   AnimalById,
   AnimalEvent,
   AnimalResponse,
+  EditAnimal,
   FetchAnimalsParams,
 } from './types'
 
@@ -63,6 +64,43 @@ export const animalsService = {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         throw new Error(`Failed to add animal: ${error.message}`)
+      }
+      throw error
+    }
+  },
+  editAnimal: async (id: string, data: EditAnimal) => {
+    try {
+      const formData = new FormData()
+      formData.append('birthDate', data.birthDate)
+      formData.append('color', data.color)
+      const jsonExistingPhotoIds = JSON.stringify(data.existingPhotoIds)
+      formData.append('existingPhotoIds', jsonExistingPhotoIds)
+      formData.append('id)', id)
+      if (data.mainPhotoId && data.mainPhotoIndex) {
+        throw new Error('Cannot provide both mainPhotoId and mainPhotoIndex')
+      }
+      if (data.mainPhotoId)
+        formData.append('mainPhotoId', String(data.mainPhotoId))
+      if (data.mainPhotoIndex !== null)
+        formData.append('mainPhotoIndex', String(data.mainPhotoIndex))
+      formData.append('name', data.name)
+      data.newPhotos.forEach((photo, index) => {
+        formData.append(`newPhotos[${index}]`, photo, photo.name)
+      })
+      formData.append('sex', String(data.sex))
+      formData.append('signature', data.signature)
+      formData.append('species', String(data.species))
+      formData.append('transponderCode', data.transponderCode)
+
+      const response = await apiClient.put(`animals/${id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+      return response.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to edit animal: ${error.message}`)
       }
       throw error
     }
