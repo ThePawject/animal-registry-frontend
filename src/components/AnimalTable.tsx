@@ -19,6 +19,7 @@ import {
 } from './ui/select'
 import { AnimalEditTabWrapper } from './tabs/AnimalEditTab'
 import AnimalHealthRecordsTab from './tabs/AnimalHealthRecordsTab'
+import DateRangeFilterModal from './modals/DateRangeFilterModal'
 import type { ColumnDef } from '@tanstack/react-table'
 import type { Animal } from '@/api/animals/types'
 
@@ -28,7 +29,21 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAnimals } from '@/api/animals/queries'
 import { formatDate } from '@/lib/utils'
-import { useReports } from '@/api/reports/queries'
+import {
+  useReports,
+  useReportsBySelectedIds,
+  useReportsDump,
+} from '@/api/reports/queries'
+
+export const createAndDownloadReport = (blob: Blob, filename: string) => {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.setAttribute('download', filename)
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
 
 function AnimalTable() {
   const [page, setPage] = React.useState(1)
@@ -45,15 +60,15 @@ function AnimalTable() {
     pageSize,
   })
 
-  const { mutate: getReports } = useReports(({ blob, filename }) => {
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.setAttribute('download', filename)
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  })
+  const { mutate: getReports } = useReports(({ blob, filename }) =>
+    createAndDownloadReport(blob, filename),
+  )
+  const { mutate: getReportsDump } = useReportsDump(({ blob, filename }) =>
+    createAndDownloadReport(blob, filename),
+  )
+  const { mutate: getReportsBySelectedIds } = useReportsBySelectedIds(
+    ({ blob, filename }) => createAndDownloadReport(blob, filename),
+  )
 
   const totalPages = animalsPage
     ? Math.ceil(animalsPage.totalCount / pageSize)
@@ -68,12 +83,30 @@ function AnimalTable() {
   const [openMedicalModal, setOpenMedicalModal] = React.useState(false)
   const [openEventsModal, setOpenEventsModal] = React.useState(false)
   const [openAddModal, setOpenAddModal] = React.useState(false)
+  const [openDateRangeModal, setOpenDateRangeModal] = React.useState(false)
 
   const columns = React.useMemo<Array<ColumnDef<Animal, any>>>(
     () => [
       {
         id: 'select',
-        header: () => null, // No select-all header, single row selection only.
+        header: () => {
+          const selectedCount = Object.keys(
+            table.getState().rowSelection,
+          ).length
+          if (selectedCount === 0) return null
+          return (
+            <div className="h-10 flex items-center justify-center">
+              <Checkbox
+                checked
+                onCheckedChange={(value) =>
+                  table.toggleAllRowsSelected(!!value)
+                }
+                aria-label="Select all rows"
+              />
+            </div>
+          )
+        },
+
         cell: ({ row }) => (
           <div className="h-10 flex items-center justify-center">
             <Checkbox
@@ -268,13 +301,8 @@ function AnimalTable() {
     pageCount: totalPages,
   })
 
-  const handleGetSelectedIds = () => {
-    const selectedRows = table.getState().rowSelection
-    const selectedIds = Object.keys(selectedRows).map((key) => Number(key))
-
-    // TODO: Implement selected IDs action
-    console.log('Selected animal IDs:', selectedIds)
-  }
+  const selectedRows = table.getState().rowSelection
+  const selectedIds = Object.keys(selectedRows)
 
   const selectedCount = Object.keys(table.getState().rowSelection).length
 
@@ -297,29 +325,35 @@ function AnimalTable() {
           >
             Pobierz raport
           </Button>
-          {selectedCount > 0 && (
-            <>
-              <span className="text-sm text-muted-foreground mr-2">
-                {selectedCount} zaznaczono
-              </span>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  table.resetRowSelection()
-                }}
-              >
-                Wyczyść zaznaczenie
-              </Button>
-            </>
-          )}
           <Button
-            onClick={handleGetSelectedIds}
-            disabled={selectedCount === 0}
-            variant={selectedCount > 0 ? 'default' : 'outline'}
+            variant="outline"
+            onClick={() => {
+              getReportsDump()
+            }}
           >
-            Pobierz zaznaczone ID
+            Pobierz caly raport
           </Button>
+          <Button
+            disabled={selectedCount === 0}
+            variant="outline"
+            onClick={() => {
+              console.log('Selected IDs:', selectedIds)
+              if (selectedIds.length > 0) {
+                getReportsBySelectedIds({ ids: selectedIds })
+              }
+            }}
+          >
+            Pobierz raport dla {selectedCount} zaznaczonych
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setOpenDateRangeModal(true)
+            }}
+          >
+            Pobierz raport z zakresu dat
+          </Button>
+
           <Button
             onClick={() => setOpenAddModal(true)}
             className="bg-emerald-600 hover:bg-emerald-700 text-white"
@@ -359,10 +393,7 @@ function AnimalTable() {
                   className="border-b transition-colors hover:bg-muted/50"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <td
-                      key={cell.id}
-                      className="px-4 py-3 align-middle [&:has([role=checkbox])]:pr-0"
-                    >
+                    <td key={cell.id} className="px-4 py-3 align-middle">
                       {!isLoading ? (
                         flexRender(
                           cell.column.columnDef.cell,
@@ -466,6 +497,10 @@ function AnimalTable() {
       <AddAnimalModal
         open={openAddModal}
         onClose={() => setOpenAddModal(false)}
+      />
+      <DateRangeFilterModal
+        open={openDateRangeModal}
+        onClose={() => setOpenDateRangeModal(false)}
       />
     </div>
   )

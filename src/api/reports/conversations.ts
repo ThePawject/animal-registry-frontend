@@ -46,4 +46,67 @@ export const reportsService = {
       throw error
     }
   },
+  async getReportsByDateRange(
+    params: ReportDateRangeParams,
+  ): Promise<ReportsResponse> {
+    try {
+      const response = await apiClient.get('reports/animals/date-range', {
+        params,
+        responseType: 'blob',
+      })
+
+      const filename = extractFilename(response.headers)
+
+      return {
+        blob: response.data,
+        filename: filename,
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to fetch reports: ${error.message}`)
+      }
+      throw error
+    }
+  },
+  async getReportsBySelectedIds(
+    params: ReportSelectedParams,
+  ): Promise<ReportsResponse> {
+    try {
+      const response = await apiClient.get('reports/animals/selected', {
+        params,
+        responseType: 'blob',
+      })
+
+      const filename = extractFilename(response.headers)
+
+      return {
+        blob: response.data,
+        filename: filename,
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to fetch reports: ${error.message}`)
+      }
+      throw error
+    }
+  },
+  async getReportsDump(): Promise<ReportsResponse> {
+    try {
+      const response = await apiClient.get('reports/animals/dump', {
+        responseType: 'blob',
+      })
+
+      const filename = extractFilename(response.headers)
+
+      return {
+        blob: response.data,
+        filename: filename,
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to fetch reports dump: ${error.message}`)
+      }
+      throw error
+    }
+  },
 }
