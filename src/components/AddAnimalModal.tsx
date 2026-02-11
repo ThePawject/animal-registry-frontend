@@ -3,7 +3,7 @@ import { Calendar, Dog, Hash, Tag, Trash2Icon, User, XIcon } from 'lucide-react'
 import { useForm, useStore } from '@tanstack/react-form'
 import type { AddAnimal, Sexes, Species } from '@/api/animals/types'
 import { SEX_MAP, SPECIES_MAP } from '@/api/animals/types'
-import { useAddAnimal } from '@/api/animals/queries'
+import { useAddAnimal, useAnimalSignature } from '@/api/animals/queries'
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -47,6 +47,7 @@ interface FormFieldProps {
   label: string
   children: React.ReactNode
   error?: string
+  className?: string
 }
 
 interface ThumbnailImageProps {
@@ -88,9 +89,19 @@ function ThumbnailImage({
   )
 }
 
-function FormField({ icon: Icon, label, children, error }: FormFieldProps) {
+function FormField({
+  icon: Icon,
+  label,
+  children,
+  error,
+  className,
+}: FormFieldProps) {
   return (
-    <div className="flex items-start gap-3 p-3 rounded-lg transition-colors mb-0">
+    <div
+      className={cn(
+        'flex items-start gap-3 p-3 rounded-lg transition-colors mb-0 w-full',
+      )}
+    >
       <div className="flex-shrink-0 mt-2">
         <Icon className="size-5" />
       </div>
@@ -98,7 +109,7 @@ function FormField({ icon: Icon, label, children, error }: FormFieldProps) {
         <Label htmlFor={label} className="text-sm">
           {label}
         </Label>
-        {children}
+        <div className={className}>{children}</div>
         {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
       </div>
     </div>
@@ -113,6 +124,10 @@ export default function AddAnimalModal({
   onClose: () => void
 }) {
   const { mutateAsync, isPending, error } = useAddAnimal()
+
+  const isSignatureError = error?.message.toLowerCase().includes('signature')
+  const { mutate: getAnimalSignature, isPending: isGettingAnimalSignature } =
+    useAnimalSignature()
 
   const fileUrlCacheRef = React.useRef<Map<File, string>>(new Map())
   const thumbnailCacheRef = React.useRef<Map<File, string>>(new Map())
@@ -190,19 +205,9 @@ export default function AddAnimalModal({
     onSubmit: async ({ value }) => {
       await mutateAsync(value)
       cleanupFileUrls()
+      form.reset()
       onClose()
     },
-    // validators: {
-    //   onChange({ value }) {
-    //     if (!value.name) return { name: 'Imię jest wymagane' }
-    //     if (!value.signature) return { signature: 'Oznaczenie jest wymagane' }
-    //     if (!value.transponderCode)
-    //       return { transponderCode: 'Numer chipa jest wymagany' }
-    //     if (!value.birthDate)
-    //       return { birthDate: 'Data urodzenia jest wymagana' }
-    //     return {}
-    //   },
-    // },
   })
 
   const isDirty = useStore(form.store, (state) => state.isDirty)
@@ -236,7 +241,7 @@ export default function AddAnimalModal({
   }
 
   const handleOpenChange = (openState: boolean) => {
-    if (!openState && (isDirty || hasImages)) {
+    if (!openState && isDirty) {
       const confirmed = window.confirm(
         'Masz niezapisane zmiany. Czy na pewno chcesz zamknąć okno? Zmiany zostaną utracone.',
       )
@@ -244,22 +249,9 @@ export default function AddAnimalModal({
     }
     if (!openState) {
       cleanupFileUrls()
+      form.reset()
       onClose()
     }
-  }
-
-  const hasImages = images.length > 0
-
-  const handleCancel = () => {
-    if (isDirty || hasImages) {
-      const confirmed = window.confirm(
-        'Masz niezapisane zmiany. Czy na pewno chcesz zamknąć okno? Zmiany zostaną utracone.',
-      )
-      if (!confirmed) return
-    }
-    cleanupFileUrls()
-    form.reset()
-    onClose()
   }
 
   const getDisplayedImageUrl = () => {
@@ -272,12 +264,12 @@ export default function AddAnimalModal({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="p-0 bg-transparent shadow-none border-none max-w-6xl max-h-[95vh] overflow-y-auto"
+        className="p-0 bg-transparent shadow-none border-none max-w-6xl max-h-[95vh]"
       >
         <div className="relative">
           <DialogClose asChild>
             <button
-              onClick={handleCancel}
+              onClick={onClose}
               className="absolute z-20 top-4 right-4 rounded-full focus:ring-2 focus:ring-ring focus:outline-none bg-red-600 hover:bg-red-700 p-2 shadow-md"
               aria-label="Close"
             >
@@ -297,7 +289,7 @@ export default function AddAnimalModal({
                 form.handleSubmit()
               }}
             >
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 overflow-y-auto max-h-[700px] px-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 px-6">
                 <div className="space-y-6 py-6">
                   <form.Field
                     name="name"
@@ -335,19 +327,44 @@ export default function AddAnimalModal({
                     }}
                     children={(field) => {
                       return (
-                        <FormField
-                          icon={Tag}
-                          label="Oznaczenie"
-                          error={field.state.meta.errors[0]}
-                        >
-                          <Input
-                            value={field.state.value}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            id="Oznaczenie"
-                            className="bg-background"
-                            placeholder="Wpisz oznaczenie"
-                          />
-                        </FormField>
+                        <div className="flex items-end justify-between gap-2 mb-0 w-full">
+                          <FormField
+                            icon={Tag}
+                            label="Oznaczenie"
+                            error={field.state.meta.errors[0]}
+                            className="flex flex-row gap-2 items-center justify-between w-full flex-1 min-w-0"
+                          >
+                            <Input
+                              value={field.state.value}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              id="Oznaczenie"
+                              className="bg-background mb-0"
+                              placeholder="Wpisz oznaczenie"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="h-9 w-[200px]"
+                              size="sm"
+                              onClick={() => {
+                                getAnimalSignature(undefined, {
+                                  onSuccess: (data) => {
+                                    form.setFieldValue(
+                                      'signature',
+                                      data.signature,
+                                    )
+                                  },
+                                })
+                              }}
+                            >
+                              {isGettingAnimalSignature
+                                ? 'Ładowanie...'
+                                : 'Generuj unikalne oznaczenie'}
+                            </Button>
+                          </FormField>
+                        </div>
                       )
                     }}
                   />
@@ -509,7 +526,7 @@ export default function AddAnimalModal({
 
                 <div className="flex flex-col items-center">
                   <div className="w-full h-full flex flex-col items-center justify-between py-4">
-                    <div className="flex gap-2 mb-4 overflow-x-auto max-w-[535px]">
+                    <div className="flex gap-2 mb-4 max-w-[535px]">
                       {images.map((img, idx) => (
                         <button
                           key={idx}
@@ -656,14 +673,16 @@ export default function AddAnimalModal({
               </div>
 
               <div className="flex gap-4 p-5 w-full">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1 text-lg font-semibold h-12"
-                  onClick={handleCancel}
-                >
-                  Anuluj
-                </Button>
+                <DialogClose asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1 text-lg font-semibold h-12"
+                    onClick={onClose}
+                  >
+                    Anuluj
+                  </Button>
+                </DialogClose>
 
                 <Button
                   type="submit"
@@ -675,7 +694,9 @@ export default function AddAnimalModal({
               </div>
               {error && (
                 <p className="text-sm text-red-500 font-medium p-4">
-                  {genericErrorMessage}
+                  {isSignatureError
+                    ? 'Oznaczenie jest już zajęte, wygeneruj nowe i spróbuj ponownie.'
+                    : genericErrorMessage}
                 </p>
               )}
             </form>

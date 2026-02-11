@@ -6,6 +6,7 @@ import type {
   AnimalEvent,
   AnimalHealthRecord,
   AnimalResponse,
+  AnimalSignature,
   EditAnimal,
   FetchAnimalsParams,
 } from './types'
@@ -59,7 +60,14 @@ export const animalsService = {
         },
       })
       return response.data
-    } catch (error) {
+    } catch (error: any) {
+      if (
+        error?.response?.data?.errors?.generalErrors &&
+        Array.isArray(error.response?.data.errors.generalErrors)
+      ) {
+        const generalErrors = error.response.data.errors.generalErrors
+        throw new Error(`Failed to add animal: ${generalErrors.join(', ')}`)
+      }
       if (axios.isAxiosError(error)) {
         throw new Error(`Failed to add animal: ${error.message}`)
       }
@@ -179,6 +187,17 @@ export const animalsService = {
         throw new Error(
           `Failed to delete animal health record: ${error.message}`,
         )
+      }
+      throw error
+    }
+  },
+  async getAnimalSignature(): Promise<AnimalSignature> {
+    try {
+      const response = await apiClient.get('animals/signature')
+      return response.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to fetch animal signature: ${error.message}`)
       }
       throw error
     }

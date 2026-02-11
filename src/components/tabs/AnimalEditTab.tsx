@@ -378,7 +378,7 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="p-0 bg-transparent shadow-none border-none max-w-6xl max-h-[95vh] overflow-y-auto"
+        className="p-0 bg-transparent shadow-none border-none max-w-6xl"
       >
         <div className="relative">
           <DialogClose asChild>
@@ -405,7 +405,7 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
                 form.handleSubmit()
               }}
             >
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 overflow-y-auto max-h-[700px] px-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 px-6">
                 <div className="space-y-6 py-6">
                   <form.Field
                     name="name"
@@ -575,7 +575,7 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
 
                 <div className="flex flex-col items-center">
                   <div className="w-full h-full flex flex-col items-center justify-between py-4">
-                    <div className="flex gap-2 mb-4 overflow-x-auto max-w-[535px]">
+                    <div className="flex gap-2 mb-4">
                       {form.getFieldValue('photos').map((img, idx) => {
                         const isFile =
                           img instanceof File && 'arrayBuffer' in img

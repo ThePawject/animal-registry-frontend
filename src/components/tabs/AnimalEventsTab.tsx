@@ -155,11 +155,13 @@ export default function AnimalEventsTab({
           <div className="relative">
             <DialogClose asChild>
               <button
-                onClick={onClose}
-                className="absolute z-10 top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:outline-none bg-white dark:bg-zinc-900 p-2"
+                onClick={() => {
+                  onClose()
+                }}
+                className="absolute z-20 top-4 right-4 rounded-full focus:ring-2 focus:ring-ring focus:outline-none bg-red-600 hover:bg-red-700 p-2 shadow-md"
                 aria-label="Close"
               >
-                <XIcon className="w-5 h-5" />
+                <XIcon className="w-5 h-5 text-white" />
               </button>
             </DialogClose>
 

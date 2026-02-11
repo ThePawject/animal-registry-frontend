@@ -126,3 +126,7 @@ export const SEX_MAP = {
 }
 
 export type Sexes = keyof typeof SEX_MAP
+
+export type AnimalSignature = {
+  signature: string
+}
