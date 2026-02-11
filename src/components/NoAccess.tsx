@@ -9,7 +9,7 @@ export function NoAccess() {
       <div className="flex flex-col md:flex-row items-center justify-center gap-8">
         <img
           src="./animal-shelter-logo.png"
-          alt="Logo Schroniska dla Zwierząt"
+          alt="Elektroniczny Rejestr Zwierząt"
           className="w-60 h-60 mb-2"
         />
         <div className="flex items-center justify-center w-full">

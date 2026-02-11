@@ -49,6 +49,53 @@ interface FormFieldProps {
   children: React.ReactNode
   error?: string
 }
+
+interface ThumbnailImageProps {
+  image: File | { id: string; url: string }
+  alt: string
+  generateThumbnail: (file: File) => Promise<string>
+  className?: string
+}
+
+function ThumbnailImage({
+  image,
+  alt,
+  generateThumbnail,
+  className,
+}: ThumbnailImageProps) {
+  const [thumbnailUrl, setThumbnailUrl] = React.useState<string | null>(null)
+  const isFile = image instanceof File && 'arrayBuffer' in image
+
+  React.useEffect(() => {
+    if (!isFile) {
+      setThumbnailUrl(null)
+      return
+    }
+
+    let cancelled = false
+    generateThumbnail(image).then((url) => {
+      if (!cancelled) {
+        setThumbnailUrl(url)
+      }
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [image, generateThumbnail, isFile])
+
+  const src = isFile ? thumbnailUrl || '' : image.url
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      loading="lazy"
+      decoding="async"
+    />
+  )
+}
 const inputUploadAccept = '.jpg,.jpeg,.png,.webp'
 
 function FormField({ icon: Icon, label, children, error }: FormFieldProps) {
@@ -150,6 +197,77 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
   })
   // TODO: add error handling, show errors in UI
 
+  const fileUrlCacheRef = React.useRef<Map<File, string>>(new Map())
+  const thumbnailCacheRef = React.useRef<Map<File, string>>(new Map())
+
+  const generateThumbnail = React.useCallback((file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const cached = thumbnailCacheRef.current.get(file)
+      if (cached) {
+        resolve(cached)
+        return
+      }
+
+      const img = new Image()
+      const objectUrl = URL.createObjectURL(file)
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const size = 128
+        canvas.width = size
+        canvas.height = size
+
+        const ctx = canvas.getContext('2d')
+        if (!ctx) {
+          URL.revokeObjectURL(objectUrl)
+          reject(new Error('Could not get canvas context'))
+          return
+        }
+
+        const scale = Math.max(size / img.width, size / img.height)
+        const x = (size - img.width * scale) / 2
+        const y = (size - img.height * scale) / 2
+
+        ctx.drawImage(img, x, y, img.width * scale, img.height * scale)
+
+        const thumbnailUrl = canvas.toDataURL('image/jpeg', 0.8)
+        thumbnailCacheRef.current.set(file, thumbnailUrl)
+        URL.revokeObjectURL(objectUrl)
+        resolve(thumbnailUrl)
+      }
+
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl)
+        reject(new Error('Failed to load image'))
+      }
+
+      img.src = objectUrl
+    })
+  }, [])
+
+  const getFileUrl = React.useCallback((file: File): string => {
+    let url = fileUrlCacheRef.current.get(file)
+    if (!url) {
+      url = URL.createObjectURL(file)
+      fileUrlCacheRef.current.set(file, url)
+    }
+    return url
+  }, [])
+
+  const cleanupFileUrls = React.useCallback(() => {
+    fileUrlCacheRef.current.forEach((url) => {
+      URL.revokeObjectURL(url)
+    })
+    fileUrlCacheRef.current.clear()
+    thumbnailCacheRef.current.clear()
+  }, [])
+
+  React.useEffect(() => {
+    return () => {
+      cleanupFileUrls()
+    }
+  }, [cleanupFileUrls])
+
   const form = useForm({
     defaultValues: mapAnimalToFormData(animal),
 
@@ -170,6 +288,7 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
       }
       await mutateAsync({ animalId: value.id, data: payload })
       if (submittedSuccessfully) {
+        cleanupFileUrls()
         form.reset()
       }
       onClose()
@@ -237,7 +356,7 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
       return image.url
     }
     if (typeof image === 'object' && 'arrayBuffer' in image) {
-      return URL.createObjectURL(image)
+      return getFileUrl(image)
     }
   }
 
@@ -249,6 +368,7 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
       if (!confirmed) return
     }
     if (!openState) {
+      cleanupFileUrls()
       form.reset()
       onClose()
     }
@@ -493,9 +613,10 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
                               </svg>
                             )}
 
-                            <img
-                              src={isFile ? URL.createObjectURL(img) : img.url}
+                            <ThumbnailImage
+                              image={img}
                               alt={`Miniatura ${idx + 1}`}
+                              generateThumbnail={generateThumbnail}
                               className="object-cover w-full h-full p-0.5"
                             />
                           </button>
@@ -546,6 +667,15 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
                               const isFile =
                                 imageToDelete instanceof File &&
                                 'arrayBuffer' in imageToDelete
+
+                              if (isFile) {
+                                const urlToRevoke =
+                                  fileUrlCacheRef.current.get(imageToDelete)
+                                if (urlToRevoke) {
+                                  URL.revokeObjectURL(urlToRevoke)
+                                  fileUrlCacheRef.current.delete(imageToDelete)
+                                }
+                              }
 
                               if (
                                 isFile &&

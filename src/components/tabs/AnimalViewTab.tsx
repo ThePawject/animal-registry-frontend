@@ -5,7 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
-import { cn, transformBlobUrl } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { SEX_MAP, SPECIES_MAP } from '@/api/animals/types'
 
 function formatDate(date: string | Date | null | undefined): string {
@@ -84,7 +84,7 @@ export default function AnimalViewTab({
     )
   }
 
-  let imageUrls = animal.photos.map((photo) => transformBlobUrl(photo.url))
+  let imageUrls = animal.photos.map((photo) => photo.url)
   if (!imageUrls.length) {
     imageUrls = ['https://placehold.co/400x400?text=Brak+zdjecia']
   }

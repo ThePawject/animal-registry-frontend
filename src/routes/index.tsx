@@ -50,8 +50,7 @@ function App() {
         onClick={() => {
           getAccessTokenWithPopup({
             authorizationParams: getAuthorizationParams(),
-          }).then((test) => {
-            console.log('response', test)
+          }).then(() => {
             setIsLoginModalOpen(false)
           })
         }}

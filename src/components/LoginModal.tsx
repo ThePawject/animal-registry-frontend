@@ -26,10 +26,11 @@ export default function LoginModal({
       <DialogContent className="max-w-xs" showCloseButton>
         <DialogHeader>
           <DialogTitle className="text-emerald-800">
-            Witaj w Panelu Schroniska!
+            Witaj w Panelu Elektronicznego Rejestru Zwierząt!
           </DialogTitle>
           <DialogDescription className="text-emerald-700 mb-4">
-            Zaloguj się, aby otrzymać dostęp do systemu schroniska dla zwierząt.
+            Zaloguj się, aby otrzymać dostęp do elektronicznego rejestru
+            zwierząt.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

@@ -49,6 +49,45 @@ interface FormFieldProps {
   error?: string
 }
 
+interface ThumbnailImageProps {
+  image: File
+  alt: string
+  generateThumbnail: (file: File) => Promise<string>
+  className?: string
+}
+
+function ThumbnailImage({
+  image,
+  alt,
+  generateThumbnail,
+  className,
+}: ThumbnailImageProps) {
+  const [thumbnailUrl, setThumbnailUrl] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    let cancelled = false
+    generateThumbnail(image).then((url) => {
+      if (!cancelled) {
+        setThumbnailUrl(url)
+      }
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [image, generateThumbnail])
+
+  return (
+    <img
+      src={thumbnailUrl || ''}
+      alt={alt}
+      className={className}
+      loading="lazy"
+      decoding="async"
+    />
+  )
+}
+
 function FormField({ icon: Icon, label, children, error }: FormFieldProps) {
   return (
     <div className="flex items-start gap-3 p-3 rounded-lg transition-colors mb-0">
@@ -75,10 +114,82 @@ export default function AddAnimalModal({
 }) {
   const { mutateAsync, isPending, error } = useAddAnimal()
 
+  const fileUrlCacheRef = React.useRef<Map<File, string>>(new Map())
+  const thumbnailCacheRef = React.useRef<Map<File, string>>(new Map())
+
+  const generateThumbnail = React.useCallback((file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const cached = thumbnailCacheRef.current.get(file)
+      if (cached) {
+        resolve(cached)
+        return
+      }
+
+      const img = new Image()
+      const objectUrl = URL.createObjectURL(file)
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const size = 128
+        canvas.width = size
+        canvas.height = size
+
+        const ctx = canvas.getContext('2d')
+        if (!ctx) {
+          URL.revokeObjectURL(objectUrl)
+          reject(new Error('Could not get canvas context'))
+          return
+        }
+
+        const scale = Math.max(size / img.width, size / img.height)
+        const x = (size - img.width * scale) / 2
+        const y = (size - img.height * scale) / 2
+
+        ctx.drawImage(img, x, y, img.width * scale, img.height * scale)
+
+        const thumbnailUrl = canvas.toDataURL('image/jpeg', 0.8)
+        thumbnailCacheRef.current.set(file, thumbnailUrl)
+        URL.revokeObjectURL(objectUrl)
+        resolve(thumbnailUrl)
+      }
+
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl)
+        reject(new Error('Failed to load image'))
+      }
+
+      img.src = objectUrl
+    })
+  }, [])
+
+  const getFileUrl = React.useCallback((file: File): string => {
+    let url = fileUrlCacheRef.current.get(file)
+    if (!url) {
+      url = URL.createObjectURL(file)
+      fileUrlCacheRef.current.set(file, url)
+    }
+    return url
+  }, [])
+
+  const cleanupFileUrls = React.useCallback(() => {
+    fileUrlCacheRef.current.forEach((url) => {
+      URL.revokeObjectURL(url)
+    })
+    fileUrlCacheRef.current.clear()
+    thumbnailCacheRef.current.clear()
+  }, [])
+
+  React.useEffect(() => {
+    return () => {
+      cleanupFileUrls()
+    }
+  }, [cleanupFileUrls])
+
   const form = useForm({
     defaultValues: defaultAnimalFormData,
     onSubmit: async ({ value }) => {
       await mutateAsync(value)
+      cleanupFileUrls()
       onClose()
     },
     // validators: {
@@ -131,7 +242,10 @@ export default function AddAnimalModal({
       )
       if (!confirmed) return
     }
-    if (!openState) onClose()
+    if (!openState) {
+      cleanupFileUrls()
+      onClose()
+    }
   }
 
   const hasImages = images.length > 0
@@ -143,13 +257,15 @@ export default function AddAnimalModal({
       )
       if (!confirmed) return
     }
+    cleanupFileUrls()
+    form.reset()
     onClose()
   }
 
   const getDisplayedImageUrl = () => {
     if (displayedImageId === null) return null
     const image = images[displayedImageId]
-    return URL.createObjectURL(image)
+    return getFileUrl(image)
   }
 
   return (
@@ -420,9 +536,10 @@ export default function AddAnimalModal({
                               />
                             </svg>
                           )}
-                          <img
-                            src={URL.createObjectURL(img)}
+                          <ThumbnailImage
+                            image={img}
                             alt={`Miniatura ${idx + 1}`}
+                            generateThumbnail={generateThumbnail}
                             className="object-cover w-full h-full p-0.5"
                           />
                         </button>
@@ -452,6 +569,16 @@ export default function AddAnimalModal({
                             size="sm"
                             onClick={() => {
                               if (displayedImageId === null) return
+                              const imageToDelete = images[displayedImageId]
+
+                              const fullUrl =
+                                fileUrlCacheRef.current.get(imageToDelete)
+                              if (fullUrl) {
+                                URL.revokeObjectURL(fullUrl)
+                                fileUrlCacheRef.current.delete(imageToDelete)
+                              }
+                              thumbnailCacheRef.current.delete(imageToDelete)
+
                               const newImages = images.filter(
                                 (_, idx) => idx !== displayedImageId,
                               )

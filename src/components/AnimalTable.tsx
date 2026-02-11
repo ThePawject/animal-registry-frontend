@@ -44,6 +44,9 @@ function AnimalTable() {
     pageSize,
   })
 
+  const totalPages = animalsPage
+    ? Math.ceil(animalsPage.totalCount / pageSize)
+    : 1
   const [rowSelection, setRowSelection] = React.useState({})
   const [selectedAnimal, setSelectedAnimal] = React.useState<Animal | null>(
     null,
@@ -102,9 +105,7 @@ function AnimalTable() {
       {
         accessorKey: 'name',
         header: 'Imię',
-        cell: (info) => (
-          <a href={`/animal/${info.row.original.id}`}>{info.getValue()}</a>
-        ),
+        cell: (info) => info.getValue(),
       },
       {
         accessorKey: 'species',
@@ -238,7 +239,7 @@ function AnimalTable() {
   // Reset to first page on search change
   React.useEffect(() => {
     setPage(1)
-  }, [globalFilter])
+  }, [debouncedGlobalFilter])
 
   const table = useReactTable({
     data: animalsPage?.items || [],
@@ -253,7 +254,7 @@ function AnimalTable() {
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
-    pageCount: Math.ceil(animalsPage?.totalCount || 9999),
+    pageCount: totalPages,
   })
 
   const handleGetSelectedIds = () => {
@@ -400,7 +401,7 @@ function AnimalTable() {
             variant="outline"
             size="sm"
             onClick={() => setPage((i) => i + 1)}
-            disabled={pageSize === animalsPage?.totalCount}
+            disabled={page === totalPages || isLoading}
           >
             Następna
           </Button>
