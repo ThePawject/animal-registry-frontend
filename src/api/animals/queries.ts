@@ -191,3 +191,9 @@ export const useDeleteAnimalHealthRecord = () => {
     },
   })
 }
+
+export const useAnimalSignature = () => {
+  return useMutation({
+    mutationFn: async () => animalsService.getAnimalSignature(),
+  })
+}

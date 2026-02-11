@@ -127,17 +127,6 @@ export default function AnimalEventFormModal({
     }
   }
 
-  const handleCancel = () => {
-    if (isDirty) {
-      const confirmed = window.confirm(
-        'Masz niezapisane zmiany. Czy na pewno chcesz zamknąć okno? Zmiany zostaną utracone.',
-      )
-      if (!confirmed) return
-    }
-    form.reset()
-    onClose()
-  }
-
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
@@ -147,7 +136,9 @@ export default function AnimalEventFormModal({
         <div className="relative">
           <DialogClose asChild>
             <button
-              onClick={handleCancel}
+              onClick={() => {
+                onClose()
+              }}
               className="absolute z-20 top-4 right-4 rounded-full focus:ring-2 focus:ring-ring focus:outline-none bg-red-600 hover:bg-red-700 p-2 shadow-md"
               aria-label="Close"
             >
@@ -273,14 +264,16 @@ export default function AnimalEventFormModal({
               />
 
               <div className="flex gap-4 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1 text-lg font-semibold h-12"
-                  onClick={handleCancel}
-                >
-                  Anuluj
-                </Button>
+                <DialogClose asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1 text-lg font-semibold h-12"
+                    onClick={onClose}
+                  >
+                    Anuluj
+                  </Button>
+                </DialogClose>
 
                 <Button
                   type="submit"
