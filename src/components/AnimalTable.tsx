@@ -28,6 +28,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAnimals } from '@/api/animals/queries'
 import { formatDate } from '@/lib/utils'
+import { useReports } from '@/api/reports/queries'
 
 function AnimalTable() {
   const [page, setPage] = React.useState(1)
@@ -42,6 +43,16 @@ function AnimalTable() {
     keyWordSearch: debouncedGlobalFilter,
     page: page,
     pageSize,
+  })
+
+  const { mutate: getReports } = useReports(({ blob, filename }) => {
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', filename)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   })
 
   const totalPages = animalsPage
@@ -278,6 +289,14 @@ function AnimalTable() {
         />
 
         <div className="flex gap-2 items-center">
+          <Button
+            variant="outline"
+            onClick={() => {
+              getReports()
+            }}
+          >
+            Pobierz raport
+          </Button>
           {selectedCount > 0 && (
             <>
               <span className="text-sm text-muted-foreground mr-2">
