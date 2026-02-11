@@ -2,6 +2,9 @@ import { clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import type { ClassValue } from 'clsx'
 
+export const genericErrorMessage =
+  'Wystąpił nieoczekiwany błąd. Jeśli problem będzie się powtarzał, skontaktuj się z administratorem.'
+
 export function cn(...inputs: Array<ClassValue>) {
   return twMerge(clsx(inputs))
 }
@@ -53,4 +56,13 @@ export function getAuthorizationParams() {
     scope: 'openid offline_access',
     audience: 'https://dev-ThePawject/',
   }
+}
+
+export function formatDate(dateString: string): string {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('pl-PL', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
 }

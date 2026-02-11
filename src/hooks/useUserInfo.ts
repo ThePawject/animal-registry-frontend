@@ -10,14 +10,17 @@ import {
 type UseUserInfoProps = {
   setIsLoginModalOpen: (isOpen: boolean) => void
   setRoles: (roles: Array<string>) => void
+  isLoginModalOpen: boolean
 }
 
 export function useUserInfo({
   setIsLoginModalOpen,
   setRoles,
+  isLoginModalOpen,
 }: UseUserInfoProps) {
   const [shelterName, setShelterName] = useState<string | null>(null)
-  const { getAccessTokenSilently, isAuthenticated } = useAuth0()
+  const [isLoadingRoles, setIsLoadingRoles] = useState(false)
+  const { getAccessTokenSilently, isAuthenticated, isLoading } = useAuth0()
   useEffect(() => {
     if (!isAuthenticated) {
       setShelterName(null)
@@ -25,13 +28,16 @@ export function useUserInfo({
     }
     ;(async () => {
       try {
+        setIsLoadingRoles(true)
         const token = await getAccessTokenSilently({
           authorizationParams: getAuthorizationParams(),
         })
         setShelterName(getShelterName(decodeJwt(token || '')))
         const roles = getRoles(decodeJwt(token || ''))
         setRoles(roles)
+        setIsLoadingRoles(false)
       } catch (e) {
+        setIsLoadingRoles(false)
         if (e instanceof Error) {
           if (e.message.includes('Missing Refresh Token')) {
             setIsLoginModalOpen(true)
@@ -41,6 +47,6 @@ export function useUserInfo({
         }
       }
     })()
-  }, [getAccessTokenSilently, isAuthenticated])
-  return { shelterName }
+  }, [getAccessTokenSilently, isAuthenticated, isLoading, isLoginModalOpen])
+  return { shelterName, isLoadingRoles }
 }

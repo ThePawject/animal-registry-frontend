@@ -44,25 +44,36 @@ function ErrorMessages({
 export function TextField({
   label,
   placeholder,
+  icon: Icon,
 }: {
   label: string
   placeholder?: string
+  icon?: React.ComponentType<{ className?: string }>
 }) {
   const field = useFieldContext<string>()
   const errors = useStore(field.store, (state) => state.meta.errors)
 
   return (
-    <div>
-      <Label htmlFor={label} className="mb-2 text-xl font-bold">
-        {label}
-      </Label>
-      <Input
-        value={field.state.value}
-        placeholder={placeholder}
-        onBlur={field.handleBlur}
-        onChange={(e) => field.handleChange(e.target.value)}
-      />
-      {field.state.meta.isTouched && <ErrorMessages errors={errors} />}
+    <div className="flex items-start gap-3 p-3 rounded-lg transition-colors">
+      {Icon && (
+        <div className="flex-shrink-0 mt-0.5">
+          <Icon className="w-5 h-5 text-muted-foreground" />
+        </div>
+      )}
+      <div className="flex-1 min-w-0">
+        <Label htmlFor={label} className="text-sm text-muted-foreground">
+          {label}
+        </Label>
+        <Input
+          id={label}
+          value={field.state.value}
+          placeholder={placeholder}
+          onBlur={field.handleBlur}
+          onChange={(e) => field.handleChange(e.target.value)}
+          className="mt-1 border-0 bg-transparent p-0 text-base font-medium text-foreground shadow-none focus-visible:ring-0"
+        />
+        {field.state.meta.isTouched && <ErrorMessages errors={errors} />}
+      </div>
     </div>
   )
 }
@@ -98,39 +109,45 @@ export function Select({
   label,
   values,
   placeholder,
+  icon: Icon,
 }: {
   label: string
   values: Array<{ label: string; value: string }>
   placeholder?: string
+  icon?: React.ComponentType<{ className?: string }>
 }) {
   const field = useFieldContext<string>()
   const errors = useStore(field.store, (state) => state.meta.errors)
 
   return (
-    <div>
-      <Label htmlFor={label} className="mb-2 text-xl font-bold">
-        {label}
-      </Label>
-      <ShadcnSelect.Select
-        name={field.name}
-        value={field.state.value}
-        onValueChange={(value) => field.handleChange(value)}
-      >
-        <ShadcnSelect.SelectTrigger className="w-full">
-          <ShadcnSelect.SelectValue placeholder={placeholder} />
-        </ShadcnSelect.SelectTrigger>
-        <ShadcnSelect.SelectContent>
-          <ShadcnSelect.SelectGroup>
-            <ShadcnSelect.SelectLabel>{label}</ShadcnSelect.SelectLabel>
-            {values.map((value) => (
-              <ShadcnSelect.SelectItem key={value.value} value={value.value}>
-                {value.label}
-              </ShadcnSelect.SelectItem>
-            ))}
-          </ShadcnSelect.SelectGroup>
-        </ShadcnSelect.SelectContent>
-      </ShadcnSelect.Select>
-      {field.state.meta.isTouched && <ErrorMessages errors={errors} />}
+    <div className="flex items-start gap-3 p-3 rounded-gg transition-colors">
+      {Icon && (
+        <div className="flex-shrink-0 mt-0.5">
+          <Icon className="w-5 h-5 text-muted-foreground" />
+        </div>
+      )}
+      <div className="flex-1 min-w-0">
+        <p className="text-sm text-muted-foreground">{label}</p>
+        <ShadcnSelect.Select
+          name={field.name}
+          value={field.state.value}
+          onValueChange={(value) => field.handleChange(value)}
+        >
+          <ShadcnSelect.SelectTrigger className="w-full border-0 bg-transparent p-0 text-base font-medium text-foreground shadow-none focus:ring-0">
+            <ShadcnSelect.SelectValue placeholder={placeholder} />
+          </ShadcnSelect.SelectTrigger>
+          <ShadcnSelect.SelectContent>
+            <ShadcnSelect.SelectGroup>
+              {values.map((value) => (
+                <ShadcnSelect.SelectItem key={value.value} value={value.value}>
+                  {value.label}
+                </ShadcnSelect.SelectItem>
+              ))}
+            </ShadcnSelect.SelectGroup>
+          </ShadcnSelect.SelectContent>
+        </ShadcnSelect.Select>
+        {field.state.meta.isTouched && <ErrorMessages errors={errors} />}
+      </div>
     </div>
   )
 }

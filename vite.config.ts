@@ -8,14 +8,19 @@ import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import tailwindcss from '@tailwindcss/vite'
 
 const config = defineConfig({
-  base: '/animal-registry-frontend/',
+  base: '/animal-registry-frontend',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
   plugins: [
-    tanstackStart(),
+    tanstackStart({
+      spa: {
+        enabled: true,
+        prerender: { crawlLinks: true, outputPath: 'index.html' },
+      },
+    }),
     devtools(),
     viteTsConfigPaths({
       projects: ['./tsconfig.json'],
@@ -24,9 +29,7 @@ const config = defineConfig({
     viteReact(),
   ],
   build: {
-    rollupOptions: {
-      input: 'index.html',
-    },
+    outDir: 'dist',
   },
 })
 

@@ -4,10 +4,11 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { Eye, Pencil, Stethoscope } from 'lucide-react'
+import { Calendar, Eye, Pencil, Plus, Stethoscope } from 'lucide-react'
+import { useDebouncedValue } from '@tanstack/react-pacer'
 import AnimalViewTab from './tabs/AnimalViewTab'
-import AnimalEditTab from './tabs/AnimalEditTab'
-import AnimalMedicalNotesTab from './tabs/AnimalMedicalNotesTab'
+import AnimalEventsTab from './tabs/AnimalEventsTab'
+import AddAnimalModal from './AddAnimalModal'
 import {
   Select,
   SelectContent,
@@ -16,35 +17,46 @@ import {
   SelectTrigger,
   SelectValue,
 } from './ui/select'
+import { AnimalEditTabWrapper } from './tabs/AnimalEditTab'
+import AnimalHealthRecordsTab from './tabs/AnimalHealthRecordsTab'
 import type { ColumnDef } from '@tanstack/react-table'
-import type { Animal } from '@/data/animal-data'
-import { mockAnimalApi } from '@/data/animal-data'
+import type { Animal } from '@/api/animals/types'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useAnimals } from '@/api/animals/queries'
+import { formatDate } from '@/lib/utils'
 
-interface AnimalTableProps {
-  onGetSelectedIds?: (ids: Array<number>) => void
-}
-
-function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
-  // MOCK API PAGINATION DATA STATE
-  const [pageData, setPageData] = React.useState<Array<Animal>>([])
-  const [total, setTotal] = React.useState(0)
-  const [loading, setLoading] = React.useState(false)
-  const [pageIndex, setPageIndex] = React.useState(0)
+function AnimalTable() {
+  const [page, setPage] = React.useState(1)
+  const [globalFilter, setGlobalFilter] = React.useState('')
   const [pageSize, setPageSize] = React.useState(10)
 
-  const [globalFilter, setGlobalFilter] = React.useState('')
+  const [debouncedGlobalFilter] = useDebouncedValue(globalFilter, {
+    wait: 500,
+  })
+
+  const { data: animalsPage, isLoading } = useAnimals({
+    keyWordSearch: debouncedGlobalFilter,
+    page: page,
+    pageSize,
+  })
+
+  const totalPages = animalsPage
+    ? Math.ceil(animalsPage.totalCount / pageSize)
+    : 1
   const [rowSelection, setRowSelection] = React.useState({})
   const [selectedAnimal, setSelectedAnimal] = React.useState<Animal | null>(
     null,
   )
+
   const [openViewModal, setOpenViewModal] = React.useState(false)
   const [openEditModal, setOpenEditModal] = React.useState(false)
   const [openMedicalModal, setOpenMedicalModal] = React.useState(false)
+  const [openEventsModal, setOpenEventsModal] = React.useState(false)
+  const [openAddModal, setOpenAddModal] = React.useState(false)
 
   const columns = React.useMemo<Array<ColumnDef<Animal, any>>>(
     () => [
@@ -65,66 +77,103 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
         enableHiding: false,
       },
       {
-        accessorKey: 'id',
-        header: 'ID',
-        cell: (info) => info.row.original.animalId,
+        id: 'mainPhoto',
+        header: 'Zdjęcie',
+        cell: (info) => {
+          const mainPhoto = info.row.original.mainPhoto
+          if (mainPhoto?.url) {
+            return (
+              <img
+                src={mainPhoto.url}
+                alt={info.row.original.name}
+                className="w-12 h-12 object-cover rounded-lg"
+              />
+            )
+          }
+          return (
+            <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 text-xs">
+              Brak
+            </div>
+          )
+        },
+      },
+      {
+        accessorKey: 'signature',
+        header: 'Oznaczenie',
+        cell: (info) => info.getValue(),
       },
       {
         accessorKey: 'name',
         header: 'Imię',
-        cell: (info) => (
-          <a href={`/animal/${info.row.original.animalId}`}>
-            {info.getValue()}
-          </a>
-        ),
+        cell: (info) => info.getValue(),
       },
       {
-        accessorKey: 'type',
+        accessorKey: 'species',
         header: 'Gatunek',
+        cell: (info) => {
+          const speciesMap: Record<number, string> = {
+            0: 'Brak',
+            1: 'Pies',
+            2: 'Kot',
+          }
+          return speciesMap[info.getValue() as number] || 'Nieznany'
+        },
+      },
+      {
+        accessorKey: 'sex',
+        header: 'Płeć',
+        cell: (info) => {
+          const sexMap: Record<number, string> = {
+            0: 'Brak',
+            1: 'Samiec',
+            2: 'Samica',
+          }
+          return sexMap[info.getValue() as number] || 'Nieznana'
+        },
+      },
+      {
+        accessorKey: 'color',
+        header: 'Umaszczenie',
         cell: (info) => info.getValue(),
       },
       {
-        accessorKey: 'breed',
-        header: 'Rasa',
-        cell: (info) => info.getValue(),
-      },
-      {
-        accessorKey: 'age',
+        accessorKey: 'birthDate',
         header: 'Wiek',
-        cell: (info) => `${info.getValue()} lat`,
+        cell: (info) => {
+          const birthDate = new Date(info.getValue() as string)
+          const ageDifMs = Date.now() - birthDate.getTime()
+          const ageDate = new Date(ageDifMs)
+          const years = Math.abs(ageDate.getUTCFullYear() - 1970)
+          const months = ageDate.getUTCMonth()
+          return `${years} lat${months > 0 ? ` ${months} mies.` : ''}`
+        },
         filterFn: 'includesString',
       },
       {
-        accessorKey: 'status',
+        accessorKey: 'isInShelter',
         header: 'Status',
         cell: (info) => {
-          const status = info.getValue() as string
-          const statusColors = {
-            available:
-              'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
-            adopted:
-              'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100',
-            pending:
-              'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
-            medical:
-              'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
-          }
+          const isInShelter = info.getValue() as boolean
           return (
             <span
-              className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[status as keyof typeof statusColors]}`}
+              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                isInShelter
+                  ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
+                  : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
+              }`}
             >
-              {status}
+              {isInShelter ? 'Aktywny' : 'Nieaktywny'}
             </span>
           )
         },
         filterFn: 'includesString',
       },
       {
-        accessorKey: 'admissionDate',
+        accessorKey: 'createdOn',
         header: 'Data przyjęcia',
         cell: (info) => {
           const date = new Date(info.getValue() as string)
-          return date.toLocaleDateString()
+          return formatDate(date.toISOString())
         },
         filterFn: 'includesString',
       },
@@ -146,7 +195,7 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
               <Eye className="w-4 h-4 mr-1" /> Podgląd
             </Button>
             <Button
-              variant="secondary"
+              variant="outline"
               size="sm"
               onClick={(e) => {
                 e.stopPropagation()
@@ -157,7 +206,7 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
               <Pencil className="w-4 h-4 mr-1" /> Edytuj
             </Button>
             <Button
-              variant="secondary"
+              variant="outline"
               size="sm"
               onClick={(e) => {
                 e.stopPropagation()
@@ -166,6 +215,17 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
               }}
             >
               <Stethoscope className="w-4 h-4 mr-1" /> Medyczne
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                setSelectedAnimal(row.original)
+                setOpenEventsModal(true)
+              }}
+            >
+              <Calendar className="w-4 h-4 mr-1" /> Wydarzenia
             </Button>
           </div>
         ),
@@ -176,31 +236,13 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
     [],
   )
 
-  // FETCH EFFECT for mock api
-  React.useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    mockAnimalApi({ page: pageIndex, pageSize, search: globalFilter }).then(
-      (res) => {
-        if (!cancelled) {
-          setPageData(res.data)
-          setTotal(res.total)
-          setLoading(false)
-        }
-      },
-    )
-    return () => {
-      cancelled = true
-    }
-  }, [globalFilter, pageIndex, pageSize])
-
   // Reset to first page on search change
   React.useEffect(() => {
-    setPageIndex(0)
-  }, [globalFilter])
+    setPage(1)
+  }, [debouncedGlobalFilter])
 
   const table = useReactTable({
-    data: pageData,
+    data: animalsPage?.items || [],
     columns,
     state: {
       globalFilter,
@@ -208,28 +250,25 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
     },
     enableMultiRowSelection: true,
     onGlobalFilterChange: setGlobalFilter,
-    getRowId: (row) => row.animalId.toString(),
+    getRowId: (row) => row.id.toString(),
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
-    pageCount: Math.ceil(total / pageSize),
+    pageCount: totalPages,
   })
 
   const handleGetSelectedIds = () => {
     const selectedRows = table.getState().rowSelection
     const selectedIds = Object.keys(selectedRows).map((key) => Number(key))
 
-    if (onGetSelectedIds) {
-      onGetSelectedIds(selectedIds)
-    } else {
-      alert(`Selected animal IDs: ${selectedIds.join(', ')}`)
-    }
+    // TODO: Implement selected IDs action
+    console.log('Selected animal IDs:', selectedIds)
   }
 
   const selectedCount = Object.keys(table.getState().rowSelection).length
 
   return (
-    <div className="space-y-4 max-w-[1440px] mx-auto">
+    <div className="space-y-4 max-w-[1440px] mx-auto px-4 md:px-0">
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <Input
           placeholder="Szukaj zwierząt..."
@@ -262,10 +301,16 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
           >
             Pobierz zaznaczone ID
           </Button>
+          <Button
+            onClick={() => setOpenAddModal(true)}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+          >
+            <Plus className="size-5" /> Dodaj zwierzę
+          </Button>
         </div>
       </div>
 
-      <div className="rounded-md border">
+      <div className="rounded-md border max-w-[1440px] w-full overflow-x-auto">
         <table className="w-full">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -299,7 +344,7 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
                       key={cell.id}
                       className="px-4 py-3 align-middle [&:has([role=checkbox])]:pr-0"
                     >
-                      {!loading ? (
+                      {!isLoading ? (
                         flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext(),
@@ -323,11 +368,12 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
       </div>
 
       <div className="flex items-center justify-end space-x-2 py-2">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-wrap">
           <label className="text-sm">Wierszy na stronę:</label>
           <Select
             value={pageSize.toString()}
             onValueChange={(value) => {
+              setPage(1)
               setPageSize(Number(value))
               window.scrollTo({ top: 0, behavior: 'instant' })
             }}
@@ -346,20 +392,16 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setPageIndex((i) => Math.max(0, i - 1))}
-            disabled={pageIndex === 0 || loading}
+            onClick={() => setPage((i) => Math.max(1, i - 1))}
+            disabled={page === 1 || isLoading}
           >
             Poprzednia
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() =>
-              setPageIndex((i) =>
-                Math.min(Math.ceil(total / pageSize) - 1, i + 1),
-              )
-            }
-            disabled={pageIndex >= Math.ceil(total / pageSize) - 1 || loading}
+            onClick={() => setPage((i) => i + 1)}
+            disabled={page === totalPages || isLoading}
           >
             Następna
           </Button>
@@ -368,7 +410,7 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
       {/* View Modal */}
       {selectedAnimal && (
         <AnimalViewTab
-          animal={selectedAnimal}
+          animalId={selectedAnimal.id}
           open={openViewModal && !!selectedAnimal}
           onClose={() => setOpenViewModal(false)}
         />
@@ -376,8 +418,8 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
 
       {/* Edit Modal */}
       {selectedAnimal && (
-        <AnimalEditTab
-          animal={selectedAnimal}
+        <AnimalEditTabWrapper
+          animalId={selectedAnimal.id}
           open={openEditModal && !!selectedAnimal}
           onClose={() => setOpenEditModal(false)}
         />
@@ -385,12 +427,27 @@ function AnimalTable({ onGetSelectedIds }: AnimalTableProps) {
 
       {/* Medical Modal */}
       {selectedAnimal && (
-        <AnimalMedicalNotesTab
-          animalId={selectedAnimal.animalId}
+        <AnimalHealthRecordsTab
+          animalId={selectedAnimal.id}
           open={openMedicalModal && !!selectedAnimal}
           onClose={() => setOpenMedicalModal(false)}
         />
       )}
+
+      {/* Events Modal */}
+      {selectedAnimal && (
+        <AnimalEventsTab
+          animalId={selectedAnimal.id}
+          open={openEventsModal && !!selectedAnimal}
+          onClose={() => setOpenEventsModal(false)}
+        />
+      )}
+
+      {/* Add Animal Modal */}
+      <AddAnimalModal
+        open={openAddModal}
+        onClose={() => setOpenAddModal(false)}
+      />
     </div>
   )
 }

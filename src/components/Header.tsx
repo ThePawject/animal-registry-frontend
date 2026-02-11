@@ -22,10 +22,12 @@ export default function Header({ shelterName }: HeaderProps) {
             <Link to="/" className="flex gap-2 items-center">
               <img
                 src="./animal-shelter-logo.png"
-                alt="Schronisko dla zwierząt"
+                alt="Elektroniczny Rejestr Zwierząt"
                 className="h-10"
               />
-              {shelterName ? `Panel ${shelterName}` : 'Panel Schroniska'}
+              {shelterName
+                ? `Panel ${shelterName}`
+                : 'Elektroniczny Rejestr Zwierząt'}
             </Link>
           </h1>
           <div className="ml-auto space-x-4 flex items-center justify-center min-w-[100px]">
@@ -52,7 +54,6 @@ export default function Header({ shelterName }: HeaderProps) {
             ) : isAuthenticated ? (
               <Button
                 variant="secondary"
-                className="cursor-pointer"
                 onClick={() => {
                   logout({
                     logoutParams: { returnTo: getOriginHomePage() || '' },

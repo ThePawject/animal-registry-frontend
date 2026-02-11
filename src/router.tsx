@@ -1,6 +1,5 @@
 import { createRouter } from '@tanstack/react-router'
 import * as TanstackQuery from './integrations/tanstack-query/root-provider'
-
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
 
@@ -16,6 +15,13 @@ export const getRouter = () => {
     },
 
     defaultPreload: 'intent',
+    Wrap: ({ children }) => {
+      return (
+        <TanstackQuery.Provider queryClient={rqContext.queryClient}>
+          {children}
+        </TanstackQuery.Provider>
+      )
+    },
   })
 
   return router

@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - feature/publish-pipe
   workflow_dispatch:
 
 permissions:
@@ -57,13 +56,16 @@ jobs:
       - name: Build
         run: pnpm run build
 
+      - name: Create 404.html
+        run: cp dist/client/index.html dist/client/404.html
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
+          path: ./dist/client
 
       - name: Deploy to GitHub Pages
         id: deployment

@@ -8,6 +8,7 @@ import { useUserInfo } from '@/hooks/useUserInfo'
 import LoginModal from '@/components/LoginModal'
 import { NoAccess } from '@/components/NoAccess'
 import { getAuthorizationParams } from '@/lib/utils'
+import { useAxiosWithAuth } from '@/api/useAxiosWithAuth'
 
 export const Route = createFileRoute('/')({
   component: App,
@@ -18,24 +19,28 @@ function App() {
   const { isAuthenticated, getAccessTokenWithPopup, isLoading } = useAuth0()
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [roles, setRoles] = useState<Array<string>>([])
-  const handleGetSelectedIds = (ids: Array<number>) => {
-    // Here you would make your future API call
-    alert(`Ready to send ${ids.length} animal IDs to API: ${ids.join(', ')}`)
-  }
 
-  const { shelterName } = useUserInfo({ setIsLoginModalOpen, setRoles })
+  const { shelterName, isLoadingRoles } = useUserInfo({
+    setIsLoginModalOpen,
+    isLoginModalOpen,
+    setRoles,
+  })
+  useAxiosWithAuth({ setIsLoginModalOpen })
+
+  const showNoAccessPage =
+    !isLoadingRoles && roles.length === 0 && !isLoginModalOpen && !isLoading
 
   return (
     <div className="">
       {!isAuthenticated ? (
         <LoginPage />
-      ) : roles.length === 0 ? (
+      ) : showNoAccessPage ? (
         <NoAccess />
       ) : (
         <div className="flex flex-col gap-16">
           <Header shelterName={shelterName} />
           <div className="container mx-auto">
-            <AnimalTable onGetSelectedIds={handleGetSelectedIds} />
+            <AnimalTable />
           </div>
         </div>
       )}
@@ -45,7 +50,9 @@ function App() {
         onClick={() => {
           getAccessTokenWithPopup({
             authorizationParams: getAuthorizationParams(),
-          }).then(() => setIsLoginModalOpen(false))
+          }).then(() => {
+            setIsLoginModalOpen(false)
+          })
         }}
         loading={isLoading}
       />
