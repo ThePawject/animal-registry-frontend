@@ -1,26 +1,31 @@
 import { URL, fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
-import { devtools } from '@tanstack/devtools-vite'
 import viteReact from '@vitejs/plugin-react'
 import viteTsConfigPaths from 'vite-tsconfig-paths'
-import { tanstackStart } from '@tanstack/react-start/plugin/vite'
+import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
 
 import tailwindcss from '@tailwindcss/vite'
 
 const config = defineConfig({
+  base: '/animal-registry-frontend',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
   plugins: [
+<<<<<<< Updated upstream
     tanstackStart({
       spa: {
         enabled: true,
         prerender: { crawlLinks: true, outputPath: 'index.html' },
       },
+=======
+    TanStackRouterVite({
+      target: 'react',
+      autoCodeSplitting: true,
+>>>>>>> Stashed changes
     }),
-    devtools(),
     viteTsConfigPaths({
       projects: ['./tsconfig.json'],
     }),
