@@ -15,7 +15,10 @@ const config = defineConfig({
   },
   plugins: [
     tanstackStart({
-      prerender: { crawlLinks: true, outputPath: 'index.html' },
+      spa: {
+        enabled: true,
+        prerender: { crawlLinks: true, outputPath: 'index.html' },
+      },
     }),
     devtools(),
     viteTsConfigPaths({
