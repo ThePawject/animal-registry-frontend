@@ -27,7 +27,9 @@ export function getShelterName(
   const shelterName = roles.find((role: string) =>
     role.startsWith('Shelter_Access_'),
   )
-  return shelterName ? shelterName.replace('Shelter_Access_', '') : null
+  return shelterName
+    ? shelterName.replace('Shelter_Access_', '').replace(/_/g, ' ')
+    : null
 }
 
 export function getRoles(decodedToken: Record<string, any>): Array<string> {
