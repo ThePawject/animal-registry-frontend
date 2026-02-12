@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useAuth0 } from '@auth0/auth0-react'
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import AnimalTable from '@/components/AnimalTable'
 import LoginPage from '@/components/LoginPage'
 import Header from '@/components/Header'
@@ -19,6 +20,7 @@ function App() {
   const { isAuthenticated, getAccessTokenWithPopup, isLoading } = useAuth0()
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [roles, setRoles] = useState<Array<string>>([])
+  const queryClient = useQueryClient()
 
   const { shelterName, isLoadingRoles } = useUserInfo({
     setIsLoginModalOpen,
@@ -51,6 +53,7 @@ function App() {
           getAccessTokenWithPopup({
             authorizationParams: getAuthorizationParams(),
           }).then(() => {
+            queryClient.invalidateQueries()
             setIsLoginModalOpen(false)
           })
         }}
