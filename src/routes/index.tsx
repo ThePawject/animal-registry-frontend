@@ -13,7 +13,6 @@ import { useAxiosWithAuth } from '@/api/useAxiosWithAuth'
 
 export const Route = createFileRoute('/')({
   component: App,
-  ssr: false,
 })
 
 function App() {
