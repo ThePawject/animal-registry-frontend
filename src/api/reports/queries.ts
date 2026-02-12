@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import { reportsService } from './conversations'
+import type { ReportDateRangeParams, ReportSelectedParams } from './types'
 
 interface ReportsData {
   blob: Blob
