@@ -67,7 +67,7 @@ function AnimalTable() {
     wait: 500,
   })
 
-  const { data: animalsPage, isLoading } = useAnimals({
+  const { data: animalsPage, isPending } = useAnimals({
     keyWordSearch: debouncedGlobalFilter,
     page: page,
     pageSize,
@@ -445,7 +445,17 @@ function AnimalTable() {
             ))}
           </thead>
           <tbody>
-            {table.getRowModel().rows.length ? (
+            {isPending ? (
+              Array.from({ length: pageSize }).map((_, index) => (
+                <tr key={`skeleton-${index}`} className="border-b">
+                  {columns.map((_, colIndex) => (
+                    <td key={`skeleton-cell-${colIndex}`} className="px-4 py-3">
+                      <Skeleton className="h-10 w-full" />
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
                 <tr
                   key={row.id}
@@ -454,13 +464,9 @@ function AnimalTable() {
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-4 py-3 align-middle">
-                      {!isLoading ? (
-                        flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )
-                      ) : (
-                        <Skeleton className="h-10 w-full" />
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
                       )}
                     </td>
                   ))}
@@ -503,7 +509,7 @@ function AnimalTable() {
             variant="outline"
             size="sm"
             onClick={() => setPage((i) => Math.max(1, i - 1))}
-            disabled={page === 1 || isLoading}
+            disabled={page === 1 || isPending}
           >
             Poprzednia
           </Button>
@@ -511,7 +517,7 @@ function AnimalTable() {
             variant="outline"
             size="sm"
             onClick={() => setPage((i) => i + 1)}
-            disabled={page === totalPages || isLoading}
+            disabled={page === totalPages || isPending}
           >
             Następna
           </Button>

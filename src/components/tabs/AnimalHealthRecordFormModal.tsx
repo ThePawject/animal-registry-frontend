@@ -1,6 +1,7 @@
 import React from 'react'
 import { Calendar, FileText, XIcon } from 'lucide-react'
 import { useForm, useStore } from '@tanstack/react-form'
+import { Textarea } from '../ui/textarea'
 import type { AnimalHealthRecord } from '@/api/animals/types'
 import {
   useAddAnimalHealthRecord,
@@ -192,11 +193,12 @@ export default function AnimalHealthRecordFormModal({
                       label="Opis"
                       error={field.state.meta.errors[0]}
                     >
-                      <Input
+                      <Textarea
+                        maxLength={500}
                         value={field.state.value}
                         onChange={(e) => field.handleChange(e.target.value)}
                         id="Opis"
-                        className="bg-background"
+                        className="bg-background wrap-anywhere"
                         placeholder="Wpisz opis"
                       />
                     </FormField>

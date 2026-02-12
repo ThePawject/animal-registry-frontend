@@ -1,6 +1,7 @@
 import React from 'react'
 import { Calendar, FileText, XIcon } from 'lucide-react'
 import { useForm, useStore } from '@tanstack/react-form'
+import { Textarea } from '../ui/textarea'
 import type { AnimalEvent, AnimalEventType } from '@/api/animals/types'
 import { ANIMAL_EVENT_TYPE_MAP } from '@/api/animals/types'
 import { useAddAnimalEvent, useEditAnimalEvent } from '@/api/animals/queries'
@@ -251,12 +252,13 @@ export default function AnimalEventFormModal({
                       label="Opis"
                       error={field.state.meta.errors[0]}
                     >
-                      <Input
+                      <Textarea
+                        maxLength={500}
                         value={field.state.value}
                         onChange={(e) => field.handleChange(e.target.value)}
                         id="Opis"
-                        className="bg-background"
-                        placeholder="Wpisz opis wydarzenia"
+                        className="bg-background wrap-anywhere"
+                        placeholder="Wpisz opis"
                       />
                     </FormField>
                   )
