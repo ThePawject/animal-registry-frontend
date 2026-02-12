@@ -461,6 +461,7 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
                           <Input
                             value={field.state.value}
                             onChange={(e) => field.handleChange(e.target.value)}
+                            disabled
                             id="Oznaczenie"
                             className="bg-background"
                             placeholder="Wpisz oznaczenie"
