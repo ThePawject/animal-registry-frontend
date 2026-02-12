@@ -128,12 +128,12 @@ jobs:
           echo "Resource Group: ${{ vars.RESOURCE_GROUP }}"
           echo "Web App Name: ${{ vars.WEB_APP_NAME }}"
           echo "Checking if the Web App exists..."
-          
+
           APP_EXISTS=$(az webapp show \
             --resource-group ${{ vars.RESOURCE_GROUP }} \
             --name ${{ vars.WEB_APP_NAME }} \
             --query "name" -o tsv 2>/dev/null || echo "")
-          
+
           if [ -z "$APP_EXISTS" ]; then
             echo "❌ Web App does not exist! Exiting..."
             exit 1
@@ -149,7 +149,7 @@ jobs:
             --src-path ${{ env.ZIP_NAME }} \
             --type zip \
             --async false
-          
+
           echo "✅ Deployment completed successfully!"
           echo "🌐 App URL: https://${{ vars.WEB_APP_NAME }}.azurewebsites.net"
 
@@ -196,12 +196,12 @@ jobs:
           echo "Resource Group: ${{ vars.RESOURCE_GROUP }}"
           echo "Web App Name: ${{ vars.WEB_APP_NAME }}"
           echo "Checking if the Web App exists..."
-          
+
           APP_EXISTS=$(az webapp show \
             --resource-group ${{ vars.RESOURCE_GROUP }} \
             --name ${{ vars.WEB_APP_NAME }} \
             --query "name" -o tsv 2>/dev/null || echo "")
-          
+
           if [ -z "$APP_EXISTS" ]; then
             echo "❌ Web App does not exist! Exiting..."
             exit 1
@@ -218,7 +218,7 @@ jobs:
             --resource-group ${{ vars.RESOURCE_GROUP }} \
             --name ${{ vars.WEB_APP_NAME }} \
             --src ${{ env.ZIP_NAME }}
-          
+
           echo "✅ Deployment completed successfully!"
           echo "🌐 App URL: https://${{ vars.WEB_APP_NAME }}.azurewebsites.net"
 
