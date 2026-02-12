@@ -16,9 +16,9 @@ export default function LoginPage() {
         <div className="flex items-center justify-center w-full">
           <div className="max-w-md w-full p-8 bg-white rounded-md shadow-lg flex flex-col items-center">
             <h2 className="text-2xl font-semibold mb-4 text-emerald-800">
-              Witaj w Panelu Elektronicznego Rejestru Zwierząt!
+              MojeSchronisko.pl
             </h2>
-            <p className="text-lg mb-8 text-emerald-700">
+            <p className="text-lg mb-8 text-emerald-700 text-center">
               Zaloguj się, aby otrzymać dostęp do elektronicznego rejestru
               zwierząt.
             </p>

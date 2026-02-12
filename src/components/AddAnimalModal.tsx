@@ -224,6 +224,15 @@ export default function AddAnimalModal({
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
+
+    const imagesOver10MB = files.filter((file) => file.size > 10 * 1024 * 1024)
+    if (imagesOver10MB.length > 0) {
+      alert(
+        `Nie można dodać zdjęć, ponieważ przekraczają one limit 10MB. Proszę wybrać mniejsze pliki.`,
+      )
+      e.target.value = ''
+      return
+    }
     if (files.length + images.length > 10) {
       alert(`Możesz dodać maksymalnie 10 zdjęć.`)
       e.target.value = ''
@@ -512,6 +521,7 @@ export default function AddAnimalModal({
                           error={field.state.meta.errors[0]}
                         >
                           <Input
+                            min="2000-01-01"
                             type="date"
                             value={field.state.value}
                             onChange={(e) => field.handleChange(e.target.value)}
