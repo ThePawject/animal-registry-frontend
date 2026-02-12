@@ -20,10 +20,13 @@ on:
 permissions:
   contents: read
   id-token: write
+  pull-requests: write
 
 env:
   NODE_VERSION: '22'
-  ZIP_NAME: animal-registry-frontend.zip
+  APP_LOCATION: '/'
+  API_LOCATION: ''
+  OUTPUT_LOCATION: 'dist/client'
 
 jobs:
   # ============================================
@@ -76,18 +79,11 @@ jobs:
       - name: Check Prettier formatting
         run: pnpm exec prettier --check .
 
-      - name: Create ZIP package
-        run: |
-          cd dist/client
-          zip -r ../../${{ env.ZIP_NAME }} .
-          cd ../..
-          ls -lh ${{ env.ZIP_NAME }}
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: animal-registry-frontend
-          path: ${{ env.ZIP_NAME }}
+          path: ${{ env.OUTPUT_LOCATION }}
           retention-days: 7
 
   # ============================================
@@ -103,59 +99,24 @@ jobs:
       (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'azure-dev')
 
     steps:
-      - name: Download artifact
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
           name: animal-registry-frontend
+          path: ${{ env.OUTPUT_LOCATION }}
 
-      - name: Azure Login
-        uses: azure/login@v1
+      - name: Deploy to Azure Static Web Apps
+        uses: Azure/static-web-apps-deploy@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Verify Azure connection
-        run: |
-          echo "Ensuring error handling is active..."
-          set -e
-          echo "Logged in to Azure"
-          echo "Logged in as: $(az account show --query user.name -o tsv)"
-          echo "Subscription: $(az account show --query name -o tsv)"
-
-      - name: Check if Web App exists
-        run: |
-          echo "Ensuring error handling is active..."
-          set -e
-          echo "Resource Group: ${{ vars.RESOURCE_GROUP }}"
-          echo "Web App Name: ${{ vars.WEB_APP_NAME }}"
-          echo "Checking if the Web App exists..."
-
-          APP_EXISTS=$(az webapp show \
-            --resource-group ${{ vars.RESOURCE_GROUP }} \
-            --name ${{ vars.WEB_APP_NAME }} \
-            --query "name" -o tsv 2>/dev/null || echo "")
-
-          if [ -z "$APP_EXISTS" ]; then
-            echo "❌ Web App does not exist! Exiting..."
-            exit 1
-          else
-            echo "✅ Web App exists"
-          fi
-
-      - name: Deploy to Azure Web App
-        run: |
-          az webapp deploy \
-            --resource-group ${{ vars.RESOURCE_GROUP }} \
-            --name ${{ vars.WEB_APP_NAME }} \
-            --src-path ${{ env.ZIP_NAME }} \
-            --type zip \
-            --async false
-
-          echo "✅ Deployment completed successfully!"
-          echo "🌐 App URL: https://${{ vars.WEB_APP_NAME }}.azurewebsites.net"
-
-      - name: Azure Logout
-        if: always()
-        run: az logout
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_DEV }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: 'upload'
+          app_location: ${{ env.APP_LOCATION }}
+          api_location: ${{ env.API_LOCATION }}
+          output_location: ${{ env.OUTPUT_LOCATION }}
 
   # ============================================
   # JOB 3: DEPLOY TO PROD (requires manual approval)
@@ -171,57 +132,21 @@ jobs:
       (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'azure-prod'))
 
     steps:
-      - name: Download artifact
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
           name: animal-registry-frontend
+          path: ${{ env.OUTPUT_LOCATION }}
 
-      - name: Azure Login
-        uses: azure/login@v1
+      - name: Deploy to Azure Static Web Apps (Prod)
+        uses: Azure/static-web-apps-deploy@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Verify Azure connection
-        run: |
-          echo "Ensuring error handling is active..."
-          set -e
-          echo "Logged in to Azure"
-          echo "Logged in as: $(az account show --query user.name -o tsv)"
-          echo "Subscription: $(az account show --query name -o tsv)"
-
-      - name: Check if Web App exists
-        run: |
-          echo "Ensuring error handling is active..."
-          set -e
-          echo "Resource Group: ${{ vars.RESOURCE_GROUP }}"
-          echo "Web App Name: ${{ vars.WEB_APP_NAME }}"
-          echo "Checking if the Web App exists..."
-
-          APP_EXISTS=$(az webapp show \
-            --resource-group ${{ vars.RESOURCE_GROUP }} \
-            --name ${{ vars.WEB_APP_NAME }} \
-            --query "name" -o tsv 2>/dev/null || echo "")
-
-          if [ -z "$APP_EXISTS" ]; then
-            echo "❌ Web App does not exist! Exiting..."
-            exit 1
-          else
-            echo "✅ Web App exists"
-          fi
-
-      - name: Deploy to Azure Web App
-        run: |
-          echo "Ensuring error handling is active..."
-          set -e
-          echo "Deploying to ${{ vars.WEB_APP_NAME }}..."
-          az webapp deployment source config-zip \
-            --resource-group ${{ vars.RESOURCE_GROUP }} \
-            --name ${{ vars.WEB_APP_NAME }} \
-            --src ${{ env.ZIP_NAME }}
-
-          echo "✅ Deployment completed successfully!"
-          echo "🌐 App URL: https://${{ vars.WEB_APP_NAME }}.azurewebsites.net"
-
-      - name: Azure Logout
-        if: always()
-        run: az logout
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_PROD }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: 'upload'
+          app_location: ${{ env.APP_LOCATION }}
+          api_location: ${{ env.API_LOCATION }}
+          output_location: ${{ env.OUTPUT_LOCATION }}
