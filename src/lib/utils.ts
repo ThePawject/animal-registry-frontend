@@ -43,12 +43,12 @@ export const origin =
 
 export function getOriginHomePage() {
   if (!origin) return null
-  return `${origin}/animal-registry-frontend/`
+  return `${origin}`
 }
 
 export function getOriginNoAccessPage() {
   if (!origin) return null
-  return `${origin}/animal-registry-frontend/no-access`
+  return `${origin}no-access`
 }
 
 export function getAuthorizationParams() {
