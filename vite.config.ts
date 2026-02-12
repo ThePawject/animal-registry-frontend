@@ -15,14 +15,7 @@ const config = defineConfig({
     },
   },
   plugins: [
-    tanstackStart({
-      spa: {
-        enabled: true,
-        prerender: {
-          enabled: false,
-        },
-      },
-    }),
+    tanstackStart({}),
     devtools(),
     viteTsConfigPaths({
       projects: ['./tsconfig.json'],
