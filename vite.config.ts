@@ -3,8 +3,7 @@ import { defineConfig } from 'vite'
 import { devtools } from '@tanstack/devtools-vite'
 import viteReact from '@vitejs/plugin-react'
 import viteTsConfigPaths from 'vite-tsconfig-paths'
-import { tanstackStart } from '@tanstack/react-start/plugin/vite'
-
+import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
 import tailwindcss from '@tailwindcss/vite'
 
 const config = defineConfig({
@@ -14,11 +13,9 @@ const config = defineConfig({
     },
   },
   plugins: [
-    tanstackStart({
-      spa: {
-        enabled: true,
-        prerender: { crawlLinks: true, outputPath: 'index.html' },
-      },
+    TanStackRouterVite({
+      target: 'react',
+      autoCodeSplitting: true,
     }),
     devtools(),
     viteTsConfigPaths({

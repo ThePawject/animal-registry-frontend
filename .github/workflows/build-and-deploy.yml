@@ -26,7 +26,7 @@ env:
   NODE_VERSION: '22'
   APP_LOCATION: '/'
   API_LOCATION: ''
-  OUTPUT_LOCATION: 'dist/client'
+  OUTPUT_LOCATION: 'dist'
 
 jobs:
   # ============================================
