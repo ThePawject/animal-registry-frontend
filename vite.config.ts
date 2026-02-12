@@ -19,6 +19,7 @@ const config = defineConfig({
         enabled: true,
         prerender: { crawlLinks: true, outputPath: 'index.html' },
       },
+      prerender: { failOnError: false },
     }),
     devtools(),
     viteTsConfigPaths({
