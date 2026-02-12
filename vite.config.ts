@@ -18,7 +18,9 @@ const config = defineConfig({
     tanstackStart({
       spa: {
         enabled: true,
-        prerender: { crawlLinks: false, outputPath: 'index.html' },
+        prerender: {
+            enabled: false,
+          }
       },
     }),
     devtools(),
