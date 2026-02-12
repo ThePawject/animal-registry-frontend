@@ -94,6 +94,11 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     environment: azure-dev
+    env:
+      VITE_AUTH0_DOMAIN: ${{ vars.VITE_AUTH0_DOMAIN }}
+      VITE_AUTH0_CLIENT_ID: ${{ vars.VITE_AUTH0_CLIENT_ID }}
+      VITE_AUTH0_REDIRECT_URI: ${{ vars.VITE_AUTH0_REDIRECT_URI }}
+      VITE_BACKEND_URL: ${{ vars.VITE_BACKEND_URL }}
     if: |
       (github.event_name == 'push' && github.ref == 'refs/heads/main') || 
       (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'azure-dev')
@@ -117,7 +122,6 @@ jobs:
           app_location: ${{ env.APP_LOCATION }}
           api_location: ${{ env.API_LOCATION }}
           output_location: ${{ env.OUTPUT_LOCATION }}
-          skip_app_build: true
 
   # ============================================
   # JOB 3: DEPLOY TO PROD (requires manual approval)
@@ -151,4 +155,3 @@ jobs:
           app_location: ${{ env.APP_LOCATION }}
           api_location: ${{ env.API_LOCATION }}
           output_location: ${{ env.OUTPUT_LOCATION }}
-          skip_app_build: true
