@@ -4,7 +4,14 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { Calendar, Eye, Pencil, Plus, Stethoscope } from 'lucide-react'
+import {
+  Calendar,
+  Eye,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  Stethoscope,
+} from 'lucide-react'
 import { useDebouncedValue } from '@tanstack/react-pacer'
 import AnimalViewTab from './tabs/AnimalViewTab'
 import AnimalEventsTab from './tabs/AnimalEventsTab'
@@ -27,6 +34,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { useAnimals } from '@/api/animals/queries'
 import { formatDate } from '@/lib/utils'
 import {
@@ -140,16 +153,27 @@ function AnimalTable() {
             </div>
           )
         },
+        meta: {
+          width: '100px',
+        },
       },
       {
         accessorKey: 'signature',
         header: 'Oznaczenie',
-        cell: (info) => info.getValue(),
+        cell: (info) => (
+          <div className="max-w-[100px] truncate">
+            {info.getValue() as string}
+          </div>
+        ),
       },
       {
         accessorKey: 'name',
         header: 'Imię',
-        cell: (info) => info.getValue(),
+        cell: (info) => (
+          <div className="max-w-[200px] truncate">
+            {info.getValue() as string}
+          </div>
+        ),
       },
       {
         accessorKey: 'species',
@@ -160,7 +184,11 @@ function AnimalTable() {
             1: 'Pies',
             2: 'Kot',
           }
-          return speciesMap[info.getValue() as number] || 'Nieznany'
+          return (
+            <div className="max-w-[100px] truncate">
+              {speciesMap[info.getValue() as number] || 'Nieznany'}
+            </div>
+          )
         },
       },
       {
@@ -172,13 +200,21 @@ function AnimalTable() {
             1: 'Samiec',
             2: 'Samica',
           }
-          return sexMap[info.getValue() as number] || 'Nieznana'
+          return (
+            <div className="max-w-[100px] truncate">
+              {sexMap[info.getValue() as number] || 'Nieznana'}
+            </div>
+          )
         },
       },
       {
         accessorKey: 'color',
         header: 'Umaszczenie',
-        cell: (info) => info.getValue(),
+        cell: (info) => (
+          <div className="max-w-[100px] truncate">
+            {info.getValue() as string}
+          </div>
+        ),
       },
       {
         accessorKey: 'birthDate',
@@ -189,7 +225,18 @@ function AnimalTable() {
           const ageDate = new Date(ageDifMs)
           const years = Math.abs(ageDate.getUTCFullYear() - 1970)
           const months = ageDate.getUTCMonth()
-          return `${years} lat${months > 0 ? ` ${months} mies.` : ''}`
+          const weeks = Math.floor(ageDate.getUTCDate() / 7)
+          const getAgeString = () => {
+            if (years === 0 && months === 0 && weeks === 0)
+              return 'Mniej niż tydzień'
+            if (years === 0 && months === 0) return `${weeks} tyg.`
+            if (years === 0)
+              return `${months} mies. ${weeks > 0 ? `${weeks} tyg.` : ''}`
+            if (years > 0 && months > 0) return `${years} lat ${months} mies.`
+            return `${years} lat`
+          }
+
+          return <div className="max-w-fit">{getAgeString()}</div>
         },
         filterFn: 'includesString',
       },
@@ -199,15 +246,17 @@ function AnimalTable() {
         cell: (info) => {
           const isInShelter = info.getValue() as boolean
           return (
-            <span
-              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                isInShelter
-                  ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
-                  : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
-              }`}
-            >
-              {isInShelter ? 'Aktywny' : 'Nieaktywny'}
-            </span>
+            <div className="max-w-[100px] truncate">
+              <span
+                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  isInShelter
+                    ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
+                    : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
+                }`}
+              >
+                {isInShelter ? 'Aktywny' : 'Nieaktywny'}
+              </span>
+            </div>
           )
         },
         filterFn: 'includesString',
@@ -217,7 +266,11 @@ function AnimalTable() {
         header: 'Data przyjęcia',
         cell: (info) => {
           const date = new Date(info.getValue() as string)
-          return formatDate(date.toISOString())
+          return (
+            <div className="max-w-[100px] truncate">
+              {formatDate(date.toISOString())}
+            </div>
+          )
         },
         filterFn: 'includesString',
       },
@@ -226,52 +279,59 @@ function AnimalTable() {
         id: 'actions',
         header: 'Akcje',
         cell: ({ row }) => (
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                setSelectedAnimal(row.original)
-                setOpenViewModal(true)
-              }}
-            >
-              <Eye className="w-4 h-4 mr-1" /> Podgląd
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                setSelectedAnimal(row.original)
-                setOpenEditModal(true)
-              }}
-            >
-              <Pencil className="w-4 h-4 mr-1" /> Edytuj
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                setSelectedAnimal(row.original)
-                setOpenMedicalModal(true)
-              }}
-            >
-              <Stethoscope className="w-4 h-4 mr-1" /> Medyczne
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                setSelectedAnimal(row.original)
-                setOpenEventsModal(true)
-              }}
-            >
-              <Calendar className="w-4 h-4 mr-1" /> Wydarzenia
-            </Button>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MoreHorizontal className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setSelectedAnimal(row.original)
+                  setOpenViewModal(true)
+                }}
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                Podgląd
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setSelectedAnimal(row.original)
+                  setOpenEditModal(true)
+                }}
+              >
+                <Pencil className="w-4 h-4 mr-2" />
+                Edytuj
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setSelectedAnimal(row.original)
+                  setOpenMedicalModal(true)
+                }}
+              >
+                <Stethoscope className="w-4 h-4 mr-2" />
+                Medyczne
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setSelectedAnimal(row.original)
+                  setOpenEventsModal(true)
+                }}
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                Wydarzenia
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         ),
         enableSorting: false,
         enableHiding: false,
