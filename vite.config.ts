@@ -14,17 +14,9 @@ const config = defineConfig({
     },
   },
   plugins: [
-<<<<<<< Updated upstream
-    tanstackStart({
-      spa: {
-        enabled: true,
-        prerender: { crawlLinks: true, outputPath: 'index.html' },
-      },
-=======
     TanStackRouterVite({
       target: 'react',
       autoCodeSplitting: true,
->>>>>>> Stashed changes
     }),
     viteTsConfigPaths({
       projects: ['./tsconfig.json'],
