@@ -116,10 +116,11 @@ function FormField({ icon: Icon, label, children, error }: FormFieldProps) {
 }
 
 const mapAnimalToFormData = (animal: AnimalById): EditAnimalForm => {
-  const { photos, mainPhotoId, ...rest } = animal
+  const { photos, mainPhotoId, birthDate, ...rest } = animal
 
   return {
     photos: photos,
+    birthDate: birthDate.split('T')[0],
     mainPhotoId: mainPhotoId,
     mainPhotoIndex: null,
     ...rest,
@@ -301,6 +302,15 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
+    const imagesOver10MB = files.filter((file) => file.size > 10 * 1024 * 1024)
+
+    if (imagesOver10MB.length > 0) {
+      alert(
+        `Nie można dodać ${imagesOver10MB.length} zdjęć, ponieważ przekraczają one limit 10MB. Proszę wybrać mniejsze pliki.`,
+      )
+      e.target.value = ''
+      return
+    }
     if (files.length + images.length > 10) {
       alert(`Możesz dodać maksymalnie 10 zdjęć.`)
       e.target.value = ''
@@ -409,6 +419,13 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
                 <div className="space-y-6 py-6">
                   <form.Field
                     name="name"
+                    validators={{
+                      onChange: ({ value }) => {
+                        return !value || value.trim().length < 2
+                          ? 'Imię musi mieć conajmniej 2 znaki'
+                          : undefined
+                      },
+                    }}
                     children={(field) => {
                       return (
                         <FormField
@@ -429,6 +446,11 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
                   />
                   <form.Field
                     name="signature"
+                    validators={{
+                      onChange: ({ value }) => {
+                        return !value ? 'Oznaczenie jest wymagane' : undefined
+                      },
+                    }}
                     children={(field) => {
                       return (
                         <FormField
@@ -450,6 +472,11 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
 
                   <form.Field
                     name="transponderCode"
+                    validators={{
+                      onChange: ({ value }) => {
+                        return !value ? 'Numer chipa jest wymagany' : undefined
+                      },
+                    }}
                     children={(field) => {
                       return (
                         <FormField
@@ -471,6 +498,11 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
 
                   <form.Field
                     name="species"
+                    validators={{
+                      onChange: ({ value }) => {
+                        return value === 0 ? 'Gatunek jest wymagany' : undefined
+                      },
+                    }}
                     children={(field) => {
                       return (
                         <FormField
@@ -502,6 +534,11 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
 
                   <form.Field
                     name="sex"
+                    validators={{
+                      onChange: ({ value }) => {
+                        return value === 0 ? 'Płeć jest wymagana' : undefined
+                      },
+                    }}
                     children={(field) => {
                       return (
                         <FormField
@@ -516,7 +553,7 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
                             }
                           >
                             <SelectTrigger className="bg-background w-full">
-                              <SelectValue placeholder="Wybierz gatunek" />
+                              <SelectValue placeholder="Wybierz płeć" />
                             </SelectTrigger>
                             <SelectContent>
                               {SEX_OPTIONS.map((opt) => (
@@ -532,6 +569,11 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
                   />
                   <form.Field
                     name="color"
+                    validators={{
+                      onChange: ({ value }) => {
+                        return !value ? 'Umaszczenie jest wymagane' : undefined
+                      },
+                    }}
                     children={(field) => {
                       return (
                         <FormField
@@ -553,6 +595,16 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
 
                   <form.Field
                     name="birthDate"
+                    validators={{
+                      onChange: ({ value }) => {
+                        if (!value) return 'Data urodzenia jest wymagana'
+                        const birthDate = new Date(value)
+                        const today = new Date()
+                        if (birthDate > today)
+                          return 'Data urodzenia nie może być z przyszłości'
+                        return undefined
+                      },
+                    }}
                     children={(field) => {
                       return (
                         <FormField
@@ -561,6 +613,7 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
                           error={field.state.meta.errors[0]}
                         >
                           <Input
+                            min="2000-01-01"
                             type="date"
                             value={field.state.value}
                             onChange={(e) => field.handleChange(e.target.value)}

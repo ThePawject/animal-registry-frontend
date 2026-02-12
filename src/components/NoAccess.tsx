@@ -30,7 +30,7 @@ export function NoAccess() {
               className="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white"
               size="lg"
               onClick={() => {
-                logout()
+                logout({ logoutParams: { returnTo: window.location.origin } })
               }}
               disabled={isLoading}
             >

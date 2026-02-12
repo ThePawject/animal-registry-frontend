@@ -75,6 +75,9 @@ export const reportsService = {
     try {
       const response = await apiClient.get('reports/animals/selected', {
         params,
+        paramsSerializer: {
+          indexes: null,
+        },
         responseType: 'blob',
       })
 
