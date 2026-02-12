@@ -1,0 +1,227 @@
+name: build-and-deploy.yml
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - azure-dev
+          - azure-prod
+        default: 'azure-dev'
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  NODE_VERSION: '22'
+  ZIP_NAME: animal-registry-frontend.zip
+
+jobs:
+  # ============================================
+  # JOB 1: BUILD AND TEST
+  # ============================================
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    env:
+      VITE_AUTH0_DOMAIN: ${{ vars.VITE_AUTH0_DOMAIN }}
+      VITE_AUTH0_CLIENT_ID: ${{ vars.VITE_AUTH0_CLIENT_ID }}
+      VITE_AUTH0_REDIRECT_URI: ${{ vars.VITE_AUTH0_REDIRECT_URI }}
+      VITE_BACKEND_URL: ${{ vars.VITE_BACKEND_URL }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Setup Node ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store/v3
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Typecheck
+        run: pnpm exec tsc --noEmit
+
+      - name: Check Prettier formatting
+        run: pnpm exec prettier --check .
+
+      - name: Create ZIP package
+        run: |
+          cd dist/client
+          zip -r ../../${{ env.ZIP_NAME }} .
+          cd ../..
+          ls -lh ${{ env.ZIP_NAME }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: animal-registry-frontend
+          path: ${{ env.ZIP_NAME }}
+          retention-days: 7
+
+  # ============================================
+  # JOB 2: DEPLOY TO DEV
+  # ============================================
+  deploy-dev:
+    name: Deploy to Development
+    needs: build
+    runs-on: ubuntu-latest
+    environment: azure-dev
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') || 
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'azure-dev')
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: animal-registry-frontend
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Verify Azure connection
+        run: |
+          echo "Ensuring error handling is active..."
+          set -e
+          echo "Logged in to Azure"
+          echo "Logged in as: $(az account show --query user.name -o tsv)"
+          echo "Subscription: $(az account show --query name -o tsv)"
+
+      - name: Check if Web App exists
+        run: |
+          echo "Ensuring error handling is active..."
+          set -e
+          echo "Resource Group: ${{ vars.RESOURCE_GROUP }}"
+          echo "Web App Name: ${{ vars.WEB_APP_NAME }}"
+          echo "Checking if the Web App exists..."
+
+          APP_EXISTS=$(az webapp show \
+            --resource-group ${{ vars.RESOURCE_GROUP }} \
+            --name ${{ vars.WEB_APP_NAME }} \
+            --query "name" -o tsv 2>/dev/null || echo "")
+
+          if [ -z "$APP_EXISTS" ]; then
+            echo "❌ Web App does not exist! Exiting..."
+            exit 1
+          else
+            echo "✅ Web App exists"
+          fi
+
+      - name: Deploy to Azure Web App
+        run: |
+          az webapp deploy \
+            --resource-group ${{ vars.RESOURCE_GROUP }} \
+            --name ${{ vars.WEB_APP_NAME }} \
+            --src-path ${{ env.ZIP_NAME }} \
+            --type zip \
+            --async false
+
+          echo "✅ Deployment completed successfully!"
+          echo "🌐 App URL: https://${{ vars.WEB_APP_NAME }}.azurewebsites.net"
+
+      - name: Azure Logout
+        if: always()
+        run: az logout
+
+  # ============================================
+  # JOB 3: DEPLOY TO PROD (requires manual approval)
+  # ============================================
+  deploy-prod:
+    name: Deploy to Production
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    environment: azure-prod
+    if: |
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'azure-prod'))
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: animal-registry-frontend
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Verify Azure connection
+        run: |
+          echo "Ensuring error handling is active..."
+          set -e
+          echo "Logged in to Azure"
+          echo "Logged in as: $(az account show --query user.name -o tsv)"
+          echo "Subscription: $(az account show --query name -o tsv)"
+
+      - name: Check if Web App exists
+        run: |
+          echo "Ensuring error handling is active..."
+          set -e
+          echo "Resource Group: ${{ vars.RESOURCE_GROUP }}"
+          echo "Web App Name: ${{ vars.WEB_APP_NAME }}"
+          echo "Checking if the Web App exists..."
+
+          APP_EXISTS=$(az webapp show \
+            --resource-group ${{ vars.RESOURCE_GROUP }} \
+            --name ${{ vars.WEB_APP_NAME }} \
+            --query "name" -o tsv 2>/dev/null || echo "")
+
+          if [ -z "$APP_EXISTS" ]; then
+            echo "❌ Web App does not exist! Exiting..."
+            exit 1
+          else
+            echo "✅ Web App exists"
+          fi
+
+      - name: Deploy to Azure Web App
+        run: |
+          echo "Ensuring error handling is active..."
+          set -e
+          echo "Deploying to ${{ vars.WEB_APP_NAME }}..."
+          az webapp deployment source config-zip \
+            --resource-group ${{ vars.RESOURCE_GROUP }} \
+            --name ${{ vars.WEB_APP_NAME }} \
+            --src ${{ env.ZIP_NAME }}
+
+          echo "✅ Deployment completed successfully!"
+          echo "🌐 App URL: https://${{ vars.WEB_APP_NAME }}.azurewebsites.net"
+
+      - name: Azure Logout
+        if: always()
+        run: az logout
