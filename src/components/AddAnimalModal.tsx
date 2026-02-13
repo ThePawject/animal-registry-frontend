@@ -211,20 +211,26 @@ export default function AddAnimalModal({
     },
   })
 
+  const isDirty = useStore(form.store, (state) => state.isDirty)
+
   // Automatyczne generowanie oznaczenia przy otwarciu formularza
   React.useEffect(() => {
     if (open) {
+      if (!isDirty) form.reset(defaultAnimalFormData)
       getAnimalSignature(undefined, {
         onSuccess: (data) => {
-          // Konwertuj backslash na slash jeśli backend zwraca backslash
           const normalizedSignature = data.signature.replace(/\\/g, '/')
-          form.setFieldValue('signature', normalizedSignature)
+          if (!isDirty) {
+            form.reset({
+              ...defaultAnimalFormData,
+              signature: normalizedSignature,
+            })
+          }
         },
       })
     }
-  }, [open, getAnimalSignature, form])
+  }, [open, getAnimalSignature, form, isDirty])
 
-  const isDirty = useStore(form.store, (state) => state.isDirty)
   const images = useStore(form.store, (state) => state.values.photos)
   const mainPhotoIndex = useStore(
     form.store,
