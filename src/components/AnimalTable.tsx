@@ -465,19 +465,21 @@ function AnimalTable() {
         <div className="flex gap-2 xl:items-center flex-col xl:flex-row w-full xl:justify-end">
           <Button
             variant="outline"
+            title="Wygeneruj PDF z zestawieniem zdarzeń za wybrany okres (Raport-Zdarzen)"
             onClick={() => {
               getReports()
             }}
           >
-            Raport
+            Raport zdarzeń
           </Button>
           <Button
             variant="outline"
             onClick={() => {
               getReportsDump()
             }}
+            title="Eksport tekstowy danych zwierząt do PDF (bez zdjęć)."
           >
-            Caly Raport
+            Raport wszystkie zwierzeta
           </Button>
           <Button
             disabled={selectedCount === 0}
@@ -487,16 +489,20 @@ function AnimalTable() {
                 getReportsBySelectedIds({ ids: selectedIds })
               }
             }}
+            title="PDF zawierający dane i zdjęcia wybranych zwierząt (siatka zdjęć)."
           >
-            Raport dla {selectedCount} zaznaczonych
+            {selectedCount > 0
+              ? `Raport z wybranych zwierzat (${selectedCount})`
+              : 'Raport z wybranych zwierzat'}
           </Button>
           <Button
             variant="outline"
             onClick={() => {
               setOpenDateRangeModal(true)
             }}
+            title="Wygeneruj raport dla zdefiniowanego zakresu dat (miesiąc/kwartał/tydzień)."
           >
-            Raport z zakresu dat
+            Raport zdarzen w zakresie
           </Button>
 
           <Button
