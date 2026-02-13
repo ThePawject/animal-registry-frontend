@@ -1,5 +1,5 @@
 import React from 'react'
-import { Calendar, XIcon } from 'lucide-react'
+import { Calendar, XIcon, LucideLoaderCircle } from 'lucide-react'
 import { useForm } from '@tanstack/react-form'
 import { createAndDownloadReport } from '../AnimalTable'
 import type { ReportDateRangeParams } from '@/api/reports/types'
@@ -56,13 +56,15 @@ export default function DateRangeFilterModal({
   open,
   onClose,
 }: DateRangeFilterModalProps) {
-  const { mutate: getReportsByDateRange, error } = useReportsByDateRange(
-    ({ blob, filename }) => {
-      createAndDownloadReport(blob, filename)
-      form.reset()
-      onClose()
-    },
-  )
+  const {
+    mutate: getReportsByDateRange,
+    isPending: isDateRangePending,
+    error,
+  } = useReportsByDateRange(({ blob, filename }) => {
+    createAndDownloadReport(blob, filename)
+    form.reset()
+    onClose()
+  })
   const form = useForm({
     defaultValues: defaultFormData,
     onSubmit: async ({ value }) => {
@@ -252,8 +254,16 @@ export default function DateRangeFilterModal({
                 <Button
                   type="submit"
                   className="flex-1 h-12 text-lg font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
+                  disabled={isDateRangePending}
                 >
-                  Generuj raport
+                  {isDateRangePending ? (
+                    <>
+                      <LucideLoaderCircle className="w-4 h-4 mr-2 animate-spin" />
+                      Generowanie...
+                    </>
+                  ) : (
+                    'Generuj raport'
+                  )}
                 </Button>
               </div>
               {error && (

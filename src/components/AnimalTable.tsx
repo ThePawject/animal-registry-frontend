@@ -12,6 +12,7 @@ import {
   Pencil,
   Plus,
   Stethoscope,
+  LucideLoaderCircle,
 } from 'lucide-react'
 import { useDebouncedValue } from '@tanstack/react-pacer'
 import AnimalViewTab from './tabs/AnimalViewTab'
@@ -81,14 +82,18 @@ function AnimalTable() {
     pageSize,
   })
 
-  const { mutate: getReports } = useReports(({ blob, filename }) =>
-    createAndDownloadReport(blob, filename),
-  )
-  const { mutate: getReportsDump } = useReportsDump(({ blob, filename }) =>
-    createAndDownloadReport(blob, filename),
-  )
-  const { mutate: getReportsBySelectedIds } = useReportsBySelectedIds(
+  const { mutate: getReports, isPending: isReportsPending } = useReports(
     ({ blob, filename }) => createAndDownloadReport(blob, filename),
+  )
+  const { mutate: getReportsDump, isPending: isReportsDumpPending } =
+    useReportsDump(({ blob, filename }) =>
+      createAndDownloadReport(blob, filename),
+    )
+  const {
+    mutate: getReportsBySelectedIds,
+    isPending: isReportsBySelectedIdsPending,
+  } = useReportsBySelectedIds(({ blob, filename }) =>
+    createAndDownloadReport(blob, filename),
   )
 
   const totalPages = animalsPage
@@ -469,8 +474,13 @@ function AnimalTable() {
             onClick={() => {
               getReports()
             }}
+            disabled={isReportsPending}
           >
-            Raport zdarzeń
+            {isReportsPending ? (
+              <LucideLoaderCircle className="w-4 h-4 animate-spin" />
+            ) : (
+              'Raport zdarzeń'
+            )}
           </Button>
           <Button
             variant="outline"
@@ -478,11 +488,16 @@ function AnimalTable() {
               getReportsDump()
             }}
             title="Eksport tekstowy danych zwierząt do PDF (bez zdjęć)."
+            disabled={isReportsDumpPending}
           >
-            Raport wszystkie zwierzeta
+            {isReportsDumpPending ? (
+              <LucideLoaderCircle className="w-4 h-4 animate-spin" />
+            ) : (
+              'Raport wszystkie zwierzeta'
+            )}
           </Button>
           <Button
-            disabled={selectedCount === 0}
+            disabled={selectedCount === 0 || isReportsBySelectedIdsPending}
             variant="outline"
             onClick={() => {
               if (selectedIds.length > 0) {
@@ -491,9 +506,13 @@ function AnimalTable() {
             }}
             title="PDF zawierający dane i zdjęcia wybranych zwierząt (siatka zdjęć)."
           >
-            {selectedCount > 0
-              ? `Raport z wybranych zwierzat (${selectedCount})`
-              : 'Raport z wybranych zwierzat'}
+            {isReportsBySelectedIdsPending ? (
+              <LucideLoaderCircle className="w-4 h-4 animate-spin" />
+            ) : selectedCount > 0 ? (
+              `Raport z wybranych zwierzat (${selectedCount})`
+            ) : (
+              'Raport z wybranych zwierzat'
+            )}
           </Button>
           <Button
             variant="outline"
