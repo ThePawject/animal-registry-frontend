@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { SignatureInput, validateSignature } from '@/components/SignatureInput'
 
 const SPECIES_OPTIONS = Object.entries(SPECIES_MAP).map(([value, label]) => ({
   value,
@@ -447,9 +448,7 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
                   <form.Field
                     name="signature"
                     validators={{
-                      onChange: ({ value }) => {
-                        return !value ? 'Oznaczenie jest wymagane' : undefined
-                      },
+                      onChange: ({ value }) => validateSignature(value),
                     }}
                     children={(field) => {
                       return (
@@ -458,13 +457,10 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
                           label="Oznaczenie"
                           error={field.state.meta.errors[0]}
                         >
-                          <Input
+                          <SignatureInput
                             value={field.state.value}
-                            onChange={(e) => field.handleChange(e.target.value)}
+                            onChange={(value) => field.handleChange(value)}
                             disabled
-                            id="Oznaczenie"
-                            className="bg-background"
-                            placeholder="Wpisz oznaczenie"
                           />
                         </FormField>
                       )

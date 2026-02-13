@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { SignatureInput, validateSignature } from '@/components/SignatureInput'
 
 const inputUploadAccept = '.jpg,.jpeg,.png,.webp'
 
@@ -210,6 +211,19 @@ export default function AddAnimalModal({
     },
   })
 
+  // Automatyczne generowanie oznaczenia przy otwarciu formularza
+  React.useEffect(() => {
+    if (open) {
+      getAnimalSignature(undefined, {
+        onSuccess: (data) => {
+          // Konwertuj backslash na slash jeśli backend zwraca backslash
+          const normalizedSignature = data.signature.replace(/\\/g, '/')
+          form.setFieldValue('signature', normalizedSignature)
+        },
+      })
+    }
+  }, [open, getAnimalSignature, form])
+
   const isDirty = useStore(form.store, (state) => state.isDirty)
   const images = useStore(form.store, (state) => state.values.photos)
   const mainPhotoIndex = useStore(
@@ -330,50 +344,45 @@ export default function AddAnimalModal({
                   <form.Field
                     name="signature"
                     validators={{
-                      onChange: ({ value }) => {
-                        return !value ? 'Oznaczenie jest wymagane' : undefined
-                      },
+                      onChange: ({ value }) => validateSignature(value),
                     }}
                     children={(field) => {
                       return (
-                        <div className="flex items-end justify-between gap-2 mb-0 w-full">
-                          <FormField
-                            icon={Tag}
-                            label="Oznaczenie"
-                            error={field.state.meta.errors[0]}
-                            className="flex flex-row gap-2 items-center justify-between w-full flex-1 min-w-0"
-                          >
-                            <Input
+                        <FormField
+                          icon={Tag}
+                          label="Oznaczenie"
+                          error={field.state.meta.errors[0]}
+                        >
+                          <div className="flex items-center gap-2">
+                            <SignatureInput
                               value={field.state.value}
-                              onChange={(e) =>
-                                field.handleChange(e.target.value)
-                              }
+                              onChange={(value) => field.handleChange(value)}
                               id="Oznaczenie"
-                              className="bg-background mb-0"
-                              placeholder="Wpisz oznaczenie"
                             />
                             <Button
                               type="button"
                               variant="outline"
-                              className="h-9 w-[200px]"
+                              className="h-9 px-3 text-sm whitespace-nowrap shrink-0"
                               size="sm"
                               onClick={() => {
                                 getAnimalSignature(undefined, {
                                   onSuccess: (data) => {
+                                    const normalizedSignature =
+                                      data.signature.replace(/\\/g, '/')
                                     form.setFieldValue(
                                       'signature',
-                                      data.signature,
+                                      normalizedSignature,
                                     )
                                   },
                                 })
                               }}
                             >
                               {isGettingAnimalSignature
-                                ? 'Ładowanie...'
-                                : 'Generuj unikalne oznaczenie'}
+                                ? 'Generowanie...'
+                                : 'Generuj'}
                             </Button>
-                          </FormField>
-                        </div>
+                          </div>
+                        </FormField>
                       )
                     }}
                   />
