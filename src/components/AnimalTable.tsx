@@ -8,11 +8,11 @@ import {
   Calendar,
   Eye,
   Info,
+  LucideLoaderCircle,
   MoreHorizontal,
   Pencil,
   Plus,
   Stethoscope,
-  LucideLoaderCircle,
 } from 'lucide-react'
 import { useDebouncedValue } from '@tanstack/react-pacer'
 import AnimalViewTab from './tabs/AnimalViewTab'

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Calendar, XIcon, LucideLoaderCircle } from 'lucide-react'
+import { Calendar, LucideLoaderCircle, XIcon } from 'lucide-react'
 import { useForm } from '@tanstack/react-form'
 import { createAndDownloadReport } from '../AnimalTable'
 import type { ReportDateRangeParams } from '@/api/reports/types'
