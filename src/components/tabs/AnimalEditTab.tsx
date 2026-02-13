@@ -460,7 +460,6 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
                           <SignatureInput
                             value={field.state.value}
                             onChange={(value) => field.handleChange(value)}
-                            disabled
                           />
                         </FormField>
                       )
