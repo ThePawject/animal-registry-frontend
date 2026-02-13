@@ -8,6 +8,7 @@ import {
   Calendar,
   Eye,
   Info,
+  LucideLoaderCircle,
   MoreHorizontal,
   Pencil,
   Plus,
@@ -81,14 +82,18 @@ function AnimalTable() {
     pageSize,
   })
 
-  const { mutate: getReports } = useReports(({ blob, filename }) =>
-    createAndDownloadReport(blob, filename),
-  )
-  const { mutate: getReportsDump } = useReportsDump(({ blob, filename }) =>
-    createAndDownloadReport(blob, filename),
-  )
-  const { mutate: getReportsBySelectedIds } = useReportsBySelectedIds(
+  const { mutate: getReports, isPending: isReportsPending } = useReports(
     ({ blob, filename }) => createAndDownloadReport(blob, filename),
+  )
+  const { mutate: getReportsDump, isPending: isReportsDumpPending } =
+    useReportsDump(({ blob, filename }) =>
+      createAndDownloadReport(blob, filename),
+    )
+  const {
+    mutate: getReportsBySelectedIds,
+    isPending: isReportsBySelectedIdsPending,
+  } = useReportsBySelectedIds(({ blob, filename }) =>
+    createAndDownloadReport(blob, filename),
   )
 
   const totalPages = animalsPage
@@ -465,38 +470,58 @@ function AnimalTable() {
         <div className="flex gap-2 xl:items-center flex-col xl:flex-row w-full xl:justify-end">
           <Button
             variant="outline"
+            title="Wygeneruj PDF z zestawieniem zdarzeń za wybrany okres (Raport-Zdarzen)"
             onClick={() => {
               getReports()
             }}
+            disabled={isReportsPending}
           >
-            Raport
+            {isReportsPending ? (
+              <LucideLoaderCircle className="w-4 h-4 animate-spin" />
+            ) : (
+              'Raport zdarzeń'
+            )}
           </Button>
           <Button
             variant="outline"
             onClick={() => {
               getReportsDump()
             }}
+            title="Eksport tekstowy danych zwierząt do PDF (bez zdjęć)."
+            disabled={isReportsDumpPending}
           >
-            Caly Raport
+            {isReportsDumpPending ? (
+              <LucideLoaderCircle className="w-4 h-4 animate-spin" />
+            ) : (
+              'Raport wszystkie zwierzeta'
+            )}
           </Button>
           <Button
-            disabled={selectedCount === 0}
+            disabled={selectedCount === 0 || isReportsBySelectedIdsPending}
             variant="outline"
             onClick={() => {
               if (selectedIds.length > 0) {
                 getReportsBySelectedIds({ ids: selectedIds })
               }
             }}
+            title="PDF zawierający dane i zdjęcia wybranych zwierząt (siatka zdjęć)."
           >
-            Raport dla {selectedCount} zaznaczonych
+            {isReportsBySelectedIdsPending ? (
+              <LucideLoaderCircle className="w-4 h-4 animate-spin" />
+            ) : selectedCount > 0 ? (
+              `Raport z wybranych zwierzat (${selectedCount})`
+            ) : (
+              'Raport z wybranych zwierzat'
+            )}
           </Button>
           <Button
             variant="outline"
             onClick={() => {
               setOpenDateRangeModal(true)
             }}
+            title="Wygeneruj raport dla zdefiniowanego zakresu dat (miesiąc/kwartał/tydzień)."
           >
-            Raport z zakresu dat
+            Raport zdarzen w zakresie
           </Button>
 
           <Button
