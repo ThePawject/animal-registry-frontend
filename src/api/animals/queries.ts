@@ -20,11 +20,20 @@ export const animalsKeys = {
     [...animalsKeys.all, 'list', params] as const,
 }
 
-export const useAnimals = (params: FetchAnimalsParams) =>
+export const defaultAnimalsParams: FetchAnimalsParams = {
+  page: 1,
+  pageSize: 20,
+  keyWordSearch: null,
+}
+
+export const useAnimals = (params: FetchAnimalsParams, disabled?: boolean) =>
   useQuery({
     queryKey: animalsKeys.list(params),
     queryFn: async () => animalsService.getAnimals(params),
     placeholderData: keepPreviousData,
+    refetchOnWindowFocus: false,
+    staleTime: 1000,
+    enabled: !disabled,
   })
 
 export const useAnimalById = (id: string) =>

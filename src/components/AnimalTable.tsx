@@ -47,7 +47,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
-import { useAnimals } from '@/api/animals/queries'
+import { defaultAnimalsParams, useAnimals } from '@/api/animals/queries'
 import { formatDate } from '@/lib/utils'
 import {
   useReports,
@@ -68,9 +68,11 @@ export const createAndDownloadReport = (blob: Blob, filename: string) => {
 const SEARCH_INFO_KEY = 'animal-search-info-dismissed'
 
 function AnimalTable() {
-  const [page, setPage] = React.useState(1)
-  const [globalFilter, setGlobalFilter] = React.useState('')
-  const [pageSize, setPageSize] = React.useState(10)
+  const [page, setPage] = React.useState(defaultAnimalsParams.page)
+  const [globalFilter, setGlobalFilter] = React.useState<string | null>(
+    defaultAnimalsParams.keyWordSearch,
+  )
+  const [pageSize, setPageSize] = React.useState(defaultAnimalsParams.pageSize)
 
   const [debouncedGlobalFilter] = useDebouncedValue(globalFilter, {
     wait: 500,
@@ -405,7 +407,7 @@ function AnimalTable() {
         <div className="flex items-center gap-2 max-w-sm w-full">
           <Input
             placeholder="Szukaj zwierząt..."
-            value={globalFilter}
+            value={globalFilter || ''}
             onChange={(e) => setGlobalFilter(e.target.value)}
             onFocus={handleInputFocus}
             className="md:text-xl h-12 shrink-0 flex-1"
