@@ -10,6 +10,8 @@ import {
   XIcon,
 } from 'lucide-react'
 import { useForm, useStore } from '@tanstack/react-form'
+import { InfoCard } from '../InfoCard'
+import { FormField } from '../FormField'
 import type {
   AnimalById,
   EditAnimal,
@@ -18,12 +20,15 @@ import type {
   Species,
 } from '@/api/animals/types'
 import { SEX_MAP, SPECIES_MAP } from '@/api/animals/types'
-import { useAnimalById, useEditAnimal } from '@/api/animals/queries'
+import {
+  useAnimalById,
+  useAnimalSignature,
+  useEditAnimal,
+} from '@/api/animals/queries'
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { cn, genericErrorMessage } from '@/lib/utils'
 import {
   Select,
@@ -42,13 +47,6 @@ const SEX_OPTIONS = Object.entries(SEX_MAP).map(([value, label]) => ({
   value,
   label,
 }))
-
-interface FormFieldProps {
-  icon: React.ElementType
-  label: string
-  children: React.ReactNode
-  error?: string
-}
 
 interface ThumbnailImageProps {
   image: File | { id: string; url: string }
@@ -97,23 +95,6 @@ function ThumbnailImage({
   )
 }
 const inputUploadAccept = '.jpg,.jpeg,.png,.webp'
-
-function FormField({ icon: Icon, label, children, error }: FormFieldProps) {
-  return (
-    <div className="flex items-start gap-3 p-3 rounded-lg transition-colors mb-0">
-      <div className="flex-shrink-0 mt-2">
-        <Icon className="size-5" />
-      </div>
-      <div className="flex-1 min-w-0 space-y-1">
-        <Label htmlFor={label} className="text-sm">
-          {label}
-        </Label>
-        {children}
-        {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
-      </div>
-    </div>
-  )
-}
 
 const mapAnimalToFormData = (animal: AnimalById): EditAnimalForm => {
   const { photos, mainPhotoId, birthDate, ...rest } = animal
@@ -196,7 +177,9 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
   const { mutateAsync, isPending, error } = useEditAnimal(() => {
     setSubmittedSuccessfully(true)
   })
-  // TODO: add error handling, show errors in UI
+  const { mutate: getAnimalSignature, isPending: isGettingAnimalSignature } =
+    useAnimalSignature()
+  const isSignatureError = error?.message.toLowerCase().includes('signature')
 
   const fileUrlCacheRef = React.useRef<Map<File, string>>(new Map())
   const thumbnailCacheRef = React.useRef<Map<File, string>>(new Map())
@@ -448,25 +431,74 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
                     name="signature"
                     validators={{
                       onChange: ({ value }) => {
-                        return !value ? 'Oznaczenie jest wymagane' : undefined
+                        if (!value) {
+                          return 'Oznaczenie jest wymagane'
+                        }
+                        if (!/^(\d{4}\/\d{4})$/.test(value)) {
+                          return 'Oznaczenie musi mieć format RRRR/NNNN, gdzie R to rok, a N to numer.'
+                        }
                       },
                     }}
                     children={(field) => {
                       return (
-                        <FormField
-                          icon={Tag}
-                          label="Oznaczenie"
-                          error={field.state.meta.errors[0]}
-                        >
-                          <Input
-                            value={field.state.value}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            disabled
-                            id="Oznaczenie"
-                            className="bg-background"
-                            placeholder="Wpisz oznaczenie"
-                          />
-                        </FormField>
+                        <div className="flex items-end justify-between gap-2 mb-0 w-full">
+                          <FormField
+                            icon={Tag}
+                            label="Oznaczenie"
+                            error={field.state.meta.errors[0]}
+                            className="flex flex-row gap-2 items-center justify-between w-full flex-1 min-w-0"
+                          >
+                            <div className="relative">
+                              <Input
+                                value={field.state.value}
+                                onChange={(e) =>
+                                  field.handleChange(e.target.value)
+                                }
+                                id="Oznaczenie"
+                                className="bg-background mb-0 pr-8"
+                                placeholder="2026/0001"
+                              />
+                              <InfoCard
+                                className="absolute top-2 right-2 p-0"
+                                iconClassName="size-5"
+                              >
+                                <p className="text-sm text-muted-foreground mb-1 text-justify">
+                                  Unikalne oznaczenie zwierzaka, które będzie
+                                  służyło do jego identyfikacji w systemie.
+                                  Format oznaczenia to RRRR/NNNN, gdzie R to rok
+                                  dodania zwierzaka, a N to unikalny numer
+                                  porządkowy. Możesz wpisać własne oznaczenie
+                                  lub wygenerować je automatycznie, klikając
+                                  przycisk obok pola.
+                                </p>
+                                <p className="text-xs italic">
+                                  Przykładowe oznaczenie: 2026/0001 - oznacza
+                                  pierwszego zwierzaka dodanego w roku 2026.
+                                </p>
+                              </InfoCard>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="h-9 w-[200px]"
+                              size="sm"
+                              onClick={() => {
+                                getAnimalSignature(undefined, {
+                                  onSuccess: (data) => {
+                                    form.setFieldValue(
+                                      'signature',
+                                      data.signature,
+                                    )
+                                  },
+                                })
+                              }}
+                            >
+                              {isGettingAnimalSignature
+                                ? 'Ładowanie...'
+                                : 'Generuj unikalne oznaczenie'}
+                            </Button>
+                          </FormField>
+                        </div>
                       )
                     }}
                   />
@@ -840,7 +872,9 @@ function AnimalEditTab({ animal, open, onClose }: AnimalEditTabProps) {
               </div>
               {error && (
                 <p className="text-sm text-red-500 font-medium p-4">
-                  {genericErrorMessage}
+                  {isSignatureError
+                    ? 'Oznaczenie jest już zajęte, wygeneruj nowe lub wpisz ręcznie i spróbuj ponownie.'
+                    : genericErrorMessage}
                 </p>
               )}
             </form>
