@@ -21,7 +21,7 @@ export function AuthTransition({
   const transitionDuration = 900
   const { isLoading: isAnimalTableLoading } = useAnimals(
     defaultAnimalsParams,
-    userHasNoRoles || isLoading,
+    !(userHasNoRoles || isLoading),
   )
   const { isMobile } = useMobile()
 

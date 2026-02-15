@@ -26,14 +26,14 @@ export const defaultAnimalsParams: FetchAnimalsParams = {
   keyWordSearch: null,
 }
 
-export const useAnimals = (params: FetchAnimalsParams, disabled?: boolean) =>
+export const useAnimals = (params: FetchAnimalsParams, enabled?: boolean) =>
   useQuery({
     queryKey: animalsKeys.list(params),
     queryFn: async () => animalsService.getAnimals(params),
     placeholderData: keepPreviousData,
     refetchOnWindowFocus: false,
     staleTime: 1000,
-    enabled: !disabled,
+    enabled,
   })
 
 export const useAnimalById = (id: string) =>
