@@ -176,7 +176,7 @@ export default function AnimalViewTab({
                       />
                       <InfoRow
                         icon={Calendar}
-                        label="Data przyjęcia"
+                        label="Data dodania"
                         value={formatDate(animal.createdOn)}
                       />
                       <InfoRow

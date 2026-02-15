@@ -311,7 +311,11 @@ export default function AddAnimalModal({
                           <FormField
                             icon={Tag}
                             label="Oznaczenie"
-                            error={field.state.meta.errors[0]}
+                            error={
+                              isSignatureError
+                                ? 'Oznaczenie jest już zajęte, wygeneruj nowe lub wpisz ręcznie i spróbuj ponownie.'
+                                : field.state.meta.errors[0]
+                            }
                             className="flex flex-row gap-2 items-center justify-between w-full flex-1 min-w-0"
                           >
                             <div className="relative">
@@ -693,11 +697,9 @@ export default function AddAnimalModal({
                   {isPending ? 'Zapisywanie...' : 'Dodaj zwierzaka'}
                 </Button>
               </div>
-              {error && (
+              {error && !isSignatureError && (
                 <p className="text-sm text-red-500 font-medium p-4">
-                  {isSignatureError
-                    ? 'Oznaczenie jest już zajęte, wygeneruj nowe lub wpisz ręcznie i spróbuj ponownie.'
-                    : genericErrorMessage}
+                  {genericErrorMessage}
                 </p>
               )}
             </form>
