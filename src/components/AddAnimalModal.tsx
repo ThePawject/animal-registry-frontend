@@ -1,6 +1,8 @@
 import React from 'react'
 import { Calendar, Dog, Hash, Tag, Trash2Icon, User, XIcon } from 'lucide-react'
 import { useForm, useStore } from '@tanstack/react-form'
+import { InfoCard } from './InfoCard'
+import { FormField } from './FormField'
 import type { AddAnimal, Sexes, Species } from '@/api/animals/types'
 import { SEX_MAP, SPECIES_MAP } from '@/api/animals/types'
 import { useAddAnimal, useAnimalSignature } from '@/api/animals/queries'
@@ -8,7 +10,6 @@ import { Card } from '@/components/ui/card'
 import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { cn, genericErrorMessage } from '@/lib/utils'
 import {
   Select,
@@ -40,14 +41,6 @@ const defaultAnimalFormData: AddAnimal = {
   signature: '',
   species: 0,
   transponderCode: '',
-}
-
-interface FormFieldProps {
-  icon: React.ElementType
-  label: string
-  children: React.ReactNode
-  error?: string
-  className?: string
 }
 
 interface ThumbnailImageProps {
@@ -86,33 +79,6 @@ function ThumbnailImage({
       loading="lazy"
       decoding="async"
     />
-  )
-}
-
-function FormField({
-  icon: Icon,
-  label,
-  children,
-  error,
-  className,
-}: FormFieldProps) {
-  return (
-    <div
-      className={cn(
-        'flex items-start gap-3 p-3 rounded-lg transition-colors mb-0 w-full',
-      )}
-    >
-      <div className="flex-shrink-0 mt-2">
-        <Icon className="size-5" />
-      </div>
-      <div className="flex-1 min-w-0 space-y-1">
-        <Label htmlFor={label} className="text-sm">
-          {label}
-        </Label>
-        <div className={className}>{children}</div>
-        {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
-      </div>
-    </div>
   )
 }
 
@@ -331,7 +297,12 @@ export default function AddAnimalModal({
                     name="signature"
                     validators={{
                       onChange: ({ value }) => {
-                        return !value ? 'Oznaczenie jest wymagane' : undefined
+                        if (!value) {
+                          return 'Oznaczenie jest wymagane'
+                        }
+                        if (!/^(\d{4}\/\d{4})$/.test(value)) {
+                          return 'Oznaczenie musi mieć format RRRR/NNNN, gdzie R to rok, a N to numer.'
+                        }
                       },
                     }}
                     children={(field) => {
@@ -343,15 +314,35 @@ export default function AddAnimalModal({
                             error={field.state.meta.errors[0]}
                             className="flex flex-row gap-2 items-center justify-between w-full flex-1 min-w-0"
                           >
-                            <Input
-                              value={field.state.value}
-                              onChange={(e) =>
-                                field.handleChange(e.target.value)
-                              }
-                              id="Oznaczenie"
-                              className="bg-background mb-0"
-                              placeholder="Wpisz oznaczenie"
-                            />
+                            <div className="relative">
+                              <Input
+                                value={field.state.value}
+                                onChange={(e) =>
+                                  field.handleChange(e.target.value)
+                                }
+                                id="Oznaczenie"
+                                className="bg-background mb-0 pr-8"
+                                placeholder="2026/0001"
+                              />
+                              <InfoCard
+                                className="absolute top-2 right-2 p-0"
+                                iconClassName="size-5"
+                              >
+                                <p className="text-sm text-muted-foreground mb-1 text-justify">
+                                  Unikalne oznaczenie zwierzaka, które będzie
+                                  służyło do jego identyfikacji w systemie.
+                                  Format oznaczenia to RRRR/NNNN, gdzie R to rok
+                                  dodania zwierzaka, a N to unikalny numer
+                                  porządkowy. Możesz wpisać własne oznaczenie
+                                  lub wygenerować je automatycznie, klikając
+                                  przycisk obok pola.
+                                </p>
+                                <p className="text-xs italic">
+                                  Przykładowe oznaczenie: 2026/0001 - oznacza
+                                  pierwszego zwierzaka dodanego w roku 2026.
+                                </p>
+                              </InfoCard>
+                            </div>
                             <Button
                               type="button"
                               variant="outline"
@@ -705,7 +696,7 @@ export default function AddAnimalModal({
               {error && (
                 <p className="text-sm text-red-500 font-medium p-4">
                   {isSignatureError
-                    ? 'Oznaczenie jest już zajęte, wygeneruj nowe i spróbuj ponownie.'
+                    ? 'Oznaczenie jest już zajęte, wygeneruj nowe lub wpisz ręcznie i spróbuj ponownie.'
                     : genericErrorMessage}
                 </p>
               )}

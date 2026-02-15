@@ -19,7 +19,7 @@ export function AuthTransition({
 }: AuthTransitionProps) {
   const { loginWithRedirect, isLoading, isAuthenticated } = useAuth0()
   const transitionDuration = 900
-  const { isFetching: isAnimalTableLoading } = useAnimals(
+  const { isLoading: isAnimalTableLoading } = useAnimals(
     defaultAnimalsParams,
     userHasNoRoles || isLoading,
   )
