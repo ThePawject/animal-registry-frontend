@@ -273,7 +273,7 @@ function AnimalTable() {
       },
       {
         accessorKey: 'createdOn',
-        header: 'Data przyjęcia',
+        header: 'Data dodania',
         cell: (info) => {
           const date = new Date(info.getValue() as string)
           return (

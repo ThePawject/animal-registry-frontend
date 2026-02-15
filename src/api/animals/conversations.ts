@@ -104,9 +104,16 @@ export const animalsService = {
         },
       })
       return response.data
-    } catch (error) {
+    } catch (error: any) {
+      if (
+        error?.response?.data?.errors?.generalErrors &&
+        Array.isArray(error.response?.data.errors.generalErrors)
+      ) {
+        const generalErrors = error.response.data.errors.generalErrors
+        throw new Error(`Failed to add animal: ${generalErrors.join(', ')}`)
+      }
       if (axios.isAxiosError(error)) {
-        throw new Error(`Failed to edit animal: ${error.message}`)
+        throw new Error(`Failed to add animal: ${error.message}`)
       }
       throw error
     }
