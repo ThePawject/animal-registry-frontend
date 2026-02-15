@@ -7,7 +7,6 @@ import {
 import {
   Calendar,
   Eye,
-  Info,
   LucideLoaderCircle,
   MoreHorizontal,
   Pencil,
@@ -29,6 +28,7 @@ import {
 import { AnimalEditTabWrapper } from './tabs/AnimalEditTab'
 import AnimalHealthRecordsTab from './tabs/AnimalHealthRecordsTab'
 import DateRangeFilterModal from './modals/DateRangeFilterModal'
+import { InfoCard } from './InfoCard'
 import type { ColumnDef } from '@tanstack/react-table'
 import type { Animal } from '@/api/animals/types'
 
@@ -42,12 +42,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from '@/components/ui/hover-card'
-import { useAnimals } from '@/api/animals/queries'
+import { defaultAnimalsParams, useAnimals } from '@/api/animals/queries'
 import { formatDate } from '@/lib/utils'
 import {
   useReports,
@@ -68,9 +63,11 @@ export const createAndDownloadReport = (blob: Blob, filename: string) => {
 const SEARCH_INFO_KEY = 'animal-search-info-dismissed'
 
 function AnimalTable() {
-  const [page, setPage] = React.useState(1)
-  const [globalFilter, setGlobalFilter] = React.useState('')
-  const [pageSize, setPageSize] = React.useState(10)
+  const [page, setPage] = React.useState(defaultAnimalsParams.page)
+  const [globalFilter, setGlobalFilter] = React.useState<string | null>(
+    defaultAnimalsParams.keyWordSearch,
+  )
+  const [pageSize, setPageSize] = React.useState(defaultAnimalsParams.pageSize)
 
   const [debouncedGlobalFilter] = useDebouncedValue(globalFilter, {
     wait: 500,
@@ -405,66 +402,49 @@ function AnimalTable() {
         <div className="flex items-center gap-2 max-w-sm w-full">
           <Input
             placeholder="Szukaj zwierząt..."
-            value={globalFilter}
+            value={globalFilter || ''}
             onChange={(e) => setGlobalFilter(e.target.value)}
             onFocus={handleInputFocus}
             className="md:text-xl h-12 shrink-0 flex-1"
           />
-          <HoverCard
-            openDelay={100}
-            closeDelay={200}
-            open={infoOpen}
-            onOpenChange={setInfoOpen}
-          >
-            <HoverCardTrigger asChild>
-              <button
-                type="button"
-                onClick={() => setInfoOpen(!infoOpen)}
-                className="p-2 rounded-full hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
-                aria-label="Informacje o wyszukiwaniu"
-              >
-                <Info className="size-8 text-blue-600" />
-              </button>
-            </HoverCardTrigger>
-            <HoverCardContent className="w-96" side="right" align="start">
-              <div className="space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <h4 className="font-semibold">Jak działa wyszukiwanie?</h4>
-                </div>
-                <div className="text-sm text-muted-foreground space-y-2">
-                  <p>Możesz szukać zwierząt po następujących polach:</p>
-                  <ul className="list-disc list-inside space-y-1">
-                    <li>
-                      <strong>Oznaczenie</strong> - np. 2026/0017
-                    </li>
-                    <li>
-                      <strong>Numer chipa</strong> - np. 616093900000000
-                    </li>
-                    <li>
-                      <strong>Imię</strong> - np. Mariusz
-                    </li>
-                    <li>
-                      <strong>Umaszczenie</strong> - np. czarny
-                    </li>
-                    <li>
-                      <strong>Wydarzenia</strong> - opis lub kto wykonał
-                    </li>
-                  </ul>
-                  <p className="text-xs italic">
-                    Wpisz fragment tekstu, a wyniki pojawią się automatycznie.
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDismiss}
-                  className="w-full mt-2"
-                >
-                  Nie pokazuj ponownie
-                </Button>
+          <InfoCard infoOpen={infoOpen} setInfoOpen={setInfoOpen}>
+            <div className="space-y-3">
+              <div className="flex items-start justify-between gap-2">
+                <h4 className="font-semibold">Jak działa wyszukiwanie?</h4>
               </div>
-            </HoverCardContent>
-          </HoverCard>
+              <div className="text-sm text-muted-foreground space-y-2">
+                <p>Możesz szukać zwierząt po następujących polach:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>
+                    <strong>Oznaczenie</strong> - np. 2026/0017
+                  </li>
+                  <li>
+                    <strong>Numer chipa</strong> - np. 616093900000000
+                  </li>
+                  <li>
+                    <strong>Imię</strong> - np. Mariusz
+                  </li>
+                  <li>
+                    <strong>Umaszczenie</strong> - np. czarny
+                  </li>
+                  <li>
+                    <strong>Wydarzenia</strong> - opis lub kto wykonał
+                  </li>
+                </ul>
+                <p className="text-xs italic">
+                  Wpisz fragment tekstu, a wyniki pojawią się automatycznie.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDismiss}
+                className="w-full mt-2"
+              >
+                Nie pokazuj ponownie
+              </Button>
+            </div>
+          </InfoCard>
         </div>
 
         <div className="flex gap-2 xl:items-center flex-col xl:flex-row w-full xl:justify-end">
