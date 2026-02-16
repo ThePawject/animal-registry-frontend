@@ -531,7 +531,7 @@ export default function AddAnimalModal({
 
                 <div className="flex flex-col items-center">
                   <div className="w-full h-full flex flex-col items-center justify-between py-4">
-                    <div className="flex gap-2 mb-4 max-w-[535px]">
+                    <div className="flex gap-2 mb-4 overflow-x-auto max-w-full w-[calc(100%-1rem)] px-2">
                       {images.map((img, idx) => (
                         <button
                           key={idx}
@@ -562,7 +562,7 @@ export default function AddAnimalModal({
                             image={img}
                             alt={`Miniatura ${idx + 1}`}
                             generateThumbnail={generateThumbnail}
-                            className="object-cover w-full h-full p-0.5"
+                            className="object-cover w-full h-full p-0.5 rounded-md"
                           />
                         </button>
                       ))}
