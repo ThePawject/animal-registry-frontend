@@ -188,7 +188,7 @@ export default function AnimalViewTab({
                   </div>
                 </div>
                 <div className="flex flex-col items-center">
-                  <div className="flex gap-2 mb-4 justify-center overflow-x-auto max-w-sm">
+                  <div className="flex gap-2 mb-4 overflow-x-auto max-w-full w-[calc(100%-1rem)] px-2">
                     {imageUrls.map((url, idx) => (
                       <button
                         key={idx}
