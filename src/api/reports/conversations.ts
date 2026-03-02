@@ -1,6 +1,6 @@
 import axios from 'axios'
-import { apiClient } from '../useAxiosWithAuth'
 import type { ReportDateRangeParams, ReportSelectedParams } from './types'
+import { apiClient } from '@/lib/auth0'
 
 interface ReportsResponse {
   blob: Blob

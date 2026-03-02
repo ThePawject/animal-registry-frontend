@@ -1,9 +1,9 @@
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth } from '@/hooks/useAuth'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
 
 export function NoAccess() {
-  const { isLoading, logout } = useAuth0()
+  const { isLoading, logout } = useAuth()
 
   return (
     <Card className="p-8 w-100">

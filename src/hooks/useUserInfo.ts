@@ -1,11 +1,6 @@
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth } from '@/hooks/useAuth'
 import { useEffect, useState } from 'react'
-import {
-  decodeJwt,
-  getAuthorizationParams,
-  getRoles,
-  getShelterName,
-} from '@/lib/utils'
+import { auth0Manager } from '@/lib/auth0'
 
 type UseUserInfoProps = {
   setIsLoginModalOpen: (isOpen: boolean) => void
@@ -20,33 +15,50 @@ export function useUserInfo({
 }: UseUserInfoProps) {
   const [shelterName, setShelterName] = useState<string | null>(null)
   const [isLoadingRoles, setIsLoadingRoles] = useState(false)
-  const { getAccessTokenSilently, isAuthenticated, isLoading } = useAuth0()
+  const { isAuthenticated, isLoading } = useAuth()
+
   useEffect(() => {
     if (!isAuthenticated) {
       setShelterName(null)
+      setRoles([])
+      setIsLoadingRoles(false)
       return
     }
-    ;(async () => {
+
+    const loadUserInfo = async () => {
       try {
         setIsLoadingRoles(true)
-        const token = await getAccessTokenSilently({
-          authorizationParams: getAuthorizationParams(),
-        })
-        setShelterName(getShelterName(decodeJwt(token || '')))
-        const roles = getRoles(decodeJwt(token || ''))
-        setRoles(roles)
+
+        const [name, userRoles] = await Promise.all([
+          auth0Manager.getShelterName(),
+          auth0Manager.getRoles(),
+        ])
+
+        setShelterName(name)
+        setRoles(userRoles)
         setIsLoadingRoles(false)
       } catch (e) {
         setIsLoadingRoles(false)
-        if (e instanceof Error) {
-          if (e.message.includes('Missing Refresh Token')) {
-            setIsLoginModalOpen(true)
-          }
+        setRoles([])
+        if (e instanceof Error && e.message.includes('Missing Refresh Token')) {
+          localStorage.clear()
+          window.location.reload()
+        } else if (e instanceof Error && e.message.includes('Login required')) {
+          setIsLoginModalOpen(true)
         } else {
           console.error('Unexpected error:', e)
         }
       }
-    })()
-  }, [getAccessTokenSilently, isAuthenticated, isLoading, isLoginModalOpen])
+    }
+
+    loadUserInfo()
+  }, [
+    isAuthenticated,
+    isLoading,
+    isLoginModalOpen,
+    setIsLoginModalOpen,
+    setRoles,
+  ])
+
   return { shelterName, isLoadingRoles }
 }

@@ -1,9 +1,9 @@
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth } from '@/hooks/useAuth'
 import { Button } from './ui/button'
 import { getAuthorizationParams } from '@/lib/utils'
 
 export default function LoginPage() {
-  const { loginWithRedirect, isLoading } = useAuth0()
+  const { loginWithRedirect, isLoading } = useAuth()
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-emerald-100 w-full">

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth } from '@/hooks/useAuth'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
 import { NoAccess } from './NoAccess'
@@ -17,7 +17,7 @@ export function AuthTransition({
   authenticatedComponent,
   userHasNoRoles,
 }: AuthTransitionProps) {
-  const { loginWithRedirect, isLoading, isAuthenticated } = useAuth0()
+  const { loginWithRedirect, isLoading, isAuthenticated } = useAuth()
   const transitionDuration = 900
   const { isLoading: isAnimalTableLoading } = useAnimals(
     defaultAnimalsParams,
