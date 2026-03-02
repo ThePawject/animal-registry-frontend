@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { useAuth0 } from '@auth0/auth0-react'
+import { useAuth } from '@/hooks/useAuth'
 import { Button } from './ui/button'
 import { getAuthorizationParams, getOriginHomePage } from '@/lib/utils'
 
@@ -8,7 +8,7 @@ type HeaderProps = {
 }
 export default function Header({ shelterName }: HeaderProps) {
   const { logout, isLoading, error, isAuthenticated, loginWithRedirect } =
-    useAuth0()
+    useAuth()
 
   if (error) {
     return <div>Error: {error.message}</div>

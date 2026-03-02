@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { apiClient } from '../useAxiosWithAuth'
 import type {
   AddAnimal,
   AnimalById,
@@ -10,6 +9,7 @@ import type {
   EditAnimal,
   FetchAnimalsParams,
 } from './types'
+import { apiClient } from '@/lib/auth0'
 
 export const animalsService = {
   async getAnimals(params: FetchAnimalsParams): Promise<AnimalResponse> {

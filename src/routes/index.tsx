@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useAuth0 } from '@auth0/auth0-react'
-import { useState } from 'react'
+import { useAuth } from '@/hooks/useAuth'
+import { useState, useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import AnimalTable from '@/components/AnimalTable'
 import Header from '@/components/Header'
@@ -8,14 +8,14 @@ import { useUserInfo } from '@/hooks/useUserInfo'
 import { AuthTransition } from '@/components/AuthTransition'
 import LoginModal from '@/components/LoginModal'
 import { getAuthorizationParams } from '@/lib/utils'
-import { useAxiosWithAuth } from '@/api/useAxiosWithAuth'
+import { auth0Manager } from '@/lib/auth0'
 
 export const Route = createFileRoute('/')({
   component: App,
 })
 
 function App() {
-  const { isLoading, getAccessTokenWithPopup } = useAuth0()
+  const { isLoading, getAccessTokenSilently, isAuthenticated } = useAuth()
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [roles, setRoles] = useState<Array<string>>([])
   const queryClient = useQueryClient()
@@ -25,9 +25,16 @@ function App() {
     isLoginModalOpen,
     setRoles,
   })
-  useAxiosWithAuth({ setIsLoginModalOpen })
 
-  const userHasNoRoles = isLoadingRoles || roles.length === 0
+  useEffect(() => {
+    auth0Manager.setup({
+      onAuthError: () => setIsLoginModalOpen(true),
+    })
+  }, [])
+
+  const userHasNoRoles =
+    isAuthenticated && (isLoadingRoles || roles.length === 0)
+
   return (
     <>
       <AuthTransition
@@ -46,7 +53,7 @@ function App() {
               open={isLoginModalOpen}
               onOpenChange={setIsLoginModalOpen}
               onClick={() => {
-                getAccessTokenWithPopup({
+                getAccessTokenSilently({
                   authorizationParams: getAuthorizationParams(),
                 }).then(() => {
                   queryClient.invalidateQueries()
