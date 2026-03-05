@@ -7,14 +7,14 @@ import {
 import { Check, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { useForm } from '@tanstack/react-form'
 import { ErrorPopover } from '../ErrorPopover'
-import AnimalEventForm, { EVENT_TYPE_OPTIONS } from './AnimalEventForm'
+import AnimalEventForm from './AnimalEventForm'
 import type { ColumnDef } from '@tanstack/react-table'
 import type {
   AnimalById,
   AnimalEvent,
   AnimalEventType,
 } from '@/api/animals/types'
-import { ANIMAL_EVENT_TYPE_MAP } from '@/api/animals/types'
+import { ANIMAL_EVENT_TYPE_MAP, EVENT_TYPE_OPTIONS } from '@/api/animals/types'
 import { useDeleteAnimalEvent, useEditAnimalEvent } from '@/api/animals/queries'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'

@@ -1,4 +1,3 @@
-// RouterWithAuth.tsx
 import { useAuth0 } from '@auth0/auth0-react'
 import { RouterProvider } from '@tanstack/react-router'
 import { getRouter } from '@/router'

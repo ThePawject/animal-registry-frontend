@@ -17,6 +17,7 @@ function RouteComponent() {
     queryKey: animalsKeys.one(animalFromLoader.id),
     queryFn: () => animalsService.getAnimalById(animalFromLoader.id),
     initialData: animalFromLoader,
+    staleTime: 1000 * 60,
   })
   return <AnimalEventsTab animal={animal} />
 }

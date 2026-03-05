@@ -1,13 +1,12 @@
-import React from 'react'
 import { Calendar, FileText } from 'lucide-react'
 import { useForm } from '@tanstack/react-form'
 import { Textarea } from '../ui/textarea'
+import { FormField } from '../FormField'
 import type { AnimalEvent, AnimalEventType } from '@/api/animals/types'
-import { ANIMAL_EVENT_TYPE_MAP } from '@/api/animals/types'
+import { EVENT_TYPE_OPTIONS } from '@/api/animals/types'
 import { useAddAnimalEvent } from '@/api/animals/queries'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -17,39 +16,8 @@ import {
 } from '@/components/ui/select'
 import { genericErrorMessage } from '@/lib/utils'
 
-export const EVENT_TYPE_OPTIONS = Object.entries(ANIMAL_EVENT_TYPE_MAP).map(
-  ([value, label]) => ({
-    value: Number(value) as AnimalEventType,
-    label,
-  }),
-)
-
-interface FormFieldProps {
-  icon: React.ElementType
-  label: string
-  children: React.ReactNode
-  error?: string
-}
-
-function FormField({ icon: Icon, label, children, error }: FormFieldProps) {
-  return (
-    <div className="flex items-start gap-3 p-3 rounded-lg transition-colors mb-0">
-      <div className="flex-shrink-0 mt-2">
-        <Icon className="size-5" />
-      </div>
-      <div className="flex-1 min-w-0 space-y-1">
-        <Label htmlFor={label} className="text-sm">
-          {label}
-        </Label>
-        {children}
-        {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
-      </div>
-    </div>
-  )
-}
-
 const defaultEventFormData: Omit<AnimalEvent, 'id'> = {
-  type: 1,
+  type: 0,
   occurredOn: new Date().toISOString().split('T')[0],
   description: '',
 }

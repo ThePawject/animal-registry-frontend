@@ -28,9 +28,11 @@ export const animalsService = {
   async getAnimalById(id: string, token?: string): Promise<AnimalById> {
     try {
       const response = await apiClient.get<AnimalById>(`animals/${id}`, {
-        headers: {
-          Authorization: 'Bearer ' + token,
-        },
+        headers: token
+          ? {
+              Authorization: 'Bearer ' + token,
+            }
+          : undefined,
       })
       return response.data
     } catch (error) {

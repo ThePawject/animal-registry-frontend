@@ -6,7 +6,7 @@ export const Route = createFileRoute('/animal/$animalId')({
   component: RouteComponent,
   loader: async ({ params, context }) => {
     const token = await context.getAccessToken()
-    const animal = await context.queryClient.fetchQuery({
+    const animal = await context.queryClient.ensureQueryData({
       queryKey: animalsKeys.one(params.animalId),
       queryFn: async () => {
         const data = await animalsService.getAnimalById(params.animalId, token)
