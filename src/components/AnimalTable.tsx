@@ -4,19 +4,9 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import {
-  Calendar,
-  Eye,
-  LucideLoaderCircle,
-  MoreHorizontal,
-  Pencil,
-  Plus,
-  Stethoscope,
-} from 'lucide-react'
+import { Eye, LucideLoaderCircle, Plus } from 'lucide-react'
 import { useDebouncedValue } from '@tanstack/react-pacer'
-import AnimalViewTab from './tabs/AnimalViewTab'
-import AnimalEventsTab from './tabs/AnimalEventsTab'
-import AddAnimalModal from './AddAnimalModal'
+import { Link } from '@tanstack/react-router'
 import {
   Select,
   SelectContent,
@@ -25,8 +15,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from './ui/select'
-import { AnimalEditTabWrapper } from './tabs/AnimalEditTab'
-import AnimalHealthRecordsTab from './tabs/AnimalHealthRecordsTab'
 import DateRangeFilterModal from './modals/DateRangeFilterModal'
 import { InfoCard } from './InfoCard'
 import type { ColumnDef } from '@tanstack/react-table'
@@ -36,12 +24,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { defaultAnimalsParams, useAnimals } from '@/api/animals/queries'
 import { formatDate } from '@/lib/utils'
 import {
@@ -97,15 +79,6 @@ function AnimalTable() {
     ? Math.ceil(animalsPage.totalCount / pageSize)
     : 1
   const [rowSelection, setRowSelection] = React.useState({})
-  const [selectedAnimal, setSelectedAnimal] = React.useState<Animal | null>(
-    null,
-  )
-
-  const [openViewModal, setOpenViewModal] = React.useState(false)
-  const [openEditModal, setOpenEditModal] = React.useState(false)
-  const [openMedicalModal, setOpenMedicalModal] = React.useState(false)
-  const [openEventsModal, setOpenEventsModal] = React.useState(false)
-  const [openAddModal, setOpenAddModal] = React.useState(false)
   const [openDateRangeModal, setOpenDateRangeModal] = React.useState(false)
 
   const columns = React.useMemo<Array<ColumnDef<Animal, any>>>(
@@ -289,59 +262,16 @@ function AnimalTable() {
         id: 'actions',
         header: 'Akcje',
         cell: ({ row }) => (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <MoreHorizontal className="w-4 h-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setSelectedAnimal(row.original)
-                  setOpenViewModal(true)
-                }}
-              >
-                <Eye className="w-4 h-4 mr-2" />
-                Podgląd
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setSelectedAnimal(row.original)
-                  setOpenEditModal(true)
-                }}
-              >
-                <Pencil className="w-4 h-4 mr-2" />
-                Edytuj
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setSelectedAnimal(row.original)
-                  setOpenMedicalModal(true)
-                }}
-              >
-                <Stethoscope className="w-4 h-4 mr-2" />
-                Medyczne
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setSelectedAnimal(row.original)
-                  setOpenEventsModal(true)
-                }}
-              >
-                <Calendar className="w-4 h-4 mr-2" />
-                Wydarzenia
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button asChild variant="outline" size="sm" className="w-full">
+            <Link
+              to="/animal/$animalId"
+              params={{ animalId: row.original.id }}
+              className="flex items-center w-full"
+            >
+              <Eye className="w-4 h-4 mr-2" />
+              Szczegóły
+            </Link>
+          </Button>
         ),
         enableSorting: false,
         enableHiding: false,
@@ -350,7 +280,6 @@ function AnimalTable() {
     [],
   )
 
-  // Reset to first page on search change
   React.useEffect(() => {
     setPage(1)
   }, [debouncedGlobalFilter])
@@ -397,7 +326,7 @@ function AnimalTable() {
   }
 
   return (
-    <div className="space-y-4 max-w-[1440px] mx-auto px-4 md:px-0">
+    <div className="space-y-4 mx-auto px-4 md:px-0 w-full">
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex items-center gap-2 max-w-sm w-full">
           <Input
@@ -505,15 +434,17 @@ function AnimalTable() {
           </Button>
 
           <Button
-            onClick={() => setOpenAddModal(true)}
+            asChild
             className="bg-emerald-600 hover:bg-emerald-700 text-white"
           >
-            <Plus className="size-5" /> Dodaj zwierzę
+            <Link to="/create">
+              <Plus className="size-5" /> Dodaj zwierzę
+            </Link>
           </Button>
         </div>
       </div>
 
-      <div className="rounded-md border max-w-[1440px] w-full overflow-x-auto">
+      <div className="rounded-md border w-full overflow-x-auto">
         <table className="w-full">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -613,47 +544,7 @@ function AnimalTable() {
           </Button>
         </div>
       </div>
-      {/* View Modal */}
-      {selectedAnimal && (
-        <AnimalViewTab
-          animalId={selectedAnimal.id}
-          open={openViewModal && !!selectedAnimal}
-          onClose={() => setOpenViewModal(false)}
-        />
-      )}
 
-      {/* Edit Modal */}
-      {selectedAnimal && (
-        <AnimalEditTabWrapper
-          animalId={selectedAnimal.id}
-          open={openEditModal && !!selectedAnimal}
-          onClose={() => setOpenEditModal(false)}
-        />
-      )}
-
-      {/* Medical Modal */}
-      {selectedAnimal && (
-        <AnimalHealthRecordsTab
-          animalId={selectedAnimal.id}
-          open={openMedicalModal && !!selectedAnimal}
-          onClose={() => setOpenMedicalModal(false)}
-        />
-      )}
-
-      {/* Events Modal */}
-      {selectedAnimal && (
-        <AnimalEventsTab
-          animalId={selectedAnimal.id}
-          open={openEventsModal && !!selectedAnimal}
-          onClose={() => setOpenEventsModal(false)}
-        />
-      )}
-
-      {/* Add Animal Modal */}
-      <AddAnimalModal
-        open={openAddModal}
-        onClose={() => setOpenAddModal(false)}
-      />
       <DateRangeFilterModal
         open={openDateRangeModal}
         onClose={() => setOpenDateRangeModal(false)}

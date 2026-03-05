@@ -1,10 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { RouterProvider } from '@tanstack/react-router'
-import { getRouter } from './router'
 import './styles.css'
-
-const router = getRouter()
+import { OurAuth0Provider } from './components/Auth0Provider'
+import { RouterWithAuth } from './components/RouterWithAuth'
 
 const rootElement = document.getElementById('root')
 if (!rootElement) {
@@ -13,6 +11,8 @@ if (!rootElement) {
 
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <OurAuth0Provider>
+      <RouterWithAuth />
+    </OurAuth0Provider>
   </React.StrictMode>,
 )
