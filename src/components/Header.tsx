@@ -17,11 +17,11 @@ export default function Header({ shelterName }: HeaderProps) {
   return (
     <>
       <header className="p-4 flex items-center bg-emerald-800 text-white shadow-md">
-        <div className="max-w-[1440px] mx-auto flex items-center w-full">
-          <h1 className="ml-4 text-xl font-semibold">
+        <div className="container mx-auto flex items-center w-full">
+          <h1 className="text-xl font-semibold">
             <Link to="/" className="flex gap-2 items-center">
               <img
-                src="./animal-shelter-logo.png"
+                src="/animal-shelter-logo.png"
                 alt="Elektroniczny Rejestr Zwierząt"
                 className="h-10"
               />

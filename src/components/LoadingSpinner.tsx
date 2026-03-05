@@ -36,7 +36,7 @@ export function LoadingSpinner() {
         />
       </motion.div>
       <img
-        src="./moje_schronisko_text.png"
+        src="/moje_schronisko_text.png"
         alt="MojeSchronisko"
         className="size-auto h-12 object-contain"
       />

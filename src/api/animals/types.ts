@@ -130,3 +130,10 @@ export type Sexes = keyof typeof SEX_MAP
 export type AnimalSignature = {
   signature: string
 }
+
+export const EVENT_TYPE_OPTIONS = Object.entries(ANIMAL_EVENT_TYPE_MAP).map(
+  ([value, label]) => ({
+    value: Number(value) as AnimalEventType,
+    label,
+  }),
+)

@@ -19,7 +19,7 @@ export function useUserInfo({
   isLoginModalOpen,
 }: UseUserInfoProps) {
   const [shelterName, setShelterName] = useState<string | null>(null)
-  const [isLoadingRoles, setIsLoadingRoles] = useState(false)
+  const [isLoadingRoles, setIsLoadingRoles] = useState(true)
   const { getAccessTokenSilently, isAuthenticated, isLoading } = useAuth0()
   useEffect(() => {
     if (!isAuthenticated) {

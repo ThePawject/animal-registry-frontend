@@ -1,12 +1,16 @@
 import { useState } from 'react'
-import { Calendar, Dog, Hash, Tag, User, XIcon } from 'lucide-react'
-import { useAnimalById } from '@/api/animals/queries'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Link } from '@tanstack/react-router'
+import {
+  BriefcaseMedicalIcon,
+  CalendarIcon,
+  Edit2Icon,
+  ImagesIcon,
+} from 'lucide-react'
+import { Badge } from '../ui/badge'
+import type { AnimalById } from '@/api/animals/types'
 import { Card } from '@/components/ui/card'
-import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog'
-import { Separator } from '@/components/ui/separator'
-import { cn } from '@/lib/utils'
 import { SEX_MAP, SPECIES_MAP } from '@/api/animals/types'
+import { cn } from '@/lib/utils'
 
 function formatDate(date: string | Date | null | undefined): string {
   if (!date) return '-'
@@ -23,214 +27,153 @@ function formatDate(date: string | Date | null | undefined): string {
 }
 
 interface InfoRowProps {
-  icon: React.ElementType
   label: string
-  value: React.ReactNode
-  highlight?: boolean
+  info: string
 }
 
-function InfoRow({
-  icon: Icon,
-  label,
-  value,
-  highlight = false,
-}: InfoRowProps) {
+function InfoRow({ label, info }: InfoRowProps) {
   return (
-    <div
-      className={`flex items-start gap-3 p-3 rounded-lg ${highlight ? 'bg-primary/5' : 'hover:bg-muted/50'} transition-colors`}
-    >
-      <div className="flex-shrink-0 mt-0.5">
-        <Icon className="w-5 h-5 text-muted-foreground" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <p className="font-medium text-foreground truncate">{value}</p>
-      </div>
+    <div className="flex flex-col gap-1">
+      <span className="text text-muted-foreground uppercase font-medium">
+        {label}
+      </span>
+      <span className="text-lg text-black font-semibold">{info}</span>
     </div>
   )
 }
 
-export default function AnimalViewTab({
-  animalId,
-  open,
-  onClose,
-}: {
-  animalId: string
-  open: boolean
-  onClose: () => void
-}) {
-  const { data: animal, isLoading } = useAnimalById(animalId)
+export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
   const [selectedIdx, setSelectedIdx] = useState(0)
 
-  if (isLoading || !animal) {
-    return (
-      <Dialog
-        open={open}
-        onOpenChange={(o) => {
-          if (!o) onClose()
-        }}
-      >
-        <DialogContent
-          showCloseButton={false}
-          className="p-0 bg-transparent shadow-none border-none max-w-4xl"
-        >
-          <Card className="p-8">
-            <div className="flex items-center justify-center h-64">
-              <Skeleton className="h-8 w-48" />
-            </div>
-          </Card>
-        </DialogContent>
-      </Dialog>
-    )
-  }
-
+  const mainPhotoUrl = animal.photos.find(
+    (photo) => photo.id === animal.mainPhotoId,
+  )?.url
   let imageUrls = animal.photos.map((photo) => photo.url)
   if (!imageUrls.length) {
     imageUrls = ['https://placehold.co/400x400?text=Brak+zdjecia']
   }
 
+  const firstFiveUrls = imageUrls.slice(0, 5)
+  const remainingUrls = imageUrls.slice(5)
+
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(open) => {
-        if (!open) onClose()
-      }}
-    >
-      <DialogContent
-        showCloseButton={false}
-        className="p-0 bg-transparent shadow-none border-none max-w-4xl max-h-[90vh]"
-      >
-        <div className="relative">
-          <DialogClose asChild>
-            <button
-              onClick={() => {
-                onClose()
-              }}
-              className="absolute z-20 top-4 right-4 rounded-full focus:ring-2 focus:ring-ring focus:outline-none bg-red-600 hover:bg-red-700 p-2 shadow-md"
-              aria-label="Close"
-            >
-              <XIcon className="w-5 h-5 text-white" />
-            </button>
-          </DialogClose>
-
-          <Card className="overflow-hidden max-h-[90vh] py-0">
-            <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-6 border-b flex-shrink-0">
-              <div className="flex items-center gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h2 className="text-3xl font-bold">{animal.name}</h2>
-                  </div>
-                </div>
-              </div>
+    <div className="flex flex-col gap-8 px-8 md:px-0 pb-8">
+      <div className="flex gap-4 md:gap-8 w-full flex-col md:flex-row">
+        <Link
+          to="/animal/$animalId/edit"
+          params={{ animalId: animal.id }}
+          className="bg-white flex gap-3 text-slate-700 items-center border border-slate-300 rounded-lg p-2 py-3 w-full hover:bg-emerald-600 hover:text-white justify-center"
+        >
+          <Edit2Icon className="size-5" />
+          <span className="text-lg font-medium">Edytuj dane</span>
+        </Link>
+        <Link
+          to="/animal/$animalId/events"
+          params={{ animalId: animal.id }}
+          className="bg-white flex gap-3 text-slate-700 items-center border border-slate-300 rounded-lg p-2 py-3 w-full hover:bg-emerald-600 hover:text-white justify-center"
+        >
+          <CalendarIcon className="size-5" />
+          <span className="text-lg font-medium">Wydarzenia</span>
+        </Link>
+        <Link
+          to="/animal/$animalId/medical-records"
+          params={{ animalId: animal.id }}
+          className="bg-white flex gap-3 text-slate-700 items-center border border-slate-300 rounded-lg p-2 py-3 w-full hover:bg-emerald-600 hover:text-white justify-center"
+        >
+          <BriefcaseMedicalIcon className="size-5" />
+          <span className="text-lg font-medium">Medyczne</span>
+        </Link>
+      </div>
+      <Card className="w-full flex gap-5 p-0 relative">
+        <div className="flex flex-col md:flex-row gap-8 p-8">
+          <img
+            src={mainPhotoUrl || imageUrls[0]}
+            className="w-64 h-64 object-cover rounded-lg shadow-md"
+          />
+          <div className="flex flex-col justify-between w-full gap-6">
+            <div className="flex flex-col gap-1">
+              <h2 className="text-3xl font-semibold">{animal.name}</h2>
             </div>
-
-            <div className="p-6 pt-0 pb-2 overflow-y-auto">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                  {/* Info */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      <Dog className="w-5 h-5 text-primary" />
-                      Informacje podstawowe
-                    </h3>
-                    <div className="space-y-1">
-                      <InfoRow
-                        icon={Tag}
-                        label="Oznaczenie"
-                        value={animal.signature || '-'}
-                        highlight
-                      />
-                      <InfoRow
-                        icon={Hash}
-                        label="Numer chipa"
-                        value={animal.transponderCode || '-'}
-                      />
-                      <InfoRow
-                        icon={Dog}
-                        label="Gatunek"
-                        value={SPECIES_MAP[animal.species] || 'Nieznany'}
-                      />
-                      <InfoRow
-                        icon={User}
-                        label="Płeć"
-                        value={SEX_MAP[animal.sex] || 'Nieznana'}
-                      />
-                      <InfoRow
-                        icon={Tag}
-                        label="Umaszczenie"
-                        value={animal.color || '-'}
-                      />
-                    </div>
-                  </div>
-                  <Separator />
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      <Calendar className="w-5 h-5 text-primary" />
-                      Daty
-                    </h3>
-                    <div className="space-y-1">
-                      <InfoRow
-                        icon={Calendar}
-                        label="Data urodzenia"
-                        value={formatDate(animal.birthDate)}
-                      />
-                      <InfoRow
-                        icon={Calendar}
-                        label="Data dodania"
-                        value={formatDate(animal.createdOn)}
-                      />
-                      <InfoRow
-                        icon={Calendar}
-                        label="Ostatnia modyfikacja"
-                        value={formatDate(animal.modifiedOn)}
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="flex flex-col items-center">
-                  <div className="flex gap-2 mb-4 overflow-x-auto max-w-full w-[calc(100%-1rem)] px-2">
-                    {imageUrls.map((url, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setSelectedIdx(idx)}
-                        className={cn(
-                          'w-16 h-16 rounded border-2 flex-shrink-0 overflow-hidden p-0 transition-all',
-                          selectedIdx === idx
-                            ? 'border-primary shadow-lg'
-                            : 'border-muted',
-                        )}
-                        aria-label={`Miniatura zdjęcia ${idx + 1}`}
-                        tabIndex={0}
-                        type="button"
-                      >
-                        <img
-                          src={url}
-                          alt={`Miniatura ${animal.name} - zdjęcie ${idx + 1}`}
-                          className="object-cover w-full h-full"
-                          draggable={false}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                  <div className="w-full max-w-sm flex justify-center items-center">
-                    <img
-                      src={imageUrls[selectedIdx]}
-                      alt={`${animal.name} - zdjęcie główne`}
-                      className="rounded-xl shadow-lg w-full h-auto max-h-[70vh]"
-                      draggable={false}
-                    />
-                  </div>
-                  {imageUrls.length > 1 && (
-                    <div className="text-muted-foreground py-2 text-center text-sm">
-                      Zdjęcie {selectedIdx + 1} z {imageUrls.length}
-                    </div>
-                  )}
-                </div>
-              </div>
+            <div className="grid gap-8 grid-cols-2 md:grid-cols-3">
+              <InfoRow label="Gatunek" info={SPECIES_MAP[animal.species]} />
+              <InfoRow label="Płeć" info={SEX_MAP[animal.sex]} />
+              <InfoRow label="Sygnatura" info={animal.signature} />
+              <InfoRow label="Umaszczenie" info={animal.color} />
+              <InfoRow
+                label="Data urodzenia"
+                info={formatDate(animal.birthDate)}
+              />
+              <InfoRow
+                label="Data dodania"
+                info={formatDate(animal.modifiedOn)}
+              />
             </div>
-          </Card>
+          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+        <Badge
+          className={cn(
+            'absolute hidden md:block top-8 right-8 px-3 py-2 rounded-4xl text-md',
+            animal.isInShelter
+              ? 'bg-emerald-50 text-emerald-600'
+              : 'bg-red-50 text-red-600',
+          )}
+        >
+          {`${animal.isInShelter ? 'W schronisku' : 'Poza schroniskiem'}`}
+        </Badge>
+      </Card>
+      <Card className="w-full p-8 flex flex-col gap-8">
+        <div className="flex gap-2 items-center">
+          <ImagesIcon className="size-8 text-emerald-500" />
+          <span className="text-2xl font-semibold ml-2">Galeria Zdjęć</span>
+        </div>
+        <div className="flex flex-col md:flex-row gap-4 items-center">
+          <div className="w-full flex-1 flex items-center justify-center bg-slate-100 py-8 rounded-xl shadow border border-slate-200">
+            <img
+              src={imageUrls[selectedIdx]}
+              className="h-[200px] md:h-[400px] w-full max-w-[550px] object-contain"
+              alt={animal.name + ' podgląd'}
+            />
+          </div>
+          <div className="flex gap-4 items-center">
+            {firstFiveUrls.length > 1 && (
+              <div className="flex flex-col gap-4 items-center pr-2">
+                {firstFiveUrls.map((url, idx) => (
+                  <img
+                    key={idx}
+                    src={url}
+                    alt={animal.name + ' zdjęcie ' + (idx + 1)}
+                    className={cn(
+                      'w-20 h-20 object-cover rounded-md border cursor-pointer transition-all',
+                      selectedIdx === idx
+                        ? 'border-emerald-500 ring-2 ring-emerald-400'
+                        : 'border-slate-300',
+                    )}
+                    onClick={() => setSelectedIdx(idx)}
+                  />
+                ))}
+              </div>
+            )}
+            {remainingUrls.length > 1 && (
+              <div className="flex flex-col gap-4 items-center pr-2">
+                {remainingUrls.map((url, idx) => (
+                  <img
+                    key={idx}
+                    src={url}
+                    alt={animal.name + ' zdjęcie ' + (idx + 1)}
+                    className={cn(
+                      'w-20 h-20 object-cover rounded-md border cursor-pointer transition-all',
+                      selectedIdx === idx + 5
+                        ? 'border-emerald-500 ring-2 ring-emerald-400'
+                        : 'border-slate-300',
+                    )}
+                    onClick={() => setSelectedIdx(idx + 5)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </Card>
+    </div>
   )
 }
