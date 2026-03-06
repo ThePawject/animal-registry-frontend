@@ -39,6 +39,8 @@ export type FetchAnimalsParams = {
   page: number
   keyWordSearch: string | null
   pageSize: number
+  species?: Species | null
+  isInShelter?: boolean | null
 }
 
 export const ANIMAL_EVENT_TYPE_MAP = {
