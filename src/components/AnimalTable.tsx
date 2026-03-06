@@ -414,7 +414,7 @@ function AnimalTable() {
               value={globalFilter || ''}
               onChange={(e) => setGlobalFilter(e.target.value)}
               onFocus={handleInputFocus}
-              className="h-10 flex-1"
+              className="h-10 flex-1 bg-white"
             />
             <InfoCard infoOpen={infoOpen} setInfoOpen={setInfoOpen}>
               <div className="space-y-3">
@@ -467,7 +467,7 @@ function AnimalTable() {
               setPage(1)
             }}
           >
-            <SelectTrigger className="w-full md:w-[180px] h-10">
+            <SelectTrigger className="w-full md:w-[180px] h-10 bg-white">
               <SelectValue placeholder="Wszystkie gatunki">
                 {speciesFilter.length > 0
                   ? SPECIES_MAP[speciesFilter[0]]
@@ -494,17 +494,17 @@ function AnimalTable() {
               setPage(1)
             }}
           >
-            <SelectTrigger className="w-full md:w-[200px] h-10">
-              <SelectValue placeholder="Wszystkie">
+            <SelectTrigger className="w-full md:w-[200px] h-10 bg-white">
+              <SelectValue placeholder="Wszystkie statusy">
                 {isInShelterFilter === null
-                  ? 'Wszystkie'
+                  ? 'Wszystkie statusy'
                   : isInShelterFilter
                     ? 'W schronisku'
                     : 'Poza schroniskiem'}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Wszystkie</SelectItem>
+              <SelectItem value="all">Wszystkie statusy</SelectItem>
               <SelectItem value="true">W schronisku</SelectItem>
               <SelectItem value="false">Poza schroniskiem</SelectItem>
             </SelectContent>
