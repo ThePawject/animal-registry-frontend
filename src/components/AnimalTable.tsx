@@ -338,6 +338,7 @@ function AnimalTable() {
     <div className="space-y-4 mx-auto px-4 md:px-0 w-full">
       <div className="flex gap-2 items-center flex-wrap justify-end">
         <Button
+          data-testid="report-events-btn"
           variant="outline"
           title="Wygeneruj PDF z zestawieniem zdarzeń za wybrany okres (Raport-Zdarzen)"
           onClick={() => {
@@ -352,6 +353,7 @@ function AnimalTable() {
           )}
         </Button>
         <Button
+          data-testid="report-all-animals-btn"
           variant="outline"
           onClick={() => {
             getReportsDump()
@@ -366,6 +368,7 @@ function AnimalTable() {
           )}
         </Button>
         <Button
+          data-testid="report-selected-animals-btn"
           disabled={selectedCount === 0 || isReportsBySelectedIdsPending}
           variant="outline"
           onClick={() => {
