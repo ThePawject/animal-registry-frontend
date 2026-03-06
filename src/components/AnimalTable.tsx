@@ -51,8 +51,8 @@ function AnimalTable() {
     defaultAnimalsParams.keyWordSearch,
   )
   const [pageSize, setPageSize] = React.useState(defaultAnimalsParams.pageSize)
-  const [speciesFilter, setSpeciesFilter] = React.useState<Array<Species>>(
-    defaultAnimalsParams.species ?? [],
+  const [speciesFilter, setSpeciesFilter] = React.useState<Species | null>(
+    defaultAnimalsParams.species ?? null,
   )
   const [isInShelterFilter, setIsInShelterFilter] = React.useState<
     boolean | null
@@ -66,7 +66,7 @@ function AnimalTable() {
     keyWordSearch: debouncedGlobalFilter,
     page: page,
     pageSize,
-    species: speciesFilter.length > 0 ? speciesFilter : null,
+    species: speciesFilter,
     isInShelter: isInShelterFilter,
   })
 
@@ -457,20 +457,20 @@ function AnimalTable() {
           </div>
 
           <Select
-            value={speciesFilter.length === 0 ? 'all' : speciesFilter.join(',')}
+            value={speciesFilter === null ? 'all' : speciesFilter.toString()}
             onValueChange={(value) => {
               if (value === 'all') {
-                setSpeciesFilter([])
+                setSpeciesFilter(null)
               } else {
-                setSpeciesFilter([Number(value) as Species])
+                setSpeciesFilter(Number(value) as Species)
               }
               setPage(1)
             }}
           >
             <SelectTrigger className="w-full md:w-[180px] h-10 bg-white">
               <SelectValue placeholder="Wszystkie gatunki">
-                {speciesFilter.length > 0
-                  ? SPECIES_MAP[speciesFilter[0]]
+                {speciesFilter !== null
+                  ? SPECIES_MAP[speciesFilter]
                   : 'Wszystkie gatunki'}
               </SelectValue>
             </SelectTrigger>

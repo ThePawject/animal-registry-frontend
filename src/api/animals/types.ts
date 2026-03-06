@@ -39,7 +39,7 @@ export type FetchAnimalsParams = {
   page: number
   keyWordSearch: string | null
   pageSize: number
-  species?: Array<Species> | null
+  species?: Species | null
   isInShelter?: boolean | null
 }
 
