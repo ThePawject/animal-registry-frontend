@@ -30,7 +30,8 @@ import AnimalHealthRecordsTab from './tabs/AnimalHealthRecordsTab'
 import DateRangeFilterModal from './modals/DateRangeFilterModal'
 import { InfoCard } from './InfoCard'
 import type { ColumnDef } from '@tanstack/react-table'
-import type { Animal } from '@/api/animals/types'
+import type { Animal, Species } from '@/api/animals/types'
+import { SPECIES_MAP } from '@/api/animals/types'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -68,6 +69,12 @@ function AnimalTable() {
     defaultAnimalsParams.keyWordSearch,
   )
   const [pageSize, setPageSize] = React.useState(defaultAnimalsParams.pageSize)
+  const [speciesFilter, setSpeciesFilter] = React.useState<Array<Species>>(
+    defaultAnimalsParams.species ?? [],
+  )
+  const [isInShelterFilter, setIsInShelterFilter] = React.useState<
+    boolean | null
+  >(defaultAnimalsParams.isInShelter ?? null)
 
   const [debouncedGlobalFilter] = useDebouncedValue(globalFilter, {
     wait: 500,
@@ -77,6 +84,8 @@ function AnimalTable() {
     keyWordSearch: debouncedGlobalFilter,
     page: page,
     pageSize,
+    species: speciesFilter.length > 0 ? speciesFilter : null,
+    isInShelter: isInShelterFilter,
   })
 
   const { mutate: getReports, isPending: isReportsPending } = useReports(
@@ -398,118 +407,176 @@ function AnimalTable() {
 
   return (
     <div className="space-y-4 max-w-[1440px] mx-auto px-4 md:px-0">
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex items-center gap-2 max-w-sm w-full">
-          <Input
-            placeholder="Szukaj zwierząt..."
-            value={globalFilter || ''}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-            onFocus={handleInputFocus}
-            className="md:text-xl h-12 shrink-0 flex-1"
-          />
-          <InfoCard infoOpen={infoOpen} setInfoOpen={setInfoOpen}>
-            <div className="space-y-3">
-              <div className="flex items-start justify-between gap-2">
-                <h4 className="font-semibold">Jak działa wyszukiwanie?</h4>
-              </div>
-              <div className="text-sm text-muted-foreground space-y-2">
-                <p>Możesz szukać zwierząt po następujących polach:</p>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>
-                    <strong>Oznaczenie</strong> - np. 2026/0017
-                  </li>
-                  <li>
-                    <strong>Numer chipa</strong> - np. 616093900000000
-                  </li>
-                  <li>
-                    <strong>Imię</strong> - np. Mariusz
-                  </li>
-                  <li>
-                    <strong>Umaszczenie</strong> - np. czarny
-                  </li>
-                  <li>
-                    <strong>Wydarzenia</strong> - opis lub kto wykonał
-                  </li>
-                </ul>
-                <p className="text-xs italic">
-                  Wpisz fragment tekstu, a wyniki pojawią się automatycznie.
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDismiss}
-                className="w-full mt-2"
-              >
-                Nie pokazuj ponownie
-              </Button>
-            </div>
-          </InfoCard>
-        </div>
+      {/* Buttons section at the top */}
+      <div className="flex gap-2 items-center flex-wrap justify-end">
+        <Button
+          variant="outline"
+          title="Wygeneruj PDF z zestawieniem zdarzeń za wybrany okres (Raport-Zdarzen)"
+          onClick={() => {
+            getReports()
+          }}
+          disabled={isReportsPending}
+        >
+          {isReportsPending ? (
+            <LucideLoaderCircle className="w-4 h-4 animate-spin" />
+          ) : (
+            'Raport zdarzeń'
+          )}
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            getReportsDump()
+          }}
+          title="Eksport tekstowy danych zwierząt do PDF (bez zdjęć)."
+          disabled={isReportsDumpPending}
+        >
+          {isReportsDumpPending ? (
+            <LucideLoaderCircle className="w-4 h-4 animate-spin" />
+          ) : (
+            'Raport wszystkie zwierzeta'
+          )}
+        </Button>
+        <Button
+          disabled={selectedCount === 0 || isReportsBySelectedIdsPending}
+          variant="outline"
+          onClick={() => {
+            if (selectedIds.length > 0) {
+              getReportsBySelectedIds({ ids: selectedIds })
+            }
+          }}
+          title="PDF zawierający dane i zdjęcia wybranych zwierząt (siatka zdjęć)."
+        >
+          {isReportsBySelectedIdsPending ? (
+            <LucideLoaderCircle className="w-4 h-4 animate-spin" />
+          ) : selectedCount > 0 ? (
+            `Raport z wybranych zwierzat (${selectedCount})`
+          ) : (
+            'Raport z wybranych zwierzat'
+          )}
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            setOpenDateRangeModal(true)
+          }}
+          title="Wygeneruj raport dla zdefiniowanego zakresu dat (miesiąc/kwartał/tydzień)."
+        >
+          Raport zdarzen w zakresie
+        </Button>
 
-        <div className="flex gap-2 xl:items-center flex-col xl:flex-row w-full xl:justify-end">
-          <Button
-            variant="outline"
-            title="Wygeneruj PDF z zestawieniem zdarzeń za wybrany okres (Raport-Zdarzen)"
-            onClick={() => {
-              getReports()
-            }}
-            disabled={isReportsPending}
-          >
-            {isReportsPending ? (
-              <LucideLoaderCircle className="w-4 h-4 animate-spin" />
-            ) : (
-              'Raport zdarzeń'
-            )}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => {
-              getReportsDump()
-            }}
-            title="Eksport tekstowy danych zwierząt do PDF (bez zdjęć)."
-            disabled={isReportsDumpPending}
-          >
-            {isReportsDumpPending ? (
-              <LucideLoaderCircle className="w-4 h-4 animate-spin" />
-            ) : (
-              'Raport wszystkie zwierzeta'
-            )}
-          </Button>
-          <Button
-            disabled={selectedCount === 0 || isReportsBySelectedIdsPending}
-            variant="outline"
-            onClick={() => {
-              if (selectedIds.length > 0) {
-                getReportsBySelectedIds({ ids: selectedIds })
+        <Button
+          onClick={() => setOpenAddModal(true)}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white"
+        >
+          <Plus className="size-5" /> Dodaj zwierzę
+        </Button>
+      </div>
+
+      {/* Search and filters section with background */}
+      <div className="bg-muted/30 rounded-lg p-4 border">
+        <div className="flex flex-col md:flex-row gap-3 items-start md:items-center w-full">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <Input
+              placeholder="Szukaj zwierząt..."
+              value={globalFilter || ''}
+              onChange={(e) => setGlobalFilter(e.target.value)}
+              onFocus={handleInputFocus}
+              className="h-10 flex-1"
+            />
+            <InfoCard infoOpen={infoOpen} setInfoOpen={setInfoOpen}>
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <h4 className="font-semibold">Jak działa wyszukiwanie?</h4>
+                </div>
+                <div className="text-sm text-muted-foreground space-y-2">
+                  <p>Możesz szukać zwierząt po następujących polach:</p>
+                  <ul className="list-disc list-inside space-y-1">
+                    <li>
+                      <strong>Oznaczenie</strong> - np. 2026/0017
+                    </li>
+                    <li>
+                      <strong>Numer chipa</strong> - np. 616093900000000
+                    </li>
+                    <li>
+                      <strong>Imię</strong> - np. Mariusz
+                    </li>
+                    <li>
+                      <strong>Umaszczenie</strong> - np. czarny
+                    </li>
+                    <li>
+                      <strong>Wydarzenia</strong> - opis lub kto wykonał
+                    </li>
+                  </ul>
+                  <p className="text-xs italic">
+                    Wpisz fragment tekstu, a wyniki pojawią się automatycznie.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDismiss}
+                  className="w-full mt-2"
+                >
+                  Nie pokazuj ponownie
+                </Button>
+              </div>
+            </InfoCard>
+          </div>
+
+          <Select
+            value={speciesFilter.length === 0 ? 'all' : speciesFilter.join(',')}
+            onValueChange={(value) => {
+              if (value === 'all') {
+                setSpeciesFilter([])
+              } else {
+                setSpeciesFilter([Number(value) as Species])
               }
+              setPage(1)
             }}
-            title="PDF zawierający dane i zdjęcia wybranych zwierząt (siatka zdjęć)."
           >
-            {isReportsBySelectedIdsPending ? (
-              <LucideLoaderCircle className="w-4 h-4 animate-spin" />
-            ) : selectedCount > 0 ? (
-              `Raport z wybranych zwierzat (${selectedCount})`
-            ) : (
-              'Raport z wybranych zwierzat'
-            )}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setOpenDateRangeModal(true)
-            }}
-            title="Wygeneruj raport dla zdefiniowanego zakresu dat (miesiąc/kwartał/tydzień)."
-          >
-            Raport zdarzen w zakresie
-          </Button>
+            <SelectTrigger className="w-full md:w-[180px] h-10">
+              <SelectValue placeholder="Wszystkie gatunki">
+                {speciesFilter.length > 0
+                  ? SPECIES_MAP[speciesFilter[0]]
+                  : 'Wszystkie gatunki'}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Wszystkie gatunki</SelectItem>
+              <SelectItem value="1">Pies</SelectItem>
+              <SelectItem value="2">Kot</SelectItem>
+            </SelectContent>
+          </Select>
 
-          <Button
-            onClick={() => setOpenAddModal(true)}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+          <Select
+            value={
+              isInShelterFilter === null ? 'all' : isInShelterFilter.toString()
+            }
+            onValueChange={(value) => {
+              if (value === 'all') {
+                setIsInShelterFilter(null)
+              } else {
+                setIsInShelterFilter(value === 'true')
+              }
+              setPage(1)
+            }}
           >
-            <Plus className="size-5" /> Dodaj zwierzę
-          </Button>
+            <SelectTrigger className="w-full md:w-[200px] h-10">
+              <SelectValue placeholder="Wszystkie">
+                {isInShelterFilter === null
+                  ? 'Wszystkie'
+                  : isInShelterFilter
+                    ? 'W schronisku'
+                    : 'Poza schroniskiem'}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Wszystkie</SelectItem>
+              <SelectItem value="true">W schronisku</SelectItem>
+              <SelectItem value="false">Poza schroniskiem</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

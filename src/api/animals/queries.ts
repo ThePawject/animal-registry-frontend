@@ -24,6 +24,8 @@ export const defaultAnimalsParams: FetchAnimalsParams = {
   page: 1,
   pageSize: 20,
   keyWordSearch: null,
+  species: null,
+  isInShelter: null,
 }
 
 export const useAnimals = (params: FetchAnimalsParams, enabled?: boolean) =>
