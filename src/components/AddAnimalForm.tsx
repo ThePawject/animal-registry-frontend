@@ -2,17 +2,11 @@ import React from 'react'
 import { Calendar, Dog, Hash, Tag, Trash2Icon, User } from 'lucide-react'
 import { useForm, useStore } from '@tanstack/react-form'
 import { useRouter } from '@tanstack/react-router'
-import { InfoCard } from '../InfoCard'
-import { FormField } from '../FormField'
-import type {
-  AnimalById,
-  EditAnimal,
-  EditAnimalForm,
-  Sexes,
-  Species,
-} from '@/api/animals/types'
+import { InfoCard } from './InfoCard'
+import { FormField } from './FormField'
+import type { AddAnimal, Sexes, Species } from '@/api/animals/types'
 import { SEX_MAP, SPECIES_MAP } from '@/api/animals/types'
-import { useAnimalSignature, useEditAnimal } from '@/api/animals/queries'
+import { useAddAnimal, useAnimalSignature } from '@/api/animals/queries'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,6 +19,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
+const inputUploadAccept = '.jpg,.jpeg,.png,.webp'
+
 const SPECIES_OPTIONS = Object.entries(SPECIES_MAP).map(([value, label]) => ({
   value,
   label,
@@ -35,8 +31,20 @@ const SEX_OPTIONS = Object.entries(SEX_MAP).map(([value, label]) => ({
   label,
 }))
 
+const defaultAnimalFormData: AddAnimal = {
+  birthDate: '',
+  color: '',
+  mainPhotoIndex: 0,
+  name: '',
+  photos: [],
+  sex: 0,
+  signature: '',
+  species: 0,
+  transponderCode: '',
+}
+
 interface ThumbnailImageProps {
-  image: File | { id: string; url: string }
+  image: File
   alt: string
   generateThumbnail: (file: File) => Promise<string>
   className?: string
@@ -49,14 +57,8 @@ function ThumbnailImage({
   className,
 }: ThumbnailImageProps) {
   const [thumbnailUrl, setThumbnailUrl] = React.useState<string | null>(null)
-  const isFile = image instanceof File && 'arrayBuffer' in image
 
   React.useEffect(() => {
-    if (!isFile) {
-      setThumbnailUrl(null)
-      return
-    }
-
     let cancelled = false
     generateThumbnail(image).then((url) => {
       if (!cancelled) {
@@ -67,13 +69,11 @@ function ThumbnailImage({
     return () => {
       cancelled = true
     }
-  }, [image, generateThumbnail, isFile])
-
-  const src = isFile ? thumbnailUrl || '' : image.url
+  }, [image, generateThumbnail])
 
   return (
     <img
-      src={src}
+      src={thumbnailUrl || ''}
       alt={alt}
       className={className}
       loading="lazy"
@@ -81,35 +81,14 @@ function ThumbnailImage({
     />
   )
 }
-const inputUploadAccept = '.jpg,.jpeg,.png,.webp'
 
-const mapAnimalToFormData = (animal: AnimalById): EditAnimalForm => {
-  const { photos, mainPhotoId, birthDate, ...rest } = animal
+export default function AddAnimalForm() {
+  const { mutateAsync, isPending, error } = useAddAnimal()
 
-  return {
-    photos: photos,
-    birthDate: birthDate.split('T')[0],
-    mainPhotoId: mainPhotoId,
-    mainPhotoIndex: null,
-    ...rest,
-  }
-}
-type AnimalEditTabProps = {
-  animal: AnimalById
-}
-
-export function AnimalEditTab({ animal }: AnimalEditTabProps) {
   const router = useRouter()
-  const { mutateAsync, isPending, error } = useEditAnimal(() => {
-    cleanupFileUrls()
-    router.navigate({
-      to: `/animal/$animalId`,
-      params: { animalId: animal.id },
-    })
-  })
+  const isSignatureError = error?.message.toLowerCase().includes('signature')
   const { mutate: getAnimalSignature, isPending: isGettingAnimalSignature } =
     useAnimalSignature()
-  const isSignatureError = error?.message.toLowerCase().includes('signature')
 
   const fileUrlCacheRef = React.useRef<Map<File, string>>(new Map())
   const thumbnailCacheRef = React.useRef<Map<File, string>>(new Map())
@@ -183,38 +162,33 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
   }, [cleanupFileUrls])
 
   const form = useForm({
-    defaultValues: mapAnimalToFormData(animal),
-
+    defaultValues: defaultAnimalFormData,
     onSubmit: async ({ value }) => {
-      const { photos, ...rest } = value
-
-      const existingPhotosIds = photos
-        .filter((p) => typeof p === 'object' && 'id' in p)
-        .map((p) => p.id)
-      const newPhotos = photos.filter(
-        (p) => typeof p === 'object' && 'arrayBuffer' in p,
-      )
-
-      const payload: EditAnimal = {
-        ...rest,
-        existingPhotoIds: existingPhotosIds,
-        newPhotos: newPhotos,
-      }
-      await mutateAsync({ animalId: value.id, data: payload })
+      await mutateAsync(value)
+      cleanupFileUrls()
+      form.reset()
+      router.navigate({ to: '/' })
     },
   })
 
-  const isDirty = useStore(form.store, (state) => state.isDirty)
+  const images = useStore(form.store, (state) => state.values.photos)
+  const mainPhotoIndex = useStore(
+    form.store,
+    (state) => state.values.mainPhotoIndex,
+  )
+  const [displayedImageId, setDisplayedImageId] = React.useState<number | null>(
+    images.length > 0 ? 0 : null,
+  )
 
   const uploadInputRef = React.useRef<HTMLInputElement>(null)
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
-    const imagesOver10MB = files.filter((file) => file.size > 10 * 1024 * 1024)
 
+    const imagesOver10MB = files.filter((file) => file.size > 10 * 1024 * 1024)
     if (imagesOver10MB.length > 0) {
       alert(
-        `Nie można dodać ${imagesOver10MB.length} zdjęć, ponieważ przekraczają one limit 10MB. Proszę wybrać mniejsze pliki.`,
+        `Nie można dodać zdjęć, ponieważ przekraczają one limit 10MB. Proszę wybrać mniejsze pliki.`,
       )
       e.target.value = ''
       return
@@ -225,57 +199,20 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
       return
     }
     if (!files.length) return
-    form.setFieldValue('photos', [...form.getFieldValue('photos'), ...files])
-    if (
-      !form.getFieldValue('mainPhotoId') &&
-      !form.getFieldValue('mainPhotoIndex')
-    ) {
-      form.setFieldValue(
-        'mainPhotoIndex',
-        form.getFieldValue('photos').length - files.length,
-      )
+    form.setFieldValue('photos', [...images, ...files])
+    if (images.length === 0 && files.length > 0) {
+      form.setFieldValue('mainPhotoIndex', 0)
     }
     e.target.value = ''
     if (displayedImageId === null) {
-      setDisplayedImageId(form.getFieldValue('photos').length - files.length)
+      setDisplayedImageId(images.length)
     }
-  }
-
-  const images = useStore(form.store, (state) => state.values.photos)
-
-  const [displayedImageId, setDisplayedImageId] = React.useState<number | null>(
-    images.length > 0 ? 0 : null,
-  )
-
-  const mainPhotoId = useStore(form.store, (state) => state.values.mainPhotoId)
-  const mainPhotoIndex = useStore(
-    form.store,
-    (state) => state.values.mainPhotoIndex,
-  )
-
-  const numberOfExistingPhotos = images.filter(
-    (img) => typeof img === 'object' && 'id' in img,
-  ).length
-
-  const isMainPhoto = (id: string | null, index: number) => {
-    if (mainPhotoId) {
-      return id === mainPhotoId
-    }
-    if (mainPhotoIndex !== null) {
-      return index === mainPhotoIndex
-    }
-    return false
   }
 
   const getDisplayedImageUrl = () => {
     if (displayedImageId === null) return null
     const image = images[displayedImageId]
-    if (typeof image === 'object' && 'id' in image) {
-      return image.url
-    }
-    if (typeof image === 'object' && 'arrayBuffer' in image) {
-      return getFileUrl(image)
-    }
+    return getFileUrl(image)
   }
 
   return (
@@ -303,7 +240,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                   <FormField
                     icon={Dog}
                     label="Imię"
-                    error={field.state.meta.errors[0]}
+                    error={field.state.meta.errors.join(', ')}
                   >
                     <Input
                       id="Imię"
@@ -549,51 +486,40 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
           <div className="flex flex-col items-center">
             <div className="w-full h-full flex flex-col items-center justify-between py-4">
               <div className="flex gap-2 mb-4 overflow-x-auto max-w-full w-[calc(100%-1rem)] px-2">
-                {form.getFieldValue('photos').map((img, idx) => {
-                  const isFile = img instanceof File && 'arrayBuffer' in img
-
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        setDisplayedImageId(idx)
-                        return
-                      }}
-                      className={cn(
-                        'relative w-16 h-16 outline-2 -outline-offset-2 rounded-md min-w-16',
-                        idx === displayedImageId
-                          ? 'outline-emerald-600 shadow-lg'
-                          : 'outline-muted hover:outline-muted-foreground',
-                      )}
-                      type="button"
-                    >
-                      {isMainPhoto(
-                        !isFile ? img.id : null,
-                        idx - numberOfExistingPhotos,
-                      ) && (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                          className="size-6 text-yellow-400 absolute top-0.5 right-0.5 opacity-80"
-                        >
-                          <path
-                            fill-rule="evenodd"
-                            d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z"
-                            clip-rule="evenodd"
-                          />
-                        </svg>
-                      )}
-
-                      <ThumbnailImage
-                        image={img}
-                        alt={`Miniatura ${idx + 1}`}
-                        generateThumbnail={generateThumbnail}
-                        className="object-cover w-full h-full p-0.5 rounded-md"
-                      />
-                    </button>
-                  )
-                })}
+                {images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setDisplayedImageId(idx)}
+                    className={cn(
+                      'relative w-16 h-16 outline-2 -outline-offset-2 rounded-md min-w-16',
+                      idx === displayedImageId
+                        ? 'outline-emerald-600 shadow-lg'
+                        : 'outline-muted hover:outline-muted-foreground',
+                    )}
+                    type="button"
+                  >
+                    {mainPhotoIndex === idx && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        className="size-6 text-yellow-400 absolute top-0.5 right-0.5 opacity-80"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                    )}
+                    <ThumbnailImage
+                      image={img}
+                      alt={`Miniatura ${idx + 1}`}
+                      generateThumbnail={generateThumbnail}
+                      className="object-cover w-full h-full p-0.5 rounded-md"
+                    />
+                  </button>
+                ))}
               </div>
 
               {images.length > 0 ? (
@@ -605,25 +531,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                       size="sm"
                       onClick={() => {
                         if (displayedImageId === null) return
-                        const currentDisplayedImage = images[displayedImageId]
-
-                        const isFile =
-                          currentDisplayedImage instanceof File &&
-                          'arrayBuffer' in currentDisplayedImage
-
-                        if (isFile) {
-                          form.setFieldValue(
-                            'mainPhotoIndex',
-                            displayedImageId - numberOfExistingPhotos,
-                          )
-                          form.setFieldValue('mainPhotoId', null)
-                        } else {
-                          form.setFieldValue(
-                            'mainPhotoId',
-                            currentDisplayedImage.id,
-                          )
-                          form.setFieldValue('mainPhotoIndex', null)
-                        }
+                        form.setFieldValue('mainPhotoIndex', displayedImageId)
                       }}
                     >
                       Ustaw jako główne
@@ -632,58 +540,41 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                       type="button"
                       variant="destructive"
                       size="sm"
-                      onClick={async () => {
+                      onClick={() => {
                         if (displayedImageId === null) return
                         const imageToDelete = images[displayedImageId]
-                        const isFile =
-                          imageToDelete instanceof File &&
-                          'arrayBuffer' in imageToDelete
 
-                        if (isFile) {
-                          const urlToRevoke =
-                            fileUrlCacheRef.current.get(imageToDelete)
-                          if (urlToRevoke) {
-                            URL.revokeObjectURL(urlToRevoke)
-                            fileUrlCacheRef.current.delete(imageToDelete)
-                          }
+                        const fullUrl =
+                          fileUrlCacheRef.current.get(imageToDelete)
+                        if (fullUrl) {
+                          URL.revokeObjectURL(fullUrl)
+                          fileUrlCacheRef.current.delete(imageToDelete)
                         }
+                        thumbnailCacheRef.current.delete(imageToDelete)
 
-                        if (
-                          isFile &&
-                          form.getFieldValue('mainPhotoIndex') ===
-                            displayedImageId - numberOfExistingPhotos
-                        ) {
-                          form.setFieldValue('mainPhotoIndex', null)
-                        }
-
-                        if (
-                          !isFile &&
-                          form.getFieldValue('mainPhotoId') === imageToDelete.id
-                        ) {
-                          form.setFieldValue('mainPhotoId', null)
-                        }
-
-                        form.setFieldValue(
-                          'photos',
-                          images.filter((_, idx) => idx !== displayedImageId),
-                        )
                         const newImages = images.filter(
                           (_, idx) => idx !== displayedImageId,
                         )
 
-                        if (newImages.length > 0) {
-                          const newMainImage = newImages[0]
-                          const isNewMainImageFile =
-                            newMainImage instanceof File &&
-                            'arrayBuffer' in newMainImage
-                          if (isNewMainImageFile) {
+                        if (mainPhotoIndex === displayedImageId) {
+                          if (newImages.length > 0) {
                             form.setFieldValue('mainPhotoIndex', 0)
-                            form.setFieldValue('mainPhotoId', null)
                           } else {
-                            form.setFieldValue('mainPhotoId', newMainImage.id)
-                            form.setFieldValue('mainPhotoIndex', null)
+                            form.setFieldValue('mainPhotoIndex', 0)
                           }
-                          setDisplayedImageId(0)
+                        } else if (mainPhotoIndex > displayedImageId) {
+                          form.setFieldValue(
+                            'mainPhotoIndex',
+                            mainPhotoIndex - 1,
+                          )
+                        }
+
+                        form.setFieldValue('photos', newImages)
+
+                        if (newImages.length > 0) {
+                          setDisplayedImageId(
+                            Math.min(displayedImageId, newImages.length - 1),
+                          )
                         } else {
                           setDisplayedImageId(null)
                         }
@@ -707,6 +598,11 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                 </div>
               )}
               <div className="w-full flex flex-col items-center gap-2">
+                {images.length > 0 && (
+                  <div className="px-3 py-1 rounded-full text-sm">
+                    {(displayedImageId ?? 0) + 1} / {images.length}
+                  </div>
+                )}
                 <Button
                   type="button"
                   variant="outline"
@@ -735,10 +631,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
             variant="outline"
             className="flex-1 text-lg font-semibold h-12"
             onClick={() => {
-              router.navigate({
-                to: `/animal/$animalId`,
-                params: { animalId: animal.id },
-              })
+              router.navigate({ to: '/' })
             }}
           >
             Anuluj
@@ -747,9 +640,9 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
           <Button
             type="submit"
             className="flex-1 h-12 text-lg font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
-            disabled={isPending || !isDirty}
+            disabled={isPending}
           >
-            {isPending ? 'Zapisywanie...' : 'Zapisz zmiany'}
+            {isPending ? 'Zapisywanie...' : 'Dodaj zwierzaka'}
           </Button>
         </div>
         {error && !isSignatureError && (

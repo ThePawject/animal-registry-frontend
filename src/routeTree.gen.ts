@@ -10,33 +10,111 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CreateIndexRouteImport } from './routes/create/index'
+import { Route as AnimalAnimalIdRouteRouteImport } from './routes/animal.$animalId/route'
+import { Route as AnimalAnimalIdIndexRouteImport } from './routes/animal.$animalId/index'
+import { Route as AnimalAnimalIdEditRouteImport } from './routes/animal.$animalId/edit'
+import { Route as AnimalAnimalIdMedicalRecordsIndexRouteImport } from './routes/animal.$animalId/medical-records/index'
+import { Route as AnimalAnimalIdEventsIndexRouteImport } from './routes/animal.$animalId/events/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CreateIndexRoute = CreateIndexRouteImport.update({
+  id: '/create/',
+  path: '/create/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnimalAnimalIdRouteRoute = AnimalAnimalIdRouteRouteImport.update({
+  id: '/animal/$animalId',
+  path: '/animal/$animalId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnimalAnimalIdIndexRoute = AnimalAnimalIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AnimalAnimalIdRouteRoute,
+} as any)
+const AnimalAnimalIdEditRoute = AnimalAnimalIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => AnimalAnimalIdRouteRoute,
+} as any)
+const AnimalAnimalIdMedicalRecordsIndexRoute =
+  AnimalAnimalIdMedicalRecordsIndexRouteImport.update({
+    id: '/medical-records/',
+    path: '/medical-records/',
+    getParentRoute: () => AnimalAnimalIdRouteRoute,
+  } as any)
+const AnimalAnimalIdEventsIndexRoute =
+  AnimalAnimalIdEventsIndexRouteImport.update({
+    id: '/events/',
+    path: '/events/',
+    getParentRoute: () => AnimalAnimalIdRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/animal/$animalId': typeof AnimalAnimalIdRouteRouteWithChildren
+  '/create/': typeof CreateIndexRoute
+  '/animal/$animalId/edit': typeof AnimalAnimalIdEditRoute
+  '/animal/$animalId/': typeof AnimalAnimalIdIndexRoute
+  '/animal/$animalId/events/': typeof AnimalAnimalIdEventsIndexRoute
+  '/animal/$animalId/medical-records/': typeof AnimalAnimalIdMedicalRecordsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/create': typeof CreateIndexRoute
+  '/animal/$animalId/edit': typeof AnimalAnimalIdEditRoute
+  '/animal/$animalId': typeof AnimalAnimalIdIndexRoute
+  '/animal/$animalId/events': typeof AnimalAnimalIdEventsIndexRoute
+  '/animal/$animalId/medical-records': typeof AnimalAnimalIdMedicalRecordsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/animal/$animalId': typeof AnimalAnimalIdRouteRouteWithChildren
+  '/create/': typeof CreateIndexRoute
+  '/animal/$animalId/edit': typeof AnimalAnimalIdEditRoute
+  '/animal/$animalId/': typeof AnimalAnimalIdIndexRoute
+  '/animal/$animalId/events/': typeof AnimalAnimalIdEventsIndexRoute
+  '/animal/$animalId/medical-records/': typeof AnimalAnimalIdMedicalRecordsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/animal/$animalId'
+    | '/create/'
+    | '/animal/$animalId/edit'
+    | '/animal/$animalId/'
+    | '/animal/$animalId/events/'
+    | '/animal/$animalId/medical-records/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/create'
+    | '/animal/$animalId/edit'
+    | '/animal/$animalId'
+    | '/animal/$animalId/events'
+    | '/animal/$animalId/medical-records'
+  id:
+    | '__root__'
+    | '/'
+    | '/animal/$animalId'
+    | '/create/'
+    | '/animal/$animalId/edit'
+    | '/animal/$animalId/'
+    | '/animal/$animalId/events/'
+    | '/animal/$animalId/medical-records/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AnimalAnimalIdRouteRoute: typeof AnimalAnimalIdRouteRouteWithChildren
+  CreateIndexRoute: typeof CreateIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +126,73 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/create/': {
+      id: '/create/'
+      path: '/create'
+      fullPath: '/create/'
+      preLoaderRoute: typeof CreateIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/animal/$animalId': {
+      id: '/animal/$animalId'
+      path: '/animal/$animalId'
+      fullPath: '/animal/$animalId'
+      preLoaderRoute: typeof AnimalAnimalIdRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/animal/$animalId/': {
+      id: '/animal/$animalId/'
+      path: '/'
+      fullPath: '/animal/$animalId/'
+      preLoaderRoute: typeof AnimalAnimalIdIndexRouteImport
+      parentRoute: typeof AnimalAnimalIdRouteRoute
+    }
+    '/animal/$animalId/edit': {
+      id: '/animal/$animalId/edit'
+      path: '/edit'
+      fullPath: '/animal/$animalId/edit'
+      preLoaderRoute: typeof AnimalAnimalIdEditRouteImport
+      parentRoute: typeof AnimalAnimalIdRouteRoute
+    }
+    '/animal/$animalId/medical-records/': {
+      id: '/animal/$animalId/medical-records/'
+      path: '/medical-records'
+      fullPath: '/animal/$animalId/medical-records/'
+      preLoaderRoute: typeof AnimalAnimalIdMedicalRecordsIndexRouteImport
+      parentRoute: typeof AnimalAnimalIdRouteRoute
+    }
+    '/animal/$animalId/events/': {
+      id: '/animal/$animalId/events/'
+      path: '/events'
+      fullPath: '/animal/$animalId/events/'
+      preLoaderRoute: typeof AnimalAnimalIdEventsIndexRouteImport
+      parentRoute: typeof AnimalAnimalIdRouteRoute
+    }
   }
 }
 
+interface AnimalAnimalIdRouteRouteChildren {
+  AnimalAnimalIdEditRoute: typeof AnimalAnimalIdEditRoute
+  AnimalAnimalIdIndexRoute: typeof AnimalAnimalIdIndexRoute
+  AnimalAnimalIdEventsIndexRoute: typeof AnimalAnimalIdEventsIndexRoute
+  AnimalAnimalIdMedicalRecordsIndexRoute: typeof AnimalAnimalIdMedicalRecordsIndexRoute
+}
+
+const AnimalAnimalIdRouteRouteChildren: AnimalAnimalIdRouteRouteChildren = {
+  AnimalAnimalIdEditRoute: AnimalAnimalIdEditRoute,
+  AnimalAnimalIdIndexRoute: AnimalAnimalIdIndexRoute,
+  AnimalAnimalIdEventsIndexRoute: AnimalAnimalIdEventsIndexRoute,
+  AnimalAnimalIdMedicalRecordsIndexRoute:
+    AnimalAnimalIdMedicalRecordsIndexRoute,
+}
+
+const AnimalAnimalIdRouteRouteWithChildren =
+  AnimalAnimalIdRouteRoute._addFileChildren(AnimalAnimalIdRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AnimalAnimalIdRouteRoute: AnimalAnimalIdRouteRouteWithChildren,
+  CreateIndexRoute: CreateIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

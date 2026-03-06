@@ -25,9 +25,15 @@ export const animalsService = {
       throw error
     }
   },
-  async getAnimalById(id: string): Promise<AnimalById> {
+  async getAnimalById(id: string, token?: string): Promise<AnimalById> {
     try {
-      const response = await apiClient.get(`animals/${id}`)
+      const response = await apiClient.get<AnimalById>(`animals/${id}`, {
+        headers: token
+          ? {
+              Authorization: 'Bearer ' + token,
+            }
+          : undefined,
+      })
       return response.data
     } catch (error) {
       if (axios.isAxiosError(error)) {

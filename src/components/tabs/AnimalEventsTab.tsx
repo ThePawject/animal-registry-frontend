@@ -4,16 +4,30 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { Pencil, Trash2, XIcon } from 'lucide-react'
-import AnimalEventFormModal from './AnimalEventFormModal'
+import { Check, Pencil, Plus, Trash2, X } from 'lucide-react'
+import { useForm } from '@tanstack/react-form'
+import { ErrorPopover } from '../ErrorPopover'
+import AnimalEventForm from './AnimalEventForm'
 import type { ColumnDef } from '@tanstack/react-table'
-import type { AnimalEvent } from '@/api/animals/types'
-import { ANIMAL_EVENT_TYPE_MAP } from '@/api/animals/types'
-import { useAnimalById, useDeleteAnimalEvent } from '@/api/animals/queries'
+import type {
+  AnimalById,
+  AnimalEvent,
+  AnimalEventType,
+} from '@/api/animals/types'
+import { ANIMAL_EVENT_TYPE_MAP, EVENT_TYPE_OPTIONS } from '@/api/animals/types'
+import { useDeleteAnimalEvent, useEditAnimalEvent } from '@/api/animals/queries'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -22,37 +36,200 @@ import {
 import { Card } from '@/components/ui/card'
 
 interface AnimalEventsTabProps {
-  animalId: string
-  open: boolean
-  onClose: () => void
+  animal: AnimalById
 }
 
-export default function AnimalEventsTab({
-  animalId,
-  open,
-  onClose,
-}: AnimalEventsTabProps) {
-  const { data: animal, isLoading } = useAnimalById(animalId)
-  const { mutate: deleteEvent, isPending: isDeleting } = useDeleteAnimalEvent()
+const defaultEditFormData: Omit<AnimalEvent, 'id'> = {
+  type: 1,
+  occurredOn: new Date().toISOString().split('T')[0],
+  description: '',
+}
 
-  const [isFormModalOpen, setIsFormModalOpen] = React.useState(false)
-  const [selectedEvent, setSelectedEvent] = React.useState<AnimalEvent | null>(
+export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
+  const { mutate: deleteEvent, isPending: isDeleting } = useDeleteAnimalEvent()
+  const { mutate: editEvent, isPending: isEditingEvent } = useEditAnimalEvent()
+
+  const [editingEventId, setEditingEventId] = React.useState<string | null>(
     null,
   )
+  const [showAddForm, setShowAddForm] = React.useState(false)
   const [eventToDelete, setEventToDelete] = React.useState<AnimalEvent | null>(
     null,
   )
 
-  const events = animal?.events || []
+  const form = useForm({
+    defaultValues: defaultEditFormData,
+    onSubmit: ({ value }) => {
+      const eventData: AnimalEvent = {
+        id: editingEventId!,
+        ...value,
+      }
 
-  const handleEdit = (event: AnimalEvent) => {
-    setSelectedEvent(event)
-    setIsFormModalOpen(true)
+      editEvent(
+        { animalId: animal.id, eventId: editingEventId!, data: eventData },
+        {
+          onSuccess: () => {
+            setEditingEventId(null)
+            form.reset()
+          },
+        },
+      )
+    },
+  })
+
+  const events = animal.events
+
+  const handleEditClick = (event: AnimalEvent) => {
+    setEditingEventId(event.id)
+    form.setFieldValue('type', event.type, { dontValidate: true })
+    form.setFieldValue('occurredOn', event.occurredOn.split('T')[0], {
+      dontValidate: true,
+    })
+    form.setFieldValue('description', event.description, { dontValidate: true })
   }
 
-  const handleAdd = () => {
-    setSelectedEvent(null)
-    setIsFormModalOpen(true)
+  const handleCancelEdit = () => {
+    setEditingEventId(null)
+    form.setFieldValue('type', defaultEditFormData.type)
+    form.setFieldValue('occurredOn', defaultEditFormData.occurredOn)
+    form.setFieldValue('description', defaultEditFormData.description)
+  }
+
+  const handleShowAddForm = () => {
+    setEditingEventId(null)
+    form.setFieldValue('type', defaultEditFormData.type, { dontValidate: true })
+    form.setFieldValue('occurredOn', defaultEditFormData.occurredOn, {
+      dontValidate: true,
+    })
+    form.setFieldValue('description', defaultEditFormData.description, {
+      dontValidate: true,
+    })
+    setShowAddForm(true)
+  }
+
+  const handleCloseAddForm = () => {
+    setShowAddForm(false)
+  }
+
+  const EventTypeCell = ({ event }: { event: AnimalEvent }) => {
+    if (editingEventId === event.id) {
+      return (
+        <form.Field
+          name="type"
+          validators={{
+            onChange: ({ value }) => {
+              return value === 0 ? 'Typ wydarzenia jest wymagany' : undefined
+            },
+          }}
+          children={(field) => {
+            return (
+              <div className="flex-1 flex justify-center">
+                <Select
+                  value={String(field.state.value)}
+                  onValueChange={(value) =>
+                    field.handleChange(Number(value) as AnimalEventType)
+                  }
+                >
+                  <SelectTrigger className="bg-background w-full">
+                    <SelectValue placeholder="Wybierz typ wydarzenia" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EVENT_TYPE_OPTIONS.filter((opt) => opt.value !== 0).map(
+                      (opt) => (
+                        <SelectItem key={opt.value} value={String(opt.value)}>
+                          {opt.label}
+                        </SelectItem>
+                      ),
+                    )}
+                  </SelectContent>
+                </Select>
+
+                <ErrorPopover error={field.state.meta.errors[0]} />
+              </div>
+            )
+          }}
+        />
+      )
+    }
+
+    return <div className="w-max">{ANIMAL_EVENT_TYPE_MAP[event.type]}</div>
+  }
+
+  const EventDateCell = ({ event }: { event: AnimalEvent }) => {
+    if (editingEventId === event.id) {
+      return (
+        <div className="min-w-[140px]">
+          <form.Field
+            name="occurredOn"
+            validators={{
+              onChange: ({ value }) => {
+                if (!value) return 'Data wydarzenia jest wymagana'
+                const eventDate = new Date(value)
+                const today = new Date()
+                if (eventDate > today)
+                  return 'Data wydarzenia nie może być z przyszłości'
+                return undefined
+              },
+            }}
+            children={(field) => {
+              return (
+                <div className="flex-1">
+                  <Input
+                    type="date"
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    id="Data wydarzenia"
+                    className="bg-background"
+                  />
+                  <ErrorPopover error={field.state.meta.errors[0]} />
+                </div>
+              )
+            }}
+          />
+        </div>
+      )
+    }
+
+    return (
+      <span className="block w-full">
+        {new Date(event.occurredOn).toLocaleDateString('pl-PL')}
+      </span>
+    )
+  }
+
+  const EventDescriptionCell = ({ event }: { event: AnimalEvent }) => {
+    if (editingEventId === event.id) {
+      return (
+        <form.Field
+          name="description"
+          validators={{
+            onChange: ({ value }) => {
+              return !value || value.trim().length < 1
+                ? 'Opis jest wymagany'
+                : undefined
+            },
+          }}
+          children={(field) => {
+            return (
+              <Textarea
+                maxLength={500}
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                id="Opis"
+                className="bg-background wrap-anywhere min-h-0 w-fit min-w-[300px]"
+                placeholder="Wpisz opis"
+              />
+            )
+          }}
+        />
+      )
+    }
+
+    return <div>{event.description}</div>
+  }
+
+  const EventPerformedByCell = ({ event }: { event: AnimalEvent }) => {
+    return <div>{event.performedBy || ''}</div>
   }
 
   const handleDeleteClick = (event: AnimalEvent) => {
@@ -62,7 +239,7 @@ export default function AnimalEventsTab({
   const handleConfirmDelete = () => {
     if (eventToDelete) {
       deleteEvent({
-        animalId: animalId,
+        animalId: animal.id,
         eventId: eventToDelete.id,
       })
       setEventToDelete(null)
@@ -73,65 +250,88 @@ export default function AnimalEventsTab({
     () => [
       {
         accessorKey: 'type',
-        header: 'Typ wydarzenia',
-        cell: (info) => {
-          const type = info.getValue() as number
-          return ANIMAL_EVENT_TYPE_MAP[
-            type as keyof typeof ANIMAL_EVENT_TYPE_MAP
-          ]
-        },
+        header: () => <div className="w-max">Typ wydarzenia</div>,
+        cell: ({ row }) => <EventTypeCell event={row.original} />,
+        size: 180,
       },
       {
         accessorKey: 'occurredOn',
-        header: 'Data wydarzenia',
-        cell: (info) => {
-          const value = info.getValue() as string
-          return value ? new Date(value).toLocaleDateString('pl-PL') : ''
-        },
+        header: () => <div className="w-max">Data wydarzenia</div>,
+        cell: ({ row }) => <EventDateCell event={row.original} />,
         size: 140,
       },
       {
         accessorKey: 'description',
         header: 'Opis',
-        cell: (info) => (
-          <span className="max-w-xs break-words block">
-            {info.getValue() as string}
-          </span>
-        ),
+        cell: ({ row }) => <EventDescriptionCell event={row.original} />,
+        size: 300,
       },
       {
         accessorKey: 'performedBy',
-        header: 'Wykonane przez',
-        cell: (info) => info.getValue(),
+        header: () => <div className="w-max">Wykonane przez</div>,
+        cell: ({ row }) => <EventPerformedByCell event={row.original} />,
+        size: 180,
       },
       {
         id: 'actions',
         header: 'Akcje',
-        cell: ({ row }) => (
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleEdit(row.original)}
-            >
-              <Pencil className="w-4 h-4 mr-1" /> Edytuj
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => handleDeleteClick(row.original)}
-              disabled={isDeleting}
-            >
-              <Trash2 className="w-4 h-4 mr-1" /> Usuń
-            </Button>
-          </div>
-        ),
+        cell: ({ row }) => {
+          const isEditing = editingEventId === row.original.id
+
+          if (isEditing) {
+            return (
+              <div className="flex gap-2 min-w-[200px] min-h-16 items-center">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCancelEdit}
+                  className="h-8 flex-1"
+                >
+                  <X className="w-4 h-4 mr-1" /> Anuluj
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isEditingEvent}
+                  onClick={() => form.handleSubmit()}
+                  className="h-8 flex-1 bg-emerald-600 hover:bg-emerald-700 text-white hover:text-white"
+                >
+                  <Check className="w-4 h-4 mr-1" />{' '}
+                  {isEditingEvent ? 'Zapisywanie...' : 'Zapisz'}
+                </Button>
+              </div>
+            )
+          }
+
+          return (
+            <div className="flex gap-2 min-w-[200px] min-h-16 items-center">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleEditClick(row.original)}
+                className="h-8 flex-1"
+              >
+                <Pencil className="w-4 h-4 mr-1" /> Edytuj
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                type="button"
+                onClick={() => handleDeleteClick(row.original)}
+                disabled={isDeleting}
+                className="h-8 flex-1"
+              >
+                <Trash2 className="w-4 h-4 mr-1" /> Usuń
+              </Button>
+            </div>
+          )
+        },
         enableSorting: false,
         enableHiding: false,
-        size: 200,
+        size: 220,
       },
     ],
-    [isDeleting],
+    [editingEventId, isDeleting],
   )
 
   const table = useReactTable({
@@ -142,122 +342,82 @@ export default function AnimalEventsTab({
 
   return (
     <>
-      <Dialog
-        open={open}
-        onOpenChange={(openState) => {
-          if (!openState) onClose()
-        }}
-      >
-        <DialogContent
-          showCloseButton={false}
-          className="p-0 bg-transparent shadow-none border-none max-w-4xl"
-        >
-          <div className="relative">
-            <DialogClose asChild>
-              <button
-                onClick={() => {
-                  onClose()
-                }}
-                className="absolute z-20 top-4 right-4 rounded-full focus:ring-2 focus:ring-ring focus:outline-none bg-red-600 hover:bg-red-700 p-2 shadow-md"
-                aria-label="Close"
-              >
-                <XIcon className="w-5 h-5 text-white" />
-              </button>
-            </DialogClose>
+      <Card className="max-w-full w-full p-8 rounded-2xl shadow-md bg-white dark:bg-zinc-900">
+        <div className="mb-8 flex items-center justify-between">
+          <h2 className="text-2xl font-bold">Wydarzenia</h2>
 
-            <Card className="max-w-full w-full p-8 rounded-2xl shadow-md bg-white dark:bg-zinc-900">
-              <div className="mb-8 flex items-center justify-between">
-                <h2 className="text-2xl font-bold">Wydarzenia</h2>
-              </div>
+          <Button
+            onClick={handleShowAddForm}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+          >
+            <Plus className="size-5" /> Dodaj wydarzenie
+          </Button>
+        </div>
 
-              <div className="space-y-6 w-max mx-auto">
-                <Button
-                  onClick={handleAdd}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white ml-auto block"
-                >
-                  Dodaj wydarzenie
-                </Button>
-                <div className="rounded-md border bg-white dark:bg-black/30 overflow-x-auto max-w-[700px]">
-                  <table className="text-sm min-w-[600px]">
-                    <thead>
-                      {table.getHeaderGroups().map((headerGroup) => (
-                        <tr key={headerGroup.id}>
-                          {headerGroup.headers.map((header) => (
-                            <th
-                              key={header.id}
-                              className="border-b bg-muted/50 px-4 py-3 text-left font-semibold text-sm"
-                            >
-                              {header.isPlaceholder
-                                ? null
-                                : flexRender(
-                                    header.column.columnDef.header,
-                                    header.getContext(),
-                                  )}
-                            </th>
-                          ))}
-                        </tr>
+        <div className="space-y-6 w-full flex flex-col gap-8">
+          {showAddForm && (
+            <div className="w-full">
+              <AnimalEventForm
+                animalId={animal.id}
+                onClose={handleCloseAddForm}
+              />
+            </div>
+          )}
+
+          <div className="rounded-md border bg-white dark:bg-black/30 overflow-x-auto m-0">
+            <table className="text-sm min-w-[600px] w-full">
+              <thead>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <th
+                        key={header.id}
+                        className="border-b bg-muted/50 px-4 py-3 text-left font-semibold text-sm"
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody>
+                {events.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={columns.length}
+                      className="h-20 text-center text-muted-foreground"
+                    >
+                      Brak wydarzeń.
+                    </td>
+                  </tr>
+                ) : (
+                  table.getRowModel().rows.map((row) => (
+                    <tr
+                      key={row.id}
+                      className="border-b transition-colors hover:bg-muted/50"
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <td key={cell.id} className="px-4 py-3 align-middle">
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </td>
                       ))}
-                    </thead>
-                    <tbody>
-                      {isLoading ? (
-                        <tr>
-                          <td
-                            colSpan={columns.length}
-                            className="h-20 text-center text-muted-foreground"
-                          >
-                            Ładowanie...
-                          </td>
-                        </tr>
-                      ) : events.length === 0 ? (
-                        <tr>
-                          <td
-                            colSpan={columns.length}
-                            className="h-20 text-center text-muted-foreground"
-                          >
-                            Brak wydarzeń.
-                          </td>
-                        </tr>
-                      ) : (
-                        table.getRowModel().rows.map((row) => (
-                          <tr
-                            key={row.id}
-                            className="border-b transition-colors hover:bg-muted/50"
-                          >
-                            {row.getVisibleCells().map((cell) => (
-                              <td
-                                key={cell.id}
-                                className="px-4 py-3 align-middle"
-                              >
-                                {flexRender(
-                                  cell.column.columnDef.cell,
-                                  cell.getContext(),
-                                )}
-                              </td>
-                            ))}
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </Card>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      </Card>
 
-      {/* Form Modal for Add/Edit */}
-      <AnimalEventFormModal
-        open={isFormModalOpen}
-        onClose={() => {
-          setIsFormModalOpen(false)
-          setSelectedEvent(null)
-        }}
-        animalId={animalId}
-        event={selectedEvent}
-      />
-
-      {/* Delete Confirmation Dialog */}
       <Dialog
         open={!!eventToDelete}
         onOpenChange={(open) => {
