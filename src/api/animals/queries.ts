@@ -75,6 +75,26 @@ export const useEditAnimal = (onSuccess: () => void) => {
   })
 }
 
+type DeleteAnimalVariables = {
+  animalId: string
+}
+
+export const useDeleteAnimal = (onSuccess: () => void) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ animalId }: DeleteAnimalVariables) =>
+      animalsService.deleteAnimal(animalId),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: animalsKeys.one(String(variables.animalId)),
+      })
+      queryClient.invalidateQueries({ queryKey: animalsKeys.all })
+      onSuccess()
+    },
+  })
+}
+
 type AddAnimalEventVariables = {
   animalId: string
   data: AnimalEvent
