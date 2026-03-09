@@ -124,6 +124,17 @@ export const animalsService = {
       throw error
     }
   },
+  deleteAnimal: async (id: string) => {
+    try {
+      const response = await apiClient.delete(`animals/${id}`)
+      return response.data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to delete animal: ${error.message}`)
+      }
+      throw error
+    }
+  },
   addAnimalEvent: async (id: string, data: AnimalEvent) => {
     try {
       const response = await apiClient.post(`animals/${id}/events`, data)

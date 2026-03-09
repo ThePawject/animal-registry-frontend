@@ -1,16 +1,26 @@
 import { useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link, useRouter } from '@tanstack/react-router'
 import {
   BriefcaseMedicalIcon,
   CalendarIcon,
   Edit2Icon,
   ImagesIcon,
+  TrashIcon,
 } from 'lucide-react'
 import { Badge } from '../ui/badge'
+import { Button } from '../ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '../ui/dialog'
 import type { AnimalById } from '@/api/animals/types'
 import { Card } from '@/components/ui/card'
 import { SEX_MAP, SPECIES_MAP } from '@/api/animals/types'
 import { cn } from '@/lib/utils'
+import { useDeleteAnimal } from '@/api/animals/queries'
 
 function formatDate(date: string | Date | null | undefined): string {
   if (!date) return '-'
@@ -43,7 +53,12 @@ function InfoRow({ label, info }: InfoRowProps) {
 }
 
 export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
+  const router = useRouter()
   const [selectedIdx, setSelectedIdx] = useState(0)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const { mutate: deleteAnimal } = useDeleteAnimal(() => {
+    router.navigate({ to: '/' })
+  })
 
   const mainPhotoUrl = animal.photos.find(
     (photo) => photo.id === animal.mainPhotoId,
@@ -62,7 +77,7 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
         <Link
           to="/animal/$animalId/edit"
           params={{ animalId: animal.id }}
-          className="bg-white flex gap-3 text-slate-700 items-center border border-slate-300 rounded-lg p-2 py-3 w-full hover:bg-emerald-600 hover:text-white justify-center"
+          className="bg-white flex flex-1 gap-3 text-slate-700 items-center border border-slate-300 rounded-lg p-2 py-3 w-full hover:bg-emerald-600 hover:text-white justify-center"
         >
           <Edit2Icon className="size-5" />
           <span className="text-lg font-medium">Edytuj dane</span>
@@ -70,7 +85,7 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
         <Link
           to="/animal/$animalId/events"
           params={{ animalId: animal.id }}
-          className="bg-white flex gap-3 text-slate-700 items-center border border-slate-300 rounded-lg p-2 py-3 w-full hover:bg-emerald-600 hover:text-white justify-center"
+          className="bg-white flex flex-1 gap-3 text-slate-700 items-center border border-slate-300 rounded-lg p-2 py-3 w-full hover:bg-emerald-600 hover:text-white justify-center"
         >
           <CalendarIcon className="size-5" />
           <span className="text-lg font-medium">Wydarzenia</span>
@@ -78,11 +93,21 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
         <Link
           to="/animal/$animalId/medical-records"
           params={{ animalId: animal.id }}
-          className="bg-white flex gap-3 text-slate-700 items-center border border-slate-300 rounded-lg p-2 py-3 w-full hover:bg-emerald-600 hover:text-white justify-center"
+          className="bg-white flex flex-1 gap-3 text-slate-700 items-center border border-slate-300 rounded-lg p-2 py-3 w-full hover:bg-emerald-600 hover:text-white justify-center"
         >
           <BriefcaseMedicalIcon className="size-5" />
           <span className="text-lg font-medium">Medyczne</span>
         </Link>
+        <Button
+          onClick={() => {
+            setIsDeleteModalOpen(true)
+          }}
+          variant="destructive"
+          className="flex-1 w-full py-7 border border-red-700 hover:bg-red-700"
+        >
+          <TrashIcon className="size-5" />
+          <span className="text-lg font-medium h-7">Usuń </span>
+        </Button>
       </div>
       <Card className="w-full flex gap-5 p-0 relative">
         <div className="flex flex-col md:flex-row gap-8 p-8">
@@ -174,6 +199,34 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
           </div>
         </div>
       </Card>
+      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Potwierdzenie usunięcia</DialogTitle>
+            <DialogDescription>
+              Czy na pewno chcesz usunąć {animal.name}? Ta operacja jest
+              nieodwracalna.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-4 mt-4 justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteModalOpen(false)}
+            >
+              Anuluj
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                deleteAnimal({ animalId: animal.id })
+                setIsDeleteModalOpen(false)
+              }}
+            >
+              Usuń
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
