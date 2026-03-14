@@ -88,7 +88,7 @@ const mapAnimalToFormData = (animal: AnimalById): EditAnimalForm => {
 
   return {
     photos: photos,
-    birthDate: birthDate.split('T')[0],
+    birthDate: birthDate ? birthDate.split('T')[0] : null,
     mainPhotoId: mainPhotoId,
     mainPhotoIndex: null,
     ...rest,
@@ -186,7 +186,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
     defaultValues: mapAnimalToFormData(animal),
 
     onSubmit: async ({ value }) => {
-      const { photos, ...rest } = value
+      const { photos, name, transponderCode, birthDate, ...rest } = value
 
       const existingPhotosIds = photos
         .filter((p) => typeof p === 'object' && 'id' in p)
@@ -197,6 +197,9 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
 
       const payload: EditAnimal = {
         ...rest,
+        name: name ?? null,
+        transponderCode: transponderCode ?? null,
+        birthDate: birthDate ? new Date(birthDate).toISOString() : null,
         existingPhotoIds: existingPhotosIds,
         newPhotos: newPhotos,
       }
@@ -291,13 +294,6 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
           <div className="space-y-6 py-6">
             <form.Field
               name="name"
-              validators={{
-                onChange: ({ value }) => {
-                  return !value || value.trim().length < 2
-                    ? 'Imię musi mieć conajmniej 2 znaki'
-                    : undefined
-                },
-              }}
               children={(field) => {
                 return (
                   <FormField
@@ -307,7 +303,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                   >
                     <Input
                       id="Imię"
-                      value={field.state.value}
+                      value={field.state.value ?? undefined}
                       onChange={(e) => field.handleChange(e.target.value)}
                       className="bg-background"
                       placeholder="Wpisz imię zwierzaka"
@@ -392,11 +388,6 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
 
             <form.Field
               name="transponderCode"
-              validators={{
-                onChange: ({ value }) => {
-                  return !value ? 'Numer chipa jest wymagany' : undefined
-                },
-              }}
               children={(field) => {
                 return (
                   <FormField
@@ -405,7 +396,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                     error={field.state.meta.errors[0]}
                   >
                     <Input
-                      value={field.state.value}
+                      value={field.state.value ?? undefined}
                       onChange={(e) => field.handleChange(e.target.value)}
                       id="Numer chipa"
                       className="bg-background"
@@ -517,7 +508,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
               name="birthDate"
               validators={{
                 onChange: ({ value }) => {
-                  if (!value) return 'Data urodzenia jest wymagana'
+                  if (!value) return undefined
                   const birthDate = new Date(value)
                   const today = new Date()
                   if (birthDate > today)
@@ -535,7 +526,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                     <Input
                       min="2000-01-01"
                       type="date"
-                      value={field.state.value}
+                      value={field.state.value ?? undefined}
                       onChange={(e) => field.handleChange(e.target.value)}
                       id="Data urodzenia"
                       className="bg-background"

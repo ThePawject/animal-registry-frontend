@@ -1,12 +1,12 @@
 export type Animal = {
   id: string
   signature: string
-  transponderCode: string
-  name: string
+  transponderCode: string | null
+  name: string | null
   color: string
   species: Species
   sex: Sexes
-  birthDate: string
+  birthDate: string | null
   createdOn: string
   modifiedOn: string
   isInShelter: boolean
@@ -80,30 +80,30 @@ export type AnimalHealthRecord = {
 }
 
 export type AddAnimal = {
-  birthDate: string
+  birthDate: string | null
   color: string
   mainPhotoIndex: number
-  name: string
+  name: string | null
   photos: Array<File>
   sex: Sexes
   signature: string
   species: Species
-  transponderCode: string
+  transponderCode: string | null
 }
 
 export type EditAnimal = {
-  birthDate: string
+  birthDate: string | null
   color: string
   existingPhotoIds: Array<string>
   id: string
   mainPhotoId: string | null
   mainPhotoIndex: number | null
-  name: string
+  name: string | null
   newPhotos: Array<File>
   sex: Sexes
   signature: string
   species: Species
-  transponderCode: string
+  transponderCode: string | null
 }
 
 export type EditAnimalForm = Omit<

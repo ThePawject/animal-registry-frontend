@@ -134,7 +134,7 @@ function AnimalTable() {
             return (
               <img
                 src={mainPhoto.url}
-                alt={info.row.original.name}
+                alt={info.row.original.name || 'Zdjęcie zwierzęcia'}
                 className="w-12 h-12 object-cover rounded-lg"
               />
             )
@@ -163,7 +163,7 @@ function AnimalTable() {
         header: 'Imię',
         cell: (info) => (
           <div className="max-w-[200px] truncate">
-            {info.getValue() as string}
+            {info.getValue() || 'Brak'}
           </div>
         ),
       },
@@ -212,7 +212,9 @@ function AnimalTable() {
         accessorKey: 'birthDate',
         header: 'Wiek',
         cell: (info) => {
-          const birthDate = new Date(info.getValue() as string)
+          const value = info.getValue() as string | null
+          if (!value) return <div className="max-w-fit">Brak danych</div>
+          const birthDate = new Date(info.getValue())
           const ageDifMs = Date.now() - birthDate.getTime()
           const ageDate = new Date(ageDifMs)
           const years = Math.abs(ageDate.getUTCFullYear() - 1970)
