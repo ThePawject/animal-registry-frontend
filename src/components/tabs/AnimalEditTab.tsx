@@ -307,6 +307,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                   >
                     <Input
                       id="Imię"
+                      data-testid="animal-name-input"
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                       className="bg-background"
@@ -343,6 +344,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                     >
                       <div className="relative">
                         <Input
+                          data-testid="animal-signature-input"
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
                           id="Oznaczenie"
@@ -369,6 +371,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                       </div>
                       <Button
                         type="button"
+                        data-testid="generate-signature-btn"
                         variant="outline"
                         className="h-9 w-[200px]"
                         size="sm"
@@ -405,6 +408,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                     error={field.state.meta.errors[0]}
                   >
                     <Input
+                      data-testid="animal-transponder-input"
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                       id="Numer chipa"
@@ -430,12 +434,13 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                     label="Gatunek"
                     error={field.state.meta.errors[0]}
                   >
-                    <Select
-                      value={String(field.state.value)}
-                      onValueChange={(value) =>
-                        field.handleChange(Number(value) as Species)
-                      }
-                    >
+                    <div data-testid="animal-species-select">
+                      <Select
+                        value={String(field.state.value)}
+                        onValueChange={(value) =>
+                          field.handleChange(Number(value) as Species)
+                        }
+                      >
                       <SelectTrigger className="bg-background w-full">
                         <SelectValue placeholder="Wybierz gatunek" />
                       </SelectTrigger>
@@ -446,7 +451,8 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                           </SelectItem>
                         ))}
                       </SelectContent>
-                    </Select>
+                      </Select>
+                    </div>
                   </FormField>
                 )
               }}
@@ -466,12 +472,13 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                     label="Płeć"
                     error={field.state.meta.errors[0]}
                   >
-                    <Select
-                      value={String(field.state.value)}
-                      onValueChange={(value) =>
-                        field.handleChange(Number(value) as Sexes)
-                      }
-                    >
+                    <div data-testid="animal-sex-select">
+                      <Select
+                        value={String(field.state.value)}
+                        onValueChange={(value) =>
+                          field.handleChange(Number(value) as Sexes)
+                        }
+                      >
                       <SelectTrigger className="bg-background w-full">
                         <SelectValue placeholder="Wybierz płeć" />
                       </SelectTrigger>
@@ -482,7 +489,8 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                           </SelectItem>
                         ))}
                       </SelectContent>
-                    </Select>
+                      </Select>
+                    </div>
                   </FormField>
                 )
               }}
@@ -502,6 +510,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                     error={field.state.meta.errors[0]}
                   >
                     <Input
+                      data-testid="animal-color-input"
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                       id="Umaszczenie"
@@ -533,6 +542,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                     error={field.state.meta.errors[0]}
                   >
                     <Input
+                      data-testid="animal-birthdate-input"
                       min="2000-01-01"
                       type="date"
                       value={field.state.value}
@@ -732,6 +742,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
         <div className="flex gap-4 p-5 w-full">
           <Button
             type="button"
+            data-testid="cancel-animal-btn"
             variant="outline"
             className="flex-1 text-lg font-semibold h-12"
             onClick={() => {
@@ -746,6 +757,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
 
           <Button
             type="submit"
+            data-testid="submit-animal-btn"
             className="flex-1 h-12 text-lg font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
             disabled={isPending || !isDirty}
           >

@@ -17,3 +17,10 @@ todos.json
 .idea
 *.md
 !README.md
+playwright-results
+playwright-report
+test-results
+test-results.json
+downloads
+tests/.auth
+.junie

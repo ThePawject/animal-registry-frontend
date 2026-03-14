@@ -39,15 +39,16 @@ function formatDate(date: string | Date | null | undefined): string {
 interface InfoRowProps {
   label: string
   info: string
+  testId?: string
 }
 
-function InfoRow({ label, info }: InfoRowProps) {
+function InfoRow({ label, info, testId }: InfoRowProps) {
   return (
     <div className="flex flex-col gap-1">
       <span className="text text-muted-foreground uppercase font-medium">
         {label}
       </span>
-      <span className="text-lg text-black font-semibold">{info}</span>
+      <span data-testid={testId} className="text-lg text-black font-semibold">{info}</span>
     </div>
   )
 }
@@ -117,14 +118,15 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
           />
           <div className="flex flex-col justify-between w-full gap-6">
             <div className="flex flex-col gap-1">
-              <h2 className="text-3xl font-semibold">{animal.name}</h2>
+              <h2 data-testid="animal-details-name" className="text-3xl font-semibold">{animal.name}</h2>
             </div>
             <div className="grid gap-8 grid-cols-2 md:grid-cols-3">
-              <InfoRow label="Gatunek" info={SPECIES_MAP[animal.species]} />
-              <InfoRow label="Płeć" info={SEX_MAP[animal.sex]} />
-              <InfoRow label="Sygnatura" info={animal.signature} />
-              <InfoRow label="Umaszczenie" info={animal.color} />
+              <InfoRow testId="animal-details-species" label="Gatunek" info={SPECIES_MAP[animal.species]} />
+              <InfoRow testId="animal-details-sex" label="Płeć" info={SEX_MAP[animal.sex]} />
+              <InfoRow testId="animal-details-signature" label="Sygnatura" info={animal.signature} />
+              <InfoRow testId="animal-details-color" label="Umaszczenie" info={animal.color} />
               <InfoRow
+                testId="animal-details-birthdate"
                 label="Data urodzenia"
                 info={formatDate(animal.birthDate)}
               />
