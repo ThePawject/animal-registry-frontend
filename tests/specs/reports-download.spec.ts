@@ -1,5 +1,5 @@
-import { test, expect } from './fixtures/authenticated'
-import { ReportsPage } from './pages/ReportsPage'
+import { expect, test } from '../fixtures/authenticated'
+import { ReportsPage } from '../pages/ReportsPage'
 
 test.describe('Animal Reports Download', () => {
   test('Downloads Report Events file', async ({

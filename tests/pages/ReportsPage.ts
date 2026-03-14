@@ -1,4 +1,5 @@
-import { type Page, type Locator, expect } from '@playwright/test'
+import {   expect } from '@playwright/test'
+import type {Locator, Page} from '@playwright/test';
 
 export class ReportsPage {
   private readonly page: Page
@@ -17,10 +18,6 @@ export class ReportsPage {
     this.animalCheckboxes = page.getByRole('checkbox', { name: /Select row/i })
   }
 
-  async expectReportButtonsVisible() {
-    await expect(this.reportEventsBtn).toBeVisible()
-    await expect(this.reportAllAnimalsBtn).toBeVisible()
-  }
 
   async downloadEventsReport() {
     await expect(this.reportEventsBtn).toBeVisible()
