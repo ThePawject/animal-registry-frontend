@@ -117,7 +117,9 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
           />
           <div className="flex flex-col justify-between w-full gap-6">
             <div className="flex flex-col gap-1">
-              <h2 className="text-3xl font-semibold">{animal.name}</h2>
+              <h2 className="text-3xl font-semibold">
+                {animal.name || 'Brak'}
+              </h2>
             </div>
             <div className="grid gap-8 grid-cols-2 md:grid-cols-3">
               <InfoRow label="Gatunek" info={SPECIES_MAP[animal.species]} />

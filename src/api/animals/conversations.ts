@@ -47,10 +47,10 @@ export const animalsService = {
   async addAnimal(data: AddAnimal) {
     try {
       const formData = new FormData()
-      formData.append('birthDate', data.birthDate)
+      data.birthDate && formData.append('birthDate', data.birthDate)
       formData.append('color', data.color)
       formData.append('mainPhotoIndex', String(data.mainPhotoIndex))
-      formData.append('name', data.name)
+      data.name && formData.append('name', data.name)
       // Append each photo individually
       data.photos.forEach((photo, index) => {
         formData.append(`photos[${index}]`, photo, photo.name)
@@ -58,7 +58,8 @@ export const animalsService = {
       formData.append('sex', String(data.sex))
       formData.append('signature', data.signature)
       formData.append('species', String(data.species))
-      formData.append('transponderCode', data.transponderCode)
+      data.transponderCode &&
+        formData.append('transponderCode', data.transponderCode)
 
       const response = await apiClient.post('animals', formData, {
         headers: {
@@ -83,7 +84,7 @@ export const animalsService = {
   editAnimal: async (id: string, data: EditAnimal) => {
     try {
       const formData = new FormData()
-      formData.append('birthDate', data.birthDate)
+      data.birthDate && formData.append('birthDate', data.birthDate)
       formData.append('color', data.color)
       const jsonExistingPhotoIds = JSON.stringify(data.existingPhotoIds)
       formData.append('existingPhotoIds', jsonExistingPhotoIds)
@@ -95,14 +96,15 @@ export const animalsService = {
         formData.append('mainPhotoId', String(data.mainPhotoId))
       if (data.mainPhotoIndex !== null)
         formData.append('mainPhotoIndex', String(data.mainPhotoIndex))
-      formData.append('name', data.name)
+      data.name && formData.append('name', data.name)
       data.newPhotos.forEach((photo, index) => {
         formData.append(`newPhotos[${index}]`, photo, photo.name)
       })
       formData.append('sex', String(data.sex))
       formData.append('signature', data.signature)
       formData.append('species', String(data.species))
-      formData.append('transponderCode', data.transponderCode)
+      data.transponderCode &&
+        formData.append('transponderCode', data.transponderCode)
 
       const response = await apiClient.put(`animals/${id}`, formData, {
         headers: {
