@@ -11,11 +11,13 @@ import { defaultAnimalsParams, useAnimals } from '@/api/animals/queries'
 interface AuthTransitionProps {
   authenticatedComponent: React.ReactNode
   userHasNoRoles?: boolean
+  isLoginModalOpen?: boolean
 }
 
 export function AuthTransition({
   authenticatedComponent,
   userHasNoRoles,
+  isLoginModalOpen,
 }: AuthTransitionProps) {
   const { loginWithRedirect, isLoading, isAuthenticated } = useAuth0()
   const transitionDuration = 900
@@ -25,7 +27,10 @@ export function AuthTransition({
   )
   const { isMobile } = useMobile()
 
-  if (isAuthenticated && !isAnimalTableLoading && !userHasNoRoles) {
+  if (
+    (isAuthenticated && !isAnimalTableLoading && !userHasNoRoles) ||
+    isLoginModalOpen
+  ) {
     return <>{authenticatedComponent}</>
   }
 
