@@ -1,11 +1,16 @@
-import { expect, test } from '../fixtures/authenticated'
+import { expect, test } from '@playwright/test'
 import { ReportsPage } from '../pages/ReportsPage'
 
 test.describe('Animal Reports Download', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/', { waitUntil: 'networkidle' })
+    await page.waitForLoadState('domcontentloaded')
+  })
+
   test('Downloads Report Events file', async ({
-    authenticatedPage,
+    page,
   }, testInfo) => {
-    const reportsPage = new ReportsPage(authenticatedPage)
+    const reportsPage = new ReportsPage(page)
 
     const download = await reportsPage.downloadEventsReport()
 
@@ -18,9 +23,9 @@ test.describe('Animal Reports Download', () => {
   })
 
   test('Downloads Report All Animals file', async ({
-    authenticatedPage,
+    page,
   }, testInfo) => {
-    const reportsPage = new ReportsPage(authenticatedPage)
+    const reportsPage = new ReportsPage(page)
 
     const download = await reportsPage.downloadAllAnimalsReport()
 
@@ -33,9 +38,9 @@ test.describe('Animal Reports Download', () => {
   })
 
   test('Downloads Report for Selected Animals', async ({
-    authenticatedPage,
+    page,
   }, testInfo) => {
-    const reportsPage = new ReportsPage(authenticatedPage)
+    const reportsPage = new ReportsPage(page)
 
     await reportsPage.selectFirstAnimal()
     const download = await reportsPage.downloadSelectedAnimalsReport()
