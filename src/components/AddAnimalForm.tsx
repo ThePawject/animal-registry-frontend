@@ -228,13 +228,6 @@ export default function AddAnimalForm() {
           <div className="space-y-6 py-6">
             <form.Field
               name="name"
-              validators={{
-                onChange: ({ value }) => {
-                  return !value || value.trim().length < 2
-                    ? 'Imię musi mieć conajmniej 2 znaki'
-                    : undefined
-                },
-              }}
               children={(field) => {
                 return (
                   <FormField
@@ -244,7 +237,7 @@ export default function AddAnimalForm() {
                   >
                     <Input
                       id="Imię"
-                      value={field.state.value}
+                      value={field.state.value ?? undefined}
                       onChange={(e) => field.handleChange(e.target.value)}
                       className="bg-background"
                       placeholder="Wpisz imię zwierzaka"
@@ -329,11 +322,6 @@ export default function AddAnimalForm() {
 
             <form.Field
               name="transponderCode"
-              validators={{
-                onChange: ({ value }) => {
-                  return !value ? 'Numer chipa jest wymagany' : undefined
-                },
-              }}
               children={(field) => {
                 return (
                   <FormField
@@ -342,7 +330,7 @@ export default function AddAnimalForm() {
                     error={field.state.meta.errors[0]}
                   >
                     <Input
-                      value={field.state.value}
+                      value={field.state.value ?? undefined}
                       onChange={(e) => field.handleChange(e.target.value)}
                       id="Numer chipa"
                       className="bg-background"
@@ -454,12 +442,14 @@ export default function AddAnimalForm() {
               name="birthDate"
               validators={{
                 onChange: ({ value }) => {
-                  if (!value) return 'Data urodzenia jest wymagana'
+                  if (!value) {
+                    return
+                  }
                   const birthDate = new Date(value)
                   const today = new Date()
                   if (birthDate > today)
                     return 'Data urodzenia nie może być z przyszłości'
-                  return undefined
+                  return
                 },
               }}
               children={(field) => {
@@ -472,7 +462,7 @@ export default function AddAnimalForm() {
                     <Input
                       min="2000-01-01"
                       type="date"
-                      value={field.state.value}
+                      value={field.state.value ?? undefined}
                       onChange={(e) => field.handleChange(e.target.value)}
                       id="Data urodzenia"
                       className="bg-background"

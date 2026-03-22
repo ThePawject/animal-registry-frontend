@@ -13,7 +13,7 @@ export const Route = createFileRoute('/animal/$animalId')({
         return data
       },
     })
-    return { animal, title: animal.name }
+    return { animal, title: animal.name || 'Szczegóły zwierzęcia' }
   },
 })
 
