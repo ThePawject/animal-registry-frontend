@@ -338,6 +338,7 @@ function AnimalTable() {
     <div className="space-y-4 mx-auto px-4 md:px-0 w-full">
       <div className="flex gap-2 items-center flex-wrap justify-end">
         <Button
+          data-testid="report-events-btn"
           variant="outline"
           title="Wygeneruj PDF z zestawieniem zdarzeń za wybrany okres (Raport-Zdarzen)"
           onClick={() => {
@@ -352,6 +353,7 @@ function AnimalTable() {
           )}
         </Button>
         <Button
+          data-testid="report-all-animals-btn"
           variant="outline"
           onClick={() => {
             getReportsDump()
@@ -366,6 +368,7 @@ function AnimalTable() {
           )}
         </Button>
         <Button
+          data-testid="report-selected-animals-btn"
           disabled={selectedCount === 0 || isReportsBySelectedIdsPending}
           variant="outline"
           onClick={() => {
@@ -395,6 +398,7 @@ function AnimalTable() {
 
         <Button
           asChild
+          data-testid="add-animal-btn"
           className="bg-emerald-600 hover:bg-emerald-700 text-white"
         >
           <Link to="/create">
@@ -407,6 +411,7 @@ function AnimalTable() {
         <div className="flex flex-col md:flex-row gap-3 items-start md:items-center w-full">
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <Input
+              data-testid="animal-search-input"
               placeholder="Szukaj zwierząt..."
               value={globalFilter || ''}
               onChange={(e) => setGlobalFilter(e.target.value)}
@@ -453,30 +458,32 @@ function AnimalTable() {
             </InfoCard>
           </div>
 
-          <Select
-            value={speciesFilter === null ? 'all' : speciesFilter.toString()}
-            onValueChange={(value) => {
-              if (value === 'all') {
-                setSpeciesFilter(null)
-              } else {
-                setSpeciesFilter(Number(value) as Species)
-              }
-              setPage(1)
-            }}
-          >
-            <SelectTrigger className="w-full md:w-[180px] h-10 bg-white">
-              <SelectValue placeholder="Wszystkie gatunki">
-                {speciesFilter !== null
-                  ? SPECIES_MAP[speciesFilter]
-                  : 'Wszystkie gatunki'}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Wszystkie gatunki</SelectItem>
-              <SelectItem value="1">Pies</SelectItem>
-              <SelectItem value="2">Kot</SelectItem>
-            </SelectContent>
-          </Select>
+          <div data-testid="animal-species-filter">
+            <Select
+              value={speciesFilter === null ? 'all' : speciesFilter.toString()}
+              onValueChange={(value) => {
+                if (value === 'all') {
+                  setSpeciesFilter(null)
+                } else {
+                  setSpeciesFilter(Number(value) as Species)
+                }
+                setPage(1)
+              }}
+            >
+              <SelectTrigger className="w-full md:w-[180px] h-10 bg-white">
+                <SelectValue placeholder="Wszystkie gatunki">
+                  {speciesFilter !== null
+                    ? SPECIES_MAP[speciesFilter]
+                    : 'Wszystkie gatunki'}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Wszystkie gatunki</SelectItem>
+                <SelectItem value="1">Pies</SelectItem>
+                <SelectItem value="2">Kot</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           <Select
             value={
