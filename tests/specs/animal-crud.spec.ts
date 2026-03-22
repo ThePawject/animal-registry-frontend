@@ -59,7 +59,10 @@ test.describe('Animal CRUD Operations', () => {
 
     const addPage = new AddAnimalPage(page)
     const signature1 = await addPage.generateSignature()
-    await addPage.cancel()
+    
+    const animalData = AnimalDataGenerator.generateAnimal()
+    await addPage.fillForm(animalData)
+    await addPage.submit()
 
     await animalHelper.navigateToCreate()
     const signature2 = await addPage.generateSignature()

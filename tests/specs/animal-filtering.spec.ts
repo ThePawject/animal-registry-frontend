@@ -13,19 +13,20 @@ test.describe('Animal List Filtering and Search', () => {
   }) => {
     const animalHelper = new AnimalHelper(page)
 
+    const prefix = Date.now()
     const animals = await animalHelper.createMultipleAnimals(4, [
-      { species: 1, name: 'Dog1' },
-      { species: 1, name: 'Dog2' },
-      { species: 2, name: 'Cat1' },
-      { species: 2, name: 'Cat2' },
+      { species: 1, name: `Dog1-${prefix}` },
+      { species: 1, name: `Dog2-${prefix}` },
+      { species: 2, name: `Cat1-${prefix}` },
+      { species: 2, name: `Cat2-${prefix}` },
     ])
 
     const tablePage = new AnimalTablePage(page)
     await tablePage.filterBySpecies('dogs')
     await tablePage.waitForTableUpdate()
 
-    await expect(page.getByText(animals[0].name)).toBeVisible()
-    await expect(page.getByText(animals[1].name)).toBeVisible()
+    await tablePage.expectAnimalInTable(animals[0].signature)
+    await tablePage.expectAnimalInTable(animals[1].signature)
   })
 
   test('Should filter animals by species - Cats', async ({
@@ -33,19 +34,20 @@ test.describe('Animal List Filtering and Search', () => {
   }) => {
     const animalHelper = new AnimalHelper(page)
 
+    const prefix = Date.now()
     const animals = await animalHelper.createMultipleAnimals(4, [
-      { species: 1, name: 'Dog1' },
-      { species: 1, name: 'Dog2' },
-      { species: 2, name: 'Cat1' },
-      { species: 2, name: 'Cat2' },
+      { species: 1, name: `Dog1-${prefix}` },
+      { species: 1, name: `Dog2-${prefix}` },
+      { species: 2, name: `Cat1-${prefix}` },
+      { species: 2, name: `Cat2-${prefix}` },
     ])
 
     const tablePage = new AnimalTablePage(page)
     await tablePage.filterBySpecies('cats')
     await tablePage.waitForTableUpdate()
 
-    await expect(page.getByText(animals[2].name)).toBeVisible()
-    await expect(page.getByText(animals[3].name)).toBeVisible()
+    await tablePage.expectAnimalInTable(animals[2].signature)
+    await tablePage.expectAnimalInTable(animals[3].signature)
   })
 
   test('Should search animals by name', async ({ page }) => {

@@ -58,7 +58,7 @@ export class AnimalTablePage {
 
   async navigateToAnimalDetails(signature: string): Promise<void> {
     const row = this.page.locator('tr', { hasText: signature })
-    await row.getByRole('button', { name: /szczegóły/i }).click()
+    await row.getByTestId('animal-details-link').click()
     await this.page.waitForURL(/\/animal\/.+/)
   }
 

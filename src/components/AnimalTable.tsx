@@ -271,7 +271,7 @@ function AnimalTable() {
         id: 'actions',
         header: 'Akcje',
         cell: ({ row }) => (
-          <Button asChild variant="outline" size="sm" className="w-full">
+          <Button asChild variant="outline" size="sm" className="w-full" data-testid="animal-details-link">
             <Link
               to="/animal/$animalId"
               params={{ animalId: row.original.id }}
