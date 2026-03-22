@@ -9,6 +9,7 @@ import type {
   AnimalSignature,
   EditAnimal,
   FetchAnimalsParams,
+  Species,
 } from './types'
 
 export const animalsService = {
@@ -217,9 +218,12 @@ export const animalsService = {
       throw error
     }
   },
-  async getAnimalSignature(): Promise<AnimalSignature> {
+  async getAnimalSignature(species: Species): Promise<AnimalSignature> {
     try {
-      const response = await apiClient.get('animals/signature')
+      const response = await apiClient.get('animals/signature', {
+        params: { species },
+      })
+
       return response.data
     } catch (error) {
       if (axios.isAxiosError(error)) {
