@@ -1,9 +1,4 @@
-import {
-  keepPreviousData,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { animalsService } from './conversations'
 import type {
   AddAnimal,
@@ -33,7 +28,6 @@ export const useAnimals = (params: FetchAnimalsParams, enabled?: boolean) =>
   useQuery({
     queryKey: animalsKeys.list(params),
     queryFn: async () => animalsService.getAnimals(params),
-    placeholderData: keepPreviousData,
     refetchOnWindowFocus: false,
     staleTime: 1000,
     enabled,

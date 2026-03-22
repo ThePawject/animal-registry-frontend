@@ -63,6 +63,7 @@ export function AuthTransition({
           className={cn(
             'absolute',
             isMobile ? 'top-20 -left-10' : ' -top-8 left-[200px]',
+            !showLogin && 'pointer-events-none',
           )}
           initial={{
             opacity: 0,
@@ -106,6 +107,7 @@ export function AuthTransition({
           className={cn(
             'absolute',
             isMobile ? 'top-20 -left-10' : ' -top-26 left-[200px]',
+            !showNoAccess && 'pointer-events-none',
           )}
           initial={{
             opacity: 0,
