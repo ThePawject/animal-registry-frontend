@@ -11,6 +11,7 @@ import type {
   AnimalHealthRecord,
   EditAnimal,
   FetchAnimalsParams,
+  Species,
 } from './types'
 
 export const animalsKeys = {
@@ -225,6 +226,7 @@ export const useDeleteAnimalHealthRecord = () => {
 
 export const useAnimalSignature = () => {
   return useMutation({
-    mutationFn: async () => animalsService.getAnimalSignature(),
+    mutationFn: async (species: Species) =>
+      animalsService.getAnimalSignature(species),
   })
 }

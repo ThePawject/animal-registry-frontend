@@ -207,6 +207,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
     },
   })
 
+  const currentSpecies = useStore(form.store, (state) => state.values.species)
   const isDirty = useStore(form.store, (state) => state.isDirty)
 
   const uploadInputRef = React.useRef<HTMLInputElement>(null)
@@ -369,7 +370,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                         className="h-9 w-[200px]"
                         size="sm"
                         onClick={() => {
-                          getAnimalSignature(undefined, {
+                          getAnimalSignature(currentSpecies, {
                             onSuccess: (data) => {
                               form.setFieldValue('signature', data.signature)
                             },

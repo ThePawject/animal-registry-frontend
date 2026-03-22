@@ -171,6 +171,7 @@ export default function AddAnimalForm() {
     },
   })
 
+  const currentSpecies = useStore(form.store, (state) => state.values.species)
   const images = useStore(form.store, (state) => state.values.photos)
   const mainPhotoIndex = useStore(
     form.store,
@@ -303,7 +304,7 @@ export default function AddAnimalForm() {
                         className="h-9 w-[200px]"
                         size="sm"
                         onClick={() => {
-                          getAnimalSignature(undefined, {
+                          getAnimalSignature(currentSpecies, {
                             onSuccess: (data) => {
                               form.setFieldValue('signature', data.signature)
                             },
