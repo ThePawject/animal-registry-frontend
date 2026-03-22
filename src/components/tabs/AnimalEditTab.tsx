@@ -313,79 +313,6 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                 )
               }}
             />
-            <form.Field
-              name="signature"
-              validators={{
-                onChange: ({ value }) => {
-                  if (!value) {
-                    return 'Oznaczenie jest wymagane'
-                  }
-                  if (!/^(\d{4}\/\d{4})$/.test(value)) {
-                    return 'Oznaczenie musi mieć format RRRR/NNNN, gdzie R to rok, a N to numer.'
-                  }
-                },
-              }}
-              children={(field) => {
-                return (
-                  <div className="flex items-end justify-between gap-2 mb-0 w-full">
-                    <FormField
-                      icon={Tag}
-                      label="Oznaczenie"
-                      error={
-                        isSignatureError
-                          ? 'Oznaczenie jest już zajęte, wygeneruj nowe lub wpisz ręcznie i spróbuj ponownie.'
-                          : field.state.meta.errors[0]
-                      }
-                      className="flex flex-row gap-2 items-center justify-between w-full flex-1 min-w-0"
-                    >
-                      <div className="relative">
-                        <Input
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          id="Oznaczenie"
-                          className="bg-background mb-0 pr-8"
-                          placeholder="2026/0001"
-                        />
-                        <InfoCard
-                          className="absolute top-2 right-2 p-0"
-                          iconClassName="size-5"
-                        >
-                          <p className="text-sm text-muted-foreground mb-1 text-justify">
-                            Unikalne oznaczenie zwierzaka, które będzie służyło
-                            do jego identyfikacji w systemie. Format oznaczenia
-                            to RRRR/NNNN, gdzie R to rok dodania zwierzaka, a N
-                            to unikalny numer porządkowy. Możesz wpisać własne
-                            oznaczenie lub wygenerować je automatycznie,
-                            klikając przycisk obok pola.
-                          </p>
-                          <p className="text-xs italic">
-                            Przykładowe oznaczenie: 2026/0001 - oznacza
-                            pierwszego zwierzaka dodanego w roku 2026.
-                          </p>
-                        </InfoCard>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="h-9 w-[200px]"
-                        size="sm"
-                        onClick={() => {
-                          getAnimalSignature(currentSpecies, {
-                            onSuccess: (data) => {
-                              form.setFieldValue('signature', data.signature)
-                            },
-                          })
-                        }}
-                      >
-                        {isGettingAnimalSignature
-                          ? 'Ładowanie...'
-                          : 'Generuj unikalne oznaczenie'}
-                      </Button>
-                    </FormField>
-                  </div>
-                )
-              }}
-            />
 
             <form.Field
               name="transponderCode"
@@ -440,6 +367,88 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                       </SelectContent>
                     </Select>
                   </FormField>
+                )
+              }}
+            />
+
+            <form.Field
+              name="signature"
+              validators={{
+                onChange: ({ value }) => {
+                  if (!value) {
+                    return 'Oznaczenie jest wymagane'
+                  }
+                  if (!/^(\d{4}\/\d{4})$/.test(value)) {
+                    return 'Oznaczenie musi mieć format RRRR/NNNN, gdzie R to rok, a N to numer.'
+                  }
+                },
+              }}
+              children={(field) => {
+                return (
+                  <div className="flex items-end justify-between gap-2 mb-0 w-full">
+                    <FormField
+                      icon={Tag}
+                      label="Oznaczenie"
+                      error={
+                        isSignatureError
+                          ? 'Oznaczenie jest już zajęte, wygeneruj nowe lub wpisz ręcznie i spróbuj ponownie.'
+                          : field.state.meta.errors[0]
+                      }
+                      className="flex flex-row gap-2 items-center justify-between w-full flex-1 min-w-0"
+                    >
+                      <div className="relative">
+                        <Input
+                          value={field.state.value}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          id="Oznaczenie"
+                          className="bg-background mb-0 pr-8"
+                          placeholder="2026/0001"
+                        />
+                        <InfoCard
+                          className="absolute top-2 right-2 p-0"
+                          iconClassName="size-5"
+                        >
+                          <p className="text-sm text-muted-foreground mb-1 text-justify">
+                            Unikalne oznaczenie zwierzaka, które będzie służyło
+                            do jego identyfikacji w systemie. Format oznaczenia
+                            to RRRR/NNNN, gdzie R to rok dodania zwierzaka, a N
+                            to unikalny numer porządkowy. Możesz wpisać własne
+                            oznaczenie lub wygenerować je automatycznie,
+                            klikając przycisk obok pola.
+                          </p>
+                          <p className="text-sm text-muted-foreground mb-1 text-justify">
+                            Gatunek zwierzaka jest wymagana do wygenerowania
+                            oznaczenia, ponieważ jest ona brana pod uwagę przy
+                            jego tworzeniu.
+                          </p>
+                          <p className="text-xs italic">
+                            Przykładowe oznaczenie: 2026/0001 - oznacza
+                            pierwszego zwierzaka dodanego w roku 2026.
+                          </p>
+                        </InfoCard>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-9 w-[200px]"
+                        disabled={
+                          currentSpecies === 0 || isGettingAnimalSignature
+                        }
+                        size="sm"
+                        onClick={() => {
+                          getAnimalSignature(currentSpecies, {
+                            onSuccess: (data) => {
+                              form.setFieldValue('signature', data.signature)
+                            },
+                          })
+                        }}
+                      >
+                        {isGettingAnimalSignature
+                          ? 'Ładowanie...'
+                          : 'Generuj unikalne oznaczenie'}
+                      </Button>
+                    </FormField>
+                  </div>
                 )
               }}
             />
