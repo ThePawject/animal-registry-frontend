@@ -51,6 +51,7 @@ function RootComponent() {
     <>
       <AuthTransition
         userHasNoRoles={userHasNoRoles}
+        isLoginModalOpen={isLoginModalOpen}
         authenticatedComponent={
           <>
             {!userHasNoRoles && (
