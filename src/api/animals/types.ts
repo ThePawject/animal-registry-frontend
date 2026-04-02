@@ -72,11 +72,20 @@ export type AnimalEvent = {
   performedBy?: string
 }
 
+export type HealthDocument = {
+  id: string
+  fileName: string
+  contentType: string
+  uploadedOn: string
+  url?: string
+}
+
 export type AnimalHealthRecord = {
   id: string
   occurredOn: string
   description: string
   performedBy?: string
+  document?: HealthDocument | null
 }
 
 export type AddAnimal = {
