@@ -1,24 +1,18 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Calendar, File, FileText, Upload, User, X } from 'lucide-react'
 import { useForm } from '@tanstack/react-form'
 import { Textarea } from '../ui/textarea'
 import type { AnimalHealthRecord } from '@/api/animals/types'
+import {
+  ALLOWED_DOCUMENT_EXTENSIONS,
+  ALLOWED_DOCUMENT_TYPES,
+  MAX_DOCUMENT_SIZE,
+} from '@/api/animals/types'
 import { useAddAnimalHealthRecord } from '@/api/animals/queries'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { genericErrorMessage } from '@/lib/utils'
-
-const ALLOWED_FILE_TYPES = [
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-]
-const ALLOWED_FILE_EXTENSIONS = '.pdf,.doc,.docx,.jpg,.jpeg,.png,.webp'
-const MAX_FILE_SIZE = 10 * 1024 * 1024
+import { cn, genericErrorMessage } from '@/lib/utils'
 
 interface FormFieldProps {
   icon: React.ElementType
@@ -44,10 +38,18 @@ function FormField({ icon: Icon, label, children, error }: FormFieldProps) {
   )
 }
 
-const defaultHealthRecordFormData: Omit<AnimalHealthRecord, 'id'> = {
+type AnimalHealthRecordFormData = {
+  occurredOn: string
+  description: string
+  performedBy: string
+  document: File | null
+}
+
+const defaultHealthRecordFormData: AnimalHealthRecordFormData = {
   occurredOn: new Date().toISOString().split('T')[0],
   description: '',
   performedBy: '',
+  document: null,
 }
 
 interface AnimalHealthRecordFormProps {
@@ -59,42 +61,11 @@ export default function AnimalHealthRecordForm({
   animalId,
   onClose,
 }: AnimalHealthRecordFormProps) {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [fileError, setFileError] = useState<string | null>(null)
   const {
     mutateAsync: addRecord,
     isPending,
     error,
   } = useAddAnimalHealthRecord()
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-
-    if (!file) {
-      return
-    }
-
-    setFileError(null)
-
-    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-      setFileError(
-        'Niedozwolony typ pliku. Dozwolone: PDF, DOC, DOCX, JPEG, PNG, WEBP',
-      )
-      return
-    }
-
-    if (file.size > MAX_FILE_SIZE) {
-      setFileError('Plik jest za duży. Maksymalny rozmiar to 10MB')
-      return
-    }
-
-    setSelectedFile(file)
-  }
-
-  const removeFile = () => {
-    setSelectedFile(null)
-    setFileError(null)
-  }
 
   const form = useForm({
     defaultValues: defaultHealthRecordFormData,
@@ -107,8 +78,8 @@ export default function AnimalHealthRecordForm({
 
       await addRecord({
         animalId,
-        data: recordData as AnimalHealthRecord,
-        file: selectedFile ?? undefined,
+        data: recordData,
+        file: value.document ?? undefined,
       })
       onClose()
       form.reset()
@@ -223,51 +194,78 @@ export default function AnimalHealthRecordForm({
           }}
         />
 
-        <FormField
-          icon={File}
-          label="Dokument (opcjonalnie)"
-          error={fileError || undefined}
-        >
-          <div className="flex items-center gap-2">
-            <label className="flex-1 cursor-pointer">
-              <input
-                type="file"
-                accept={ALLOWED_FILE_EXTENSIONS}
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              <div
-                className={`flex items-center justify-center w-full h-10 px-4 border-2 border-dashed rounded-lg transition-colors ${
-                  fileError
-                    ? 'border-red-500 bg-red-50'
-                    : 'border-gray-300 hover:border-gray-400'
-                }`}
+        <form.Field
+          name="document"
+          validators={{
+            onChange: ({ value }) => {
+              if (value && !ALLOWED_DOCUMENT_TYPES.includes(value.type)) {
+                return 'Niedozwolony typ pliku. Dozwolone: PDF, DOC, DOCX, JPEG, PNG, WEBP'
+              }
+              if (value && value.size > MAX_DOCUMENT_SIZE) {
+                return 'Plik jest za duży. Maksymalny rozmiar to 10MB'
+              }
+              return undefined
+            },
+          }}
+          children={(field) => {
+            return (
+              <FormField
+                icon={File}
+                label="Dokument (opcjonalnie)"
+                error={field.state.meta.errors[0]}
               >
-                <Upload className="w-4 h-4 mr-2" />
-                <span
-                  className={`text-sm ${
-                    fileError ? 'text-red-600' : 'text-gray-500'
-                  }`}
-                >
-                  {selectedFile
-                    ? selectedFile.name
-                    : 'Wybierz plik (PDF, DOC, DOCX, JPEG, PNG, WEBP - max 10MB)'}
-                </span>
-              </div>
-            </label>
-            {selectedFile && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-10 w-10 p-0 bg-red-500 hover:bg-red-600 text-white border-red-500 hover:border-red-600"
-                onClick={removeFile}
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
-        </FormField>
+                <div className="flex items-center gap-2">
+                  <label className="flex-1 cursor-pointer">
+                    <input
+                      type="file"
+                      accept={ALLOWED_DOCUMENT_EXTENSIONS}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) {
+                          field.handleChange(file)
+                        }
+                      }}
+                      className="hidden"
+                    />
+                    <div
+                      className={cn(
+                        'flex items-center justify-center w-full h-10 px-4 border-2 border-dashed rounded-lg transition-colors',
+                        field.state.meta.errors.length > 0
+                          ? 'border-red-500 bg-red-50'
+                          : 'border-gray-300 hover:border-gray-400',
+                      )}
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      <span
+                        className={cn(
+                          'text-sm',
+                          field.state.meta.errors.length > 0
+                            ? 'text-red-600'
+                            : 'text-gray-500',
+                        )}
+                      >
+                        {field.state.value
+                          ? field.state.value.name
+                          : 'Wybierz plik (PDF, DOC, DOCX, JPEG, PNG, WEBP - max 10MB)'}
+                      </span>
+                    </div>
+                  </label>
+                  {field.state.value && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-10 w-10 p-0 bg-red-500 hover:bg-red-600 text-white border-red-500 hover:border-red-600"
+                      onClick={() => field.handleChange(null)}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+              </FormField>
+            )
+          }}
+        />
 
         <div className="flex gap-4 pt-4">
           <Button

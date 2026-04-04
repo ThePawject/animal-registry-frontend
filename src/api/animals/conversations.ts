@@ -176,7 +176,7 @@ export const animalsService = {
   },
   addAnimalHealthRecord: async (
     id: string,
-    data: AnimalHealthRecord,
+    data: Omit<AnimalHealthRecord, 'id'>,
     file?: File,
   ) => {
     try {

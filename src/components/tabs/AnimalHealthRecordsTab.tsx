@@ -19,6 +19,11 @@ import AnimalHealthRecordForm from './AnimalHealthRecordForm'
 import type { ColumnDef } from '@tanstack/react-table'
 import type { AnimalById, AnimalHealthRecord } from '@/api/animals/types'
 import {
+  ALLOWED_DOCUMENT_EXTENSIONS,
+  ALLOWED_DOCUMENT_TYPES,
+  MAX_DOCUMENT_SIZE,
+} from '@/api/animals/types'
+import {
   useDeleteAnimalHealthRecord,
   useEditAnimalHealthRecord,
 } from '@/api/animals/queries'
@@ -33,17 +38,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Card } from '@/components/ui/card'
-
-const ALLOWED_FILE_TYPES = [
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-]
-const ALLOWED_FILE_EXTENSIONS = '.pdf,.doc,.docx,.jpg,.jpeg,.png,.webp'
-const MAX_FILE_SIZE = 10 * 1024 * 1024
+import { cn } from '@/lib/utils'
 
 interface AnimalHealthRecordsTabProps {
   animal: AnimalById
@@ -169,14 +164,14 @@ export default function AnimalHealthRecordsTab({
 
     setEditingFileError(null)
 
-    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+    if (!ALLOWED_DOCUMENT_TYPES.includes(file.type)) {
       setEditingFileError(
         'Niedozwolony typ pliku. Dozwolone: PDF, DOC, DOCX, JPEG, PNG, WEBP (max 10MB)',
       )
       return
     }
 
-    if (file.size > MAX_FILE_SIZE) {
+    if (file.size > MAX_DOCUMENT_SIZE) {
       setEditingFileError('Plik jest za duży. Maksymalny rozmiar to 10MB')
       return
     }
@@ -283,20 +278,22 @@ export default function AnimalHealthRecordsTab({
   }
 
   const RecordDocumentCell = ({ record }: { record: AnimalHealthRecord }) => {
+    const fileInputRef = React.useRef<HTMLInputElement>(null)
     const originalDocument = record.document
     const isEditing = editingRecordId === record.id
 
-    const currentDoc = editingFile
-      ? {
-          fileName: editingFile.name,
-          url: URL.createObjectURL(editingFile),
-          id: '',
-          contentType: '',
-          uploadedOn: '',
-        }
-      : isEditing && removeDocument
-        ? null
-        : originalDocument
+    let currentDoc: typeof originalDocument = originalDocument
+    if (editingFile) {
+      currentDoc = {
+        fileName: editingFile.name,
+        url: URL.createObjectURL(editingFile),
+        id: '',
+        contentType: '',
+        uploadedOn: '',
+      }
+    } else if (isEditing && removeDocument) {
+      currentDoc = null
+    }
 
     if (isEditing) {
       return (
@@ -312,9 +309,7 @@ export default function AnimalHealthRecordsTab({
                   variant="outline"
                   size="sm"
                   className="h-7 text-xs flex-1"
-                  onClick={() =>
-                    document.getElementById(`file-input-${record.id}`)?.click()
-                  }
+                  onClick={() => fileInputRef.current?.click()}
                 >
                   Zmień plik
                 </Button>
@@ -328,9 +323,9 @@ export default function AnimalHealthRecordsTab({
                 </Button>
               </div>
               <input
-                id={`file-input-${record.id}`}
+                ref={fileInputRef}
                 type="file"
-                accept={ALLOWED_FILE_EXTENSIONS}
+                accept={ALLOWED_DOCUMENT_EXTENSIONS}
                 onChange={handleFileChange}
                 className="hidden"
               />
@@ -338,17 +333,19 @@ export default function AnimalHealthRecordsTab({
           ) : (
             <label className="cursor-pointer inline-block">
               <input
+                ref={fileInputRef}
                 type="file"
-                accept={ALLOWED_FILE_EXTENSIONS}
+                accept={ALLOWED_DOCUMENT_EXTENSIONS}
                 onChange={handleFileChange}
                 className="hidden"
               />
               <div
-                className={`px-3 py-1.5 h-8 border border-dashed rounded-md text-sm flex items-center gap-2 transition-colors ${
+                className={cn(
+                  'px-3 py-1.5 h-8 border border-dashed rounded-md text-sm flex items-center gap-2 transition-colors',
                   editingFileError
                     ? 'border-red-500 bg-red-50 text-red-600'
-                    : 'border-gray-400 hover:bg-gray-50'
-                }`}
+                    : 'border-gray-400 hover:bg-gray-50',
+                )}
               >
                 <Upload className="w-4 h-4" />
                 Wybierz plik

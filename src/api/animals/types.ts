@@ -148,3 +148,17 @@ export const EVENT_TYPE_OPTIONS = Object.entries(ANIMAL_EVENT_TYPE_MAP).map(
     label,
   }),
 )
+
+export const ALLOWED_DOCUMENT_TYPES = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+]
+
+export const ALLOWED_DOCUMENT_EXTENSIONS =
+  '.pdf,.doc,.docx,.jpg,.jpeg,.png,.webp'
+
+export const MAX_DOCUMENT_SIZE = 10 * 1024 * 1024

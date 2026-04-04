@@ -152,7 +152,7 @@ export const useDeleteAnimalEvent = () => {
 
 type AddAnimalHealthRecordVariables = {
   animalId: string
-  data: AnimalHealthRecord
+  data: Omit<AnimalHealthRecord, 'id'>
   file?: File
 }
 
