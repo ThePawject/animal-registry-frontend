@@ -174,9 +174,23 @@ export const animalsService = {
       throw error
     }
   },
-  addAnimalHealthRecord: async (id: string, data: AnimalHealthRecord) => {
+  addAnimalHealthRecord: async (
+    id: string,
+    data: Omit<AnimalHealthRecord, 'id'>,
+    file?: File,
+  ) => {
     try {
-      const response = await apiClient.post(`animals/${id}/health`, data)
+      const formData = new FormData()
+      formData.append('OccurredOn', data.occurredOn)
+      formData.append('Description', data.description)
+      if (data.performedBy) formData.append('PerformedBy', data.performedBy)
+      if (file) formData.append('DocumentFile', file)
+
+      const response = await apiClient.post(`animals/${id}/health`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
       return response.data
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -189,11 +203,25 @@ export const animalsService = {
     id: string,
     recordId: string,
     data: AnimalHealthRecord,
+    file?: File,
+    deleteDocument?: boolean,
   ) => {
     try {
+      const formData = new FormData()
+      formData.append('OccurredOn', data.occurredOn)
+      formData.append('Description', data.description)
+      if (data.performedBy) formData.append('PerformedBy', data.performedBy)
+      if (file) formData.append('DocumentFile', file)
+      if (deleteDocument) formData.append('DeleteDocument', 'true')
+
       const response = await apiClient.put(
         `animals/${id}/health/${recordId}`,
-        data,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        },
       )
       return response.data
     } catch (error) {

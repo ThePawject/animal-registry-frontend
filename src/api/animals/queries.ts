@@ -152,15 +152,20 @@ export const useDeleteAnimalEvent = () => {
 
 type AddAnimalHealthRecordVariables = {
   animalId: string
-  data: AnimalHealthRecord
+  data: Omit<AnimalHealthRecord, 'id'>
+  file?: File
 }
 
 export const useAddAnimalHealthRecord = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ animalId, data }: AddAnimalHealthRecordVariables) =>
-      animalsService.addAnimalHealthRecord(animalId, data),
+    mutationFn: async ({
+      animalId,
+      data,
+      file,
+    }: AddAnimalHealthRecordVariables) =>
+      animalsService.addAnimalHealthRecord(animalId, data, file),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: animalsKeys.one(String(variables.animalId)),
@@ -174,6 +179,8 @@ type EditAnimalHealthRecordVariables = {
   animalId: string
   recordId: string
   data: AnimalHealthRecord
+  file?: File
+  deleteDocument?: boolean
 }
 
 export const useEditAnimalHealthRecord = () => {
@@ -184,8 +191,16 @@ export const useEditAnimalHealthRecord = () => {
       animalId,
       recordId,
       data,
+      file,
+      deleteDocument,
     }: EditAnimalHealthRecordVariables) =>
-      animalsService.editAnimalHealthRecord(animalId, recordId, data),
+      animalsService.editAnimalHealthRecord(
+        animalId,
+        recordId,
+        data,
+        file,
+        deleteDocument,
+      ),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: animalsKeys.one(String(variables.animalId)),
