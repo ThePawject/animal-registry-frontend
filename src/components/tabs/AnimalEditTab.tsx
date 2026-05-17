@@ -1,5 +1,14 @@
 import React from 'react'
-import { Calendar, Dog, Hash, Tag, Trash2Icon, User } from 'lucide-react'
+import {
+  Calendar,
+  Dog,
+  Hash,
+  PawPrintIcon,
+  SparklesIcon,
+  Tag,
+  Trash2Icon,
+  User,
+} from 'lucide-react'
 import { useForm, useStore } from '@tanstack/react-form'
 import { useRouter } from '@tanstack/react-router'
 import { InfoCard } from '../InfoCard'
@@ -329,6 +338,64 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                       id="Numer chipa"
                       className="bg-background"
                       placeholder="Wpisz numer chipa"
+                    />
+                  </FormField>
+                )
+              }}
+            />
+
+            <form.Field
+              name="breed"
+              validators={{
+                onChange: ({ value }) => {
+                  if (value.length > 100) {
+                    return 'Rasa nie może mieć więcej niż 100 znaków'
+                  }
+                  return !value ? 'Rasa jest wymagana' : undefined
+                },
+              }}
+              children={(field) => {
+                return (
+                  <FormField
+                    icon={PawPrintIcon}
+                    label="Rasa"
+                    error={field.state.meta.errors.join(', ')}
+                  >
+                    <Input
+                      id="Rada"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      className="bg-background"
+                      placeholder="Wpisz rasę zwierzaka"
+                    />
+                  </FormField>
+                )
+              }}
+            />
+
+            <form.Field
+              name="distinguishingMarks"
+              validators={{
+                onChange: ({ value }) => {
+                  if (value.length > 100) {
+                    return 'Znaki szczególne nie mogą mieć więcej niż 100 znaków'
+                  }
+                  return !value ? 'Znaki szczególne są wymagane' : undefined
+                },
+              }}
+              children={(field) => {
+                return (
+                  <FormField
+                    icon={SparklesIcon}
+                    label="Znaki szczególne"
+                    error={field.state.meta.errors.join(', ')}
+                  >
+                    <Input
+                      id="Rada"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      className="bg-background"
+                      placeholder="Wpisz znaki szczególne zwierzaka, np. biała łapa, pręgi na grzbiecie itp."
                     />
                   </FormField>
                 )
