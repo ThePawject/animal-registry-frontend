@@ -4,6 +4,7 @@ import {
   BriefcaseMedicalIcon,
   CalendarIcon,
   Edit2Icon,
+  FileTextIcon,
   ImagesIcon,
   TrashIcon,
 } from 'lucide-react'
@@ -16,11 +17,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../ui/dialog'
+import { createAndDownloadReport } from '../AnimalTable'
 import type { AnimalById } from '@/api/animals/types'
 import { Card } from '@/components/ui/card'
 import { SEX_MAP, SPECIES_MAP } from '@/api/animals/types'
 import { cn } from '@/lib/utils'
 import { useDeleteAnimal } from '@/api/animals/queries'
+import { useReportsBySelectedIds } from '@/api/reports/queries'
 
 function formatDate(date: string | Date | null | undefined): string {
   if (!date) return '-'
@@ -59,6 +62,9 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
   const { mutate: deleteAnimal } = useDeleteAnimal(() => {
     router.navigate({ to: '/' })
   })
+  const { mutate, isPending } = useReportsBySelectedIds(({ blob, filename }) =>
+    createAndDownloadReport(blob, filename),
+  )
 
   const mainPhotoUrl = animal.photos.find(
     (photo) => photo.id === animal.mainPhotoId,
@@ -73,7 +79,7 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
 
   return (
     <div className="flex flex-col gap-8 px-8 md:px-0 pb-8">
-      <div className="flex gap-4 md:gap-8 w-full flex-col md:flex-row">
+      <div className="flex gap-4 w-full flex-col md:flex-row">
         <Link
           to="/animal/$animalId/edit"
           params={{ animalId: animal.id }}
@@ -98,6 +104,15 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
           <BriefcaseMedicalIcon className="size-5" />
           <span className="text-lg font-medium">Medyczne</span>
         </Link>
+        <Button
+          onClick={() => mutate({ ids: [animal.id] })}
+          disabled={isPending}
+          variant="outline"
+          className="flex-1 w-full py-7 border border-slate-300 hover:bg-emerald-600 hover:text-white"
+        >
+          <FileTextIcon className="size-5" />
+          <span className="text-lg font-medium h-7">Pobierz raport</span>
+        </Button>
         <Button
           onClick={() => {
             setIsDeleteModalOpen(true)

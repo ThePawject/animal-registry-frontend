@@ -77,7 +77,10 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
     },
   })
 
-  const events = animal.events
+  const events = animal.events.sort(
+    (a, b) =>
+      new Date(b.occurredOn).getTime() - new Date(a.occurredOn).getTime(),
+  )
 
   const handleEditClick = (event: AnimalEvent) => {
     setEditingEventId(event.id)
