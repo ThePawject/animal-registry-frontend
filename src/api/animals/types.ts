@@ -4,8 +4,10 @@ export type Animal = {
   transponderCode: string | null
   name: string | null
   color: string
+  breed: string
   species: Species
   sex: Sexes
+  distinguishingMarks: string
   birthDate: string | null
   createdOn: string
   modifiedOn: string
@@ -60,6 +62,8 @@ export const ANIMAL_EVENT_TYPE_MAP = {
   13: 'Ważenie',
   14: 'Eutanazja',
   15: 'Zgon',
+  16: 'Wypuszczony do środowiska',
+  17: 'Kondycja',
 } as const
 
 export type AnimalEventType = keyof typeof ANIMAL_EVENT_TYPE_MAP
@@ -91,6 +95,8 @@ export type AnimalHealthRecord = {
 export type AddAnimal = {
   birthDate: string | null
   color: string
+  breed: string
+  distinguishingMarks: string
   mainPhotoIndex: number
   name: string | null
   photos: Array<File>
@@ -103,6 +109,8 @@ export type AddAnimal = {
 export type EditAnimal = {
   birthDate: string | null
   color: string
+  breed: string
+  distinguishingMarks: string
   existingPhotoIds: Array<string>
   id: string
   mainPhotoId: string | null

@@ -104,7 +104,10 @@ export default function AnimalHealthRecordsTab({
     },
   })
 
-  const healthRecords = animal.healthRecords
+  const healthRecords = animal.healthRecords.sort(
+    (a, b) =>
+      new Date(b.occurredOn).getTime() - new Date(a.occurredOn).getTime(),
+  )
 
   const handleEditClick = (record: AnimalHealthRecord) => {
     setEditingRecordId(record.id)

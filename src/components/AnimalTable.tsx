@@ -4,7 +4,14 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { Eye, LucideLoaderCircle, Plus } from 'lucide-react'
+import {
+  ChevronFirst,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  LucideLoaderCircle,
+  Plus,
+} from 'lucide-react'
 import { useDebouncedValue } from '@tanstack/react-pacer'
 import { Link } from '@tanstack/react-router'
 import {
@@ -165,6 +172,20 @@ function AnimalTable() {
           <div className="max-w-[200px] truncate">
             {info.getValue() || 'Brak'}
           </div>
+        ),
+      },
+      {
+        accessorKey: 'breed',
+        header: 'Rasa',
+        cell: (info) => (
+          <div className="max-w-[100px] truncate">{info.getValue() || '-'}</div>
+        ),
+      },
+      {
+        accessorKey: 'distinguishingMarks',
+        header: 'Znaki szczególne',
+        cell: (info) => (
+          <div className="max-w-[100px] truncate">{info.getValue() || '-'}</div>
         ),
       },
       {
@@ -337,7 +358,7 @@ function AnimalTable() {
   }
 
   return (
-    <div className="space-y-4 mx-auto px-4 md:px-0 w-full">
+    <div className="space-y-4 mx-auto px-4 md:px-0 w-full pb-8">
       <div className="flex gap-2 items-center flex-wrap justify-end">
         <Button
           variant="outline"
@@ -435,6 +456,14 @@ function AnimalTable() {
                     <li>
                       <strong>Umaszczenie</strong> - np. czarny
                     </li>
+                    <li>
+                      <strong>Rasa</strong> - np. mieszaniec
+                    </li>
+                    <li>
+                      <strong>Znaki Szczególne</strong> - np. brak ogona, białe
+                      łapy
+                    </li>
+
                     <li>
                       <strong>Wydarzenia</strong> - opis lub kto wykonał
                     </li>
@@ -573,7 +602,7 @@ function AnimalTable() {
 
       <div className="flex items-center justify-end space-x-2 py-2">
         <div className="flex items-center gap-4 flex-wrap">
-          <label className="text-sm">Wierszy na stronę:</label>
+          <label className="text-sm font-semibold">Wierszy na stronę:</label>
           <Select
             value={pageSize.toString()}
             onValueChange={(value) => {
@@ -582,7 +611,7 @@ function AnimalTable() {
               window.scrollTo({ top: 0, behavior: 'instant' })
             }}
           >
-            <SelectTrigger className="w-[80px]">
+            <SelectTrigger className="w-[80px] bg-white">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -593,22 +622,43 @@ function AnimalTable() {
               </SelectGroup>
             </SelectContent>
           </Select>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage((i) => Math.max(1, i - 1))}
-            disabled={page === 1 || isPending}
-          >
-            Poprzednia
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage((i) => i + 1)}
-            disabled={page === totalPages || isPending}
-          >
-            Następna
-          </Button>
+          <span className="text-sm font-semibold">
+            Strona {page} z {totalPages}
+          </span>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page === 1 || isPending}
+              onClick={() => setPage(1)}
+            >
+              <ChevronFirst className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((i) => Math.max(1, i - 1))}
+              disabled={page === 1 || isPending}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((i) => i + 1)}
+              disabled={page === totalPages || isPending}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(totalPages)}
+              disabled={page === totalPages || isPending}
+            >
+              <ChevronFirst className="w-4 h-4 rotate-180" />
+            </Button>
+          </div>
         </div>
       </div>
 

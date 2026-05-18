@@ -71,5 +71,14 @@
     "vitest": "^3.0.5",
     "web-vitals": "^5.1.0",
     "wrangler": "^4.40.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "browser-tabs-lock",
+      "esbuild",
+      "sharp",
+      "unrs-resolver",
+      "workerd"
+    ]
   }
 }

@@ -50,6 +50,8 @@ export const animalsService = {
       const formData = new FormData()
       data.birthDate && formData.append('birthDate', data.birthDate)
       formData.append('color', data.color)
+      formData.append('breed', data.breed)
+      formData.append('distinguishingMarks', data.distinguishingMarks)
       formData.append('mainPhotoIndex', String(data.mainPhotoIndex))
       data.name && formData.append('name', data.name)
       // Append each photo individually
@@ -87,6 +89,8 @@ export const animalsService = {
       const formData = new FormData()
       data.birthDate && formData.append('birthDate', data.birthDate)
       formData.append('color', data.color)
+      formData.append('breed', data.breed)
+      formData.append('distinguishingMarks', data.distinguishingMarks)
       const jsonExistingPhotoIds = JSON.stringify(data.existingPhotoIds)
       formData.append('existingPhotoIds', jsonExistingPhotoIds)
       formData.append('id)', id)
