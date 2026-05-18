@@ -1,21 +1,46 @@
 import React from 'react'
-import { Calendar, LucideLoaderCircle, XIcon } from 'lucide-react'
+import {
+  Calendar,
+  Dog,
+  ListFilter,
+  LucideLoaderCircle,
+  XIcon,
+} from 'lucide-react'
 import { useForm } from '@tanstack/react-form'
 import { createAndDownloadReport } from '../AnimalTable'
+import {
+  Combobox,
+  ComboboxChip,
+  ComboboxChips,
+  ComboboxChipsInput,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxValue,
+  useComboboxAnchor,
+} from '../ui/combobox'
 import type { ReportDateRangeParams } from '@/api/reports/types'
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
 import { useReportsByDateRange } from '@/api/reports/queries'
 import { genericErrorMessage } from '@/lib/utils'
+import { ANIMAL_EVENT_TYPE_MAP } from '@/api/animals/types'
 
 const SPECIES_OPTIONS = [
   { value: 1, label: 'Psy' },
   { value: 2, label: 'Koty' },
 ]
+
+const AnimalEventOptions = Object.entries(ANIMAL_EVENT_TYPE_MAP)
+  .filter((event) => event[1] !== 'Brak')
+  .map((event) => ({
+    value: event[0],
+    label: event[1],
+  }))
 
 interface FormFieldProps {
   icon: React.ElementType
@@ -49,7 +74,8 @@ interface DateRangeFilterModalProps {
 const defaultFormData = {
   startDate: '',
   endDate: '',
-  species: [] as Array<number>,
+  species: [] as Array<string>,
+  eventTypes: [] as Array<string>,
 }
 
 export default function DateRangeFilterModal({
@@ -67,14 +93,27 @@ export default function DateRangeFilterModal({
   })
   const form = useForm({
     defaultValues: defaultFormData,
-    onSubmit: async ({ value }) => {
+    onSubmit: ({ value }) => {
+      const getSpecies = () => {
+        if (value.species.length === 0) return [1, 2]
+        return value.species.map((label) => {
+          const option = SPECIES_OPTIONS.find((o) => o.label === label)!
+          return option.value
+        })
+      }
+
       const data: ReportDateRangeParams = {
         startDate: value.startDate,
         endDate: value.endDate,
-        species:
-          value.species.length === 1
-            ? [value.species[0] as 1 | 2]
-            : ([1, 2] as [1, 2]),
+        eventTypes: value.eventTypes.length
+          ? value.eventTypes.map(
+              (label) =>
+                Number(
+                  AnimalEventOptions.find((o) => o.label === label)?.value,
+                ) as keyof typeof ANIMAL_EVENT_TYPE_MAP,
+            )
+          : null,
+        species: getSpecies(),
       }
       getReportsByDateRange(data)
     },
@@ -86,6 +125,8 @@ export default function DateRangeFilterModal({
       onClose()
     }
   }
+  const anchor = useComboboxAnchor()
+  const containerRef = React.useRef<HTMLDivElement>(null)
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -93,7 +134,7 @@ export default function DateRangeFilterModal({
         showCloseButton={false}
         className="p-0 bg-transparent shadow-none border-none max-w-lg"
       >
-        <div className="relative">
+        <div className="relative" ref={containerRef}>
           <DialogClose asChild>
             <button
               onClick={() => {
@@ -178,63 +219,112 @@ export default function DateRangeFilterModal({
               />
 
               <form.Field
-                name="species"
-                validators={{
-                  onChange: ({ value }) => {
-                    if (value.length === 0) {
-                      return 'Wybierz co najmniej jeden gatunek'
-                    }
-                    return undefined
-                  },
-                }}
+                name="eventTypes"
                 children={(field) => {
                   return (
-                    <div className="flex items-start gap-3 p-3 rounded-lg transition-colors mb-0">
-                      <div className="flex-1 min-w-0 space-y-1">
-                        <Label className="text-sm">Gatunek</Label>
-                        <div className="flex gap-6 pt-2">
-                          {SPECIES_OPTIONS.map((option) => (
-                            <div
-                              key={option.value}
-                              className="flex items-center gap-2"
-                            >
-                              <Checkbox
-                                id={`species-${option.value}`}
-                                checked={field.state.value.includes(
-                                  option.value,
-                                )}
-                                onCheckedChange={(checked) => {
-                                  const currentValue = field.state.value
-                                  if (checked) {
-                                    field.handleChange([
-                                      ...currentValue,
-                                      option.value,
-                                    ])
-                                  } else {
-                                    field.handleChange(
-                                      currentValue.filter(
-                                        (v) => v !== option.value,
-                                      ),
-                                    )
+                    <FormField
+                      icon={ListFilter}
+                      label="Typ zdarzenia"
+                      error={field.state.meta.errors[0]}
+                    >
+                      <Combobox
+                        multiple
+                        autoHighlight
+                        items={AnimalEventOptions.map((option) => option.label)}
+                        value={field.state.value}
+                        onValueChange={(val) => field.handleChange(val)}
+                      >
+                        <ComboboxChips ref={anchor} className="w-full">
+                          <ComboboxValue>
+                            {(values) => (
+                              <React.Fragment>
+                                {values.map((value: string) => (
+                                  <ComboboxChip key={value}>
+                                    {value}
+                                  </ComboboxChip>
+                                ))}
+                                <ComboboxChipsInput
+                                  placeholder={
+                                    field.state.value.length
+                                      ? ''
+                                      : 'Wybierz typ zdarzenia'
                                   }
-                                }}
-                              />
-                              <Label
-                                htmlFor={`species-${option.value}`}
-                                className="text-sm cursor-pointer"
-                              >
-                                {option.label}
-                              </Label>
-                            </div>
-                          ))}
-                        </div>
-                        {field.state.meta.errors[0] && (
-                          <p className="text-sm text-red-500 font-medium">
-                            {field.state.meta.errors[0]}
-                          </p>
-                        )}
-                      </div>
-                    </div>
+                                />
+                              </React.Fragment>
+                            )}
+                          </ComboboxValue>
+                        </ComboboxChips>
+                        <ComboboxContent
+                          anchor={anchor}
+                          container={containerRef}
+                          className="drop-shadow-2xl"
+                        >
+                          <ComboboxEmpty>Brak wyników.</ComboboxEmpty>
+                          <ComboboxList>
+                            {(item) => (
+                              <ComboboxItem key={item} value={item}>
+                                {item}
+                              </ComboboxItem>
+                            )}
+                          </ComboboxList>
+                        </ComboboxContent>
+                      </Combobox>
+                    </FormField>
+                  )
+                }}
+              />
+
+              <form.Field
+                name="species"
+                children={(field) => {
+                  return (
+                    <FormField
+                      icon={Dog}
+                      label="Gatunek"
+                      error={field.state.meta.errors[0]}
+                    >
+                      <Combobox
+                        multiple
+                        autoHighlight
+                        items={SPECIES_OPTIONS.map((option) => option.label)}
+                        value={field.state.value}
+                        onValueChange={(val) => field.handleChange(val)}
+                      >
+                        <ComboboxChips ref={anchor} className="w-full">
+                          <ComboboxValue>
+                            {(values) => (
+                              <React.Fragment>
+                                {values.map((value: string) => (
+                                  <ComboboxChip key={value}>
+                                    {value}
+                                  </ComboboxChip>
+                                ))}
+                                <ComboboxChipsInput
+                                  placeholder={
+                                    field.state.value.length
+                                      ? ''
+                                      : 'Wybierz gatunek'
+                                  }
+                                />
+                              </React.Fragment>
+                            )}
+                          </ComboboxValue>
+                        </ComboboxChips>
+                        <ComboboxContent
+                          anchor={anchor}
+                          container={containerRef}
+                        >
+                          <ComboboxEmpty>Brak wyników.</ComboboxEmpty>
+                          <ComboboxList>
+                            {(item) => (
+                              <ComboboxItem key={item} value={item}>
+                                {item}
+                              </ComboboxItem>
+                            )}
+                          </ComboboxList>
+                        </ComboboxContent>
+                      </Combobox>
+                    </FormField>
                   )
                 }}
               />
