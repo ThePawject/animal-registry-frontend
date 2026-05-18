@@ -68,3 +68,32 @@ export function formatDate(dateString: string): string {
     day: 'numeric',
   })
 }
+
+export async function rotateFile(
+  file: File,
+  degrees: 90 | 180 | 270,
+): Promise<File> {
+  const bitmap = await createImageBitmap(file)
+  const { width: w, height: h } = bitmap
+  const canvas = document.createElement('canvas')
+  const swapDimensions = degrees === 90 || degrees === 270
+  canvas.width = swapDimensions ? h : w
+  canvas.height = swapDimensions ? w : h
+  const ctx = canvas.getContext('2d')!
+  ctx.translate(canvas.width / 2, canvas.height / 2)
+  ctx.rotate((degrees * Math.PI) / 180)
+  ctx.drawImage(bitmap, -w / 2, -h / 2)
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error('Canvas toBlob failed'))
+          return
+        }
+        resolve(new File([blob], file.name, { type: file.type }))
+      },
+      file.type,
+      0.92,
+    )
+  })
+}

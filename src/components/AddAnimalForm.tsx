@@ -19,7 +19,7 @@ import { useAddAnimal, useAnimalSignature } from '@/api/animals/queries'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { cn, genericErrorMessage } from '@/lib/utils'
+import { cn, genericErrorMessage, rotateFile } from '@/lib/utils'
 import {
   Select,
   SelectContent,
@@ -603,6 +603,37 @@ export default function AddAnimalForm() {
                       }}
                     >
                       Ustaw jako główne
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        rotateFile(images[displayedImageId!], 90).then(
+                          (rotatedFile) => {
+                            const newImages = [...images]
+                            newImages[displayedImageId!] = rotatedFile
+                            form.setFieldValue('photos', newImages)
+
+                            if (mainPhotoIndex === displayedImageId) {
+                              form.setFieldValue(
+                                'mainPhotoIndex',
+                                displayedImageId,
+                              )
+                            }
+
+                            const oldFile = images[displayedImageId!]
+                            const oldUrl = fileUrlCacheRef.current.get(oldFile)
+                            if (oldUrl) {
+                              URL.revokeObjectURL(oldUrl)
+                              fileUrlCacheRef.current.delete(oldFile)
+                            }
+                            thumbnailCacheRef.current.delete(oldFile)
+                          },
+                        )
+                      }}
+                    >
+                      Obróć w prawo
                     </Button>
                     <Button
                       type="button"
