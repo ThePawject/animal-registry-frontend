@@ -175,6 +175,20 @@ function AnimalTable() {
         ),
       },
       {
+        accessorKey: 'breed',
+        header: 'Rasa',
+        cell: (info) => (
+          <div className="max-w-[100px] truncate">{info.getValue() || '-'}</div>
+        ),
+      },
+      {
+        accessorKey: 'distinguishingMarks',
+        header: 'Znaki szczególne',
+        cell: (info) => (
+          <div className="max-w-[100px] truncate">{info.getValue() || '-'}</div>
+        ),
+      },
+      {
         accessorKey: 'species',
         header: 'Gatunek',
         cell: (info) => {
@@ -443,6 +457,14 @@ function AnimalTable() {
                       <strong>Umaszczenie</strong> - np. czarny
                     </li>
                     <li>
+                      <strong>Rasa</strong> - np. mieszaniec
+                    </li>
+                    <li>
+                      <strong>Znaki Szczególne</strong> - np. brak ogona, białe
+                      łapy
+                    </li>
+
+                    <li>
                       <strong>Wydarzenia</strong> - opis lub kto wykonał
                     </li>
                   </ul>
@@ -589,7 +611,7 @@ function AnimalTable() {
               window.scrollTo({ top: 0, behavior: 'instant' })
             }}
           >
-            <SelectTrigger className="w-[80px]">
+            <SelectTrigger className="w-[80px] bg-white">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

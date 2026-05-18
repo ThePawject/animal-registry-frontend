@@ -50,7 +50,9 @@ function InfoRow({ label, info }: InfoRowProps) {
       <span className="text text-muted-foreground uppercase font-medium">
         {label}
       </span>
-      <span className="text-lg text-black font-semibold">{info}</span>
+      <span className="text-lg text-black font-semibold wrap-break-word">
+        {info}
+      </span>
     </div>
   )
 }
@@ -136,11 +138,16 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
                 {animal.name || 'Brak'}
               </h2>
             </div>
-            <div className="grid gap-8 grid-cols-2 md:grid-cols-3">
+            <div className="grid gap-8 grid-cols-2 md:grid-cols-4">
               <InfoRow label="Gatunek" info={SPECIES_MAP[animal.species]} />
               <InfoRow label="Płeć" info={SEX_MAP[animal.sex]} />
               <InfoRow label="Sygnatura" info={animal.signature} />
               <InfoRow label="Umaszczenie" info={animal.color} />
+              <InfoRow label="Rasa" info={animal.breed || 'Brak'} />
+              <InfoRow
+                label="Znaki szczególne"
+                info={animal.distinguishingMarks || 'Brak'}
+              />
               <InfoRow
                 label="Data urodzenia"
                 info={formatDate(animal.birthDate)}
