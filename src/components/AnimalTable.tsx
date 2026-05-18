@@ -182,9 +182,7 @@ function AnimalTable() {
         accessorKey: 'name',
         header: 'Imię',
         cell: (info) => (
-          <div className="max-w-[200px] truncate">
-            {info.getValue() || 'Brak'}
-          </div>
+          <div className="max-w-[200px] truncate">{info.getValue() || '-'}</div>
         ),
       },
       {
@@ -238,7 +236,7 @@ function AnimalTable() {
         header: 'Umaszczenie',
         cell: (info) => (
           <div className="max-w-[100px] truncate">
-            {info.getValue() as string}
+            {(info.getValue() as string) || '-'}
           </div>
         ),
       },
