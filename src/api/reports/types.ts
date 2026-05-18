@@ -1,7 +1,10 @@
+import type { ANIMAL_EVENT_TYPE_MAP } from '../animals/types'
+
 export type ReportDateRangeParams = {
   endDate: string
   startDate: string
-  species: [1] | [2] | [1, 2]
+  species: Array<number>
+  eventTypes: Array<keyof typeof ANIMAL_EVENT_TYPE_MAP> | null
 }
 
 export type ReportSelectedParams = {
