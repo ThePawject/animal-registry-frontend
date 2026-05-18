@@ -25,7 +25,7 @@ import { useAnimalSignature, useEditAnimal } from '@/api/animals/queries'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { cn, genericErrorMessage } from '@/lib/utils'
+import { cn, genericErrorMessage, rotateFile } from '@/lib/utils'
 import {
   Select,
   SelectContent,
@@ -666,7 +666,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
 
               {images.length > 0 ? (
                 <Card className="relative flex flex-col gap-2 p-0 pt-4 rounded-none w-full items-center h-120">
-                  <div className="w-full flex justify-between px-4 items-center">
+                  <div className="w-full flex flex-col md:flex-row justify-between px-4 items-center gap-2">
                     <Button
                       type="button"
                       variant="outline"
@@ -696,6 +696,37 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                     >
                       Ustaw jako główne
                     </Button>
+
+                    {displayedImageId !== null &&
+                    images[displayedImageId] instanceof File ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          rotateFile(images[displayedImageId] as File, 90).then(
+                            (rotatedFile) => {
+                              const newPhotos = [...images]
+                              newPhotos[displayedImageId] = rotatedFile
+                              form.setFieldValue('photos', newPhotos)
+
+                              if (
+                                form.getFieldValue('mainPhotoIndex') ===
+                                displayedImageId - numberOfExistingPhotos
+                              ) {
+                                form.setFieldValue(
+                                  'mainPhotoIndex',
+                                  displayedImageId - numberOfExistingPhotos,
+                                )
+                                form.setFieldValue('mainPhotoId', null)
+                              }
+                            },
+                          )
+                        }}
+                      >
+                        Obróć w prawo
+                      </Button>
+                    ) : null}
                     <Button
                       type="button"
                       variant="destructive"
