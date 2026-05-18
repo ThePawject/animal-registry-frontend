@@ -351,7 +351,6 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                   if (value.length > 100) {
                     return 'Rasa nie może mieć więcej niż 100 znaków'
                   }
-                  return !value ? 'Rasa jest wymagana' : undefined
                 },
               }}
               children={(field) => {
@@ -380,7 +379,6 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                   if (value.length > 100) {
                     return 'Znaki szczególne nie mogą mieć więcej niż 100 znaków'
                   }
-                  return !value ? 'Znaki szczególne są wymagane' : undefined
                 },
               }}
               children={(field) => {
@@ -522,11 +520,6 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
 
             <form.Field
               name="sex"
-              validators={{
-                onChange: ({ value }) => {
-                  return value === 0 ? 'Płeć jest wymagana' : undefined
-                },
-              }}
               children={(field) => {
                 return (
                   <FormField
@@ -557,11 +550,6 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
             />
             <form.Field
               name="color"
-              validators={{
-                onChange: ({ value }) => {
-                  return !value ? 'Umaszczenie jest wymagane' : undefined
-                },
-              }}
               children={(field) => {
                 return (
                   <FormField

@@ -51,7 +51,7 @@ function InfoRow({ label, info }: InfoRowProps) {
         {label}
       </span>
       <span className="text-lg text-black font-semibold wrap-break-word">
-        {info}
+        {!info || info.length === 0 ? 'Brak' : info}
       </span>
     </div>
   )
@@ -143,10 +143,10 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
               <InfoRow label="Płeć" info={SEX_MAP[animal.sex]} />
               <InfoRow label="Sygnatura" info={animal.signature} />
               <InfoRow label="Umaszczenie" info={animal.color} />
-              <InfoRow label="Rasa" info={animal.breed || 'Brak'} />
+              <InfoRow label="Rasa" info={animal.breed} />
               <InfoRow
                 label="Znaki szczególne"
-                info={animal.distinguishingMarks || 'Brak'}
+                info={animal.distinguishingMarks}
               />
               <InfoRow
                 label="Data urodzenia"
