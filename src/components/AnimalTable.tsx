@@ -13,7 +13,7 @@ import {
   Plus,
 } from 'lucide-react'
 import { useDebouncedValue } from '@tanstack/react-pacer'
-import { Link } from '@tanstack/react-router'
+import { Link, getRouteApi, useNavigate } from '@tanstack/react-router'
 import {
   Select,
   SelectContent,
@@ -24,6 +24,7 @@ import {
 } from './ui/select'
 import DateRangeFilterModal from './modals/DateRangeFilterModal'
 import { InfoCard } from './InfoCard'
+import type { IndexSearch } from '@/routes/index'
 import type { ColumnDef } from '@tanstack/react-table'
 import type { Animal, Species } from '@/api/animals/types'
 import { SPECIES_MAP } from '@/api/animals/types'
@@ -32,7 +33,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Skeleton } from '@/components/ui/skeleton'
-import { defaultAnimalsParams, useAnimals } from '@/api/animals/queries'
+import { useAnimals } from '@/api/animals/queries'
 import { formatDate } from '@/lib/utils'
 import {
   useReports,
@@ -52,29 +53,41 @@ export const createAndDownloadReport = (blob: Blob, filename: string) => {
 
 const SEARCH_INFO_KEY = 'animal-search-info-dismissed'
 
-function AnimalTable() {
-  const [page, setPage] = React.useState(defaultAnimalsParams.page)
-  const [globalFilter, setGlobalFilter] = React.useState<string | null>(
-    defaultAnimalsParams.keyWordSearch,
-  )
-  const [pageSize, setPageSize] = React.useState(defaultAnimalsParams.pageSize)
-  const [speciesFilter, setSpeciesFilter] = React.useState<Species | null>(
-    defaultAnimalsParams.species ?? null,
-  )
-  const [isInShelterFilter, setIsInShelterFilter] = React.useState<
-    boolean | null
-  >(defaultAnimalsParams.isInShelter ?? null)
+const routeApi = getRouteApi('/')
 
-  const [debouncedGlobalFilter] = useDebouncedValue(globalFilter, {
-    wait: 500,
-  })
+function AnimalTable() {
+  const search = routeApi.useSearch()
+  const navigate = useNavigate({ from: '/' })
+
+  const setSearch = (
+    patch: Partial<{
+      query: string | undefined
+      species: Species | undefined
+      isInShelter: boolean | undefined
+      page: number
+      pageSize: 10 | 20 | 50
+    }>,
+  ) => navigate({ search: (prev: IndexSearch) => ({ ...prev, ...patch }) })
+
+  const [inputValue, setInputValue] = React.useState(search.query ?? '')
+  const [debouncedQuery] = useDebouncedValue(inputValue, { wait: 500 })
+
+  React.useEffect(() => {
+    const nextQuery = debouncedQuery || undefined
+    if (nextQuery !== search.query) {
+      setSearch({ query: nextQuery, page: 1 })
+    }
+  }, [debouncedQuery])
+
+  const page = search.page ?? 1
+  const pageSize = search.pageSize ?? 20
 
   const { data: animalsPage, isPending } = useAnimals({
-    keyWordSearch: debouncedGlobalFilter,
-    page: page,
+    keyWordSearch: search.query ?? null,
+    page,
     pageSize,
-    species: speciesFilter,
-    isInShelter: isInShelterFilter,
+    species: search.species ?? null,
+    isInShelter: search.isInShelter ?? null,
   })
 
   const { mutate: getReports, isPending: isReportsPending } = useReports(
@@ -312,19 +325,13 @@ function AnimalTable() {
     [],
   )
 
-  React.useEffect(() => {
-    setPage(1)
-  }, [debouncedGlobalFilter])
-
   const table = useReactTable({
     data: animalsPage?.items || [],
     columns,
     state: {
-      globalFilter,
       rowSelection,
     },
     enableMultiRowSelection: true,
-    onGlobalFilterChange: setGlobalFilter,
     getRowId: (row) => row.id.toString(),
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
@@ -431,8 +438,8 @@ function AnimalTable() {
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <Input
               placeholder="Szukaj zwierząt..."
-              value={globalFilter || ''}
-              onChange={(e) => setGlobalFilter(e.target.value)}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
               onFocus={handleInputFocus}
               className="h-10 flex-1 bg-white"
             />
@@ -485,20 +492,21 @@ function AnimalTable() {
           </div>
 
           <Select
-            value={speciesFilter === null ? 'all' : speciesFilter.toString()}
+            value={
+              search.species === undefined ? 'all' : search.species.toString()
+            }
             onValueChange={(value) => {
-              if (value === 'all') {
-                setSpeciesFilter(null)
-              } else {
-                setSpeciesFilter(Number(value) as Species)
-              }
-              setPage(1)
+              setSearch({
+                species:
+                  value === 'all' ? undefined : (Number(value) as Species),
+                page: 1,
+              })
             }}
           >
             <SelectTrigger className="w-full md:w-[180px] h-10 bg-white">
               <SelectValue placeholder="Wszystkie gatunki">
-                {speciesFilter !== null
-                  ? SPECIES_MAP[speciesFilter]
+                {search.species !== undefined
+                  ? SPECIES_MAP[search.species]
                   : 'Wszystkie gatunki'}
               </SelectValue>
             </SelectTrigger>
@@ -511,22 +519,22 @@ function AnimalTable() {
 
           <Select
             value={
-              isInShelterFilter === null ? 'all' : isInShelterFilter.toString()
+              search.isInShelter === undefined
+                ? 'all'
+                : search.isInShelter.toString()
             }
             onValueChange={(value) => {
-              if (value === 'all') {
-                setIsInShelterFilter(null)
-              } else {
-                setIsInShelterFilter(value === 'true')
-              }
-              setPage(1)
+              setSearch({
+                isInShelter: value === 'all' ? undefined : value === 'true',
+                page: 1,
+              })
             }}
           >
             <SelectTrigger className="w-full md:w-[200px] h-10 bg-white">
               <SelectValue placeholder="Wszystkie statusy">
-                {isInShelterFilter === null
+                {search.isInShelter === undefined
                   ? 'Wszystkie statusy'
-                  : isInShelterFilter
+                  : search.isInShelter
                     ? 'W schronisku'
                     : 'Poza schroniskiem'}
               </SelectValue>
@@ -606,8 +614,7 @@ function AnimalTable() {
           <Select
             value={pageSize.toString()}
             onValueChange={(value) => {
-              setPage(1)
-              setPageSize(Number(value))
+              setSearch({ page: 1, pageSize: Number(value) as 10 | 20 | 50 })
               window.scrollTo({ top: 0, behavior: 'instant' })
             }}
           >
@@ -630,14 +637,14 @@ function AnimalTable() {
               variant="outline"
               size="sm"
               disabled={page === 1 || isPending}
-              onClick={() => setPage(1)}
+              onClick={() => setSearch({ page: 1 })}
             >
               <ChevronFirst className="w-4 h-4" />
             </Button>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage((i) => Math.max(1, i - 1))}
+              onClick={() => setSearch({ page: Math.max(1, page - 1) })}
               disabled={page === 1 || isPending}
             >
               <ChevronLeft className="w-4 h-4" />
@@ -645,7 +652,7 @@ function AnimalTable() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage((i) => i + 1)}
+              onClick={() => setSearch({ page: page + 1 })}
               disabled={page === totalPages || isPending}
             >
               <ChevronRight className="w-4 h-4" />
@@ -653,7 +660,7 @@ function AnimalTable() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage(totalPages)}
+              onClick={() => setSearch({ page: totalPages })}
               disabled={page === totalPages || isPending}
             >
               <ChevronFirst className="w-4 h-4 rotate-180" />
