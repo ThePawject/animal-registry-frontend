@@ -1,5 +1,4 @@
 import { test as base, type Page } from '@playwright/test'
-import { login } from './handlers/auth.handler'
 
 type Fixtures = {
   authenticatedPage: Page
@@ -7,7 +6,8 @@ type Fixtures = {
 
 export const test = base.extend<Fixtures>({
   authenticatedPage: async ({ page }, use) => {
-    await login(page)
+    await page.goto('/')
+    await page.waitForLoadState('networkidle')
     await use(page)
   },
 })

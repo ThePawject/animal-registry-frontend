@@ -21,3 +21,4 @@ todos.json
 # Playwright
 playwright-report/
 playwright-results/
+tests/e2e/.auth-state.json

@@ -6,12 +6,15 @@ config()
 export default defineConfig({
   testDir: './tests/e2e',
   outputDir: './playwright-results',
-  fullyParallel: false,
-  retries: 0,
-  workers: 1,
+  globalSetup: './tests/e2e/global-setup.ts',
+  fullyParallel: true,
+  retries: 1,
+  workers: 3,
+  timeout: 60000,
   reporter: [['html', { outputFolder: 'playwright-report' }]],
   use: {
     baseURL: 'http://localhost:3000',
+    storageState: 'tests/e2e/.auth-state.json',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'off',

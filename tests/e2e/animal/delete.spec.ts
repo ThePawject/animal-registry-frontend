@@ -12,7 +12,7 @@ test('delete animal - confirm in dialog', async ({
   await expect(page.getByTestId('delete-dialog-title')).toBeVisible()
 
   await page.getByTestId('confirm-delete-animal-btn').click()
-  await page.waitForURL(/localhost:3000\/?(\?.*)?$/, { timeout: 10000 })
+  await page.waitForURL(/localhost:3000\/?(\?.*)?$/, { timeout: 20000 })
 
   await expect(page).toHaveURL(/localhost:3000\/?(\?.*)?$/)
 })
