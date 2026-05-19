@@ -10,7 +10,9 @@
     "lint": "eslint",
     "format": "prettier",
     "check": "prettier --write . && eslint --fix",
-    "pre-commit": "pnpm run lint && pnpm exec tsc --noEmit && pnpm exec prettier --check . && pnpm run build"
+    "pre-commit": "pnpm run lint && pnpm exec tsc --noEmit && pnpm exec prettier --check . && pnpm run build",
+    "test:e2e": "playwright test",
+    "test:e2e:docs": "playwright test tests/e2e/docs"
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.13.0",
@@ -55,6 +57,7 @@
   "devDependencies": {
     "@content-collections/core": "^0.13.1",
     "@content-collections/vite": "^0.2.8",
+    "@playwright/test": "^1.60.0",
     "@tanstack/devtools-vite": "^0.3.11",
     "@tanstack/eslint-config": "^0.3.0",
     "@tanstack/router-plugin": "^1.132.0",
@@ -64,6 +67,7 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.0.4",
+    "dotenv": "^17.4.2",
     "eslint": "^9.39.2",
     "jsdom": "^27.0.0",
     "prettier": "^3.5.3",

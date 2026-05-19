@@ -17,3 +17,7 @@ todos.json
 .idea
 *.md
 !README.md
+
+# Playwright
+playwright-report/
+playwright-results/
