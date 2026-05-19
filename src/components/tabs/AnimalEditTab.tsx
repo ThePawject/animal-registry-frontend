@@ -313,6 +313,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                   >
                     <Input
                       id="Imię"
+                      data-testid="name-input"
                       value={field.state.value ?? undefined}
                       onChange={(e) => field.handleChange(e.target.value)}
                       className="bg-background"
@@ -361,7 +362,8 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                     error={field.state.meta.errors.join(', ')}
                   >
                     <Input
-                      id="Rada"
+                      id="Rasa"
+                      data-testid="breed-input"
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                       className="bg-background"
@@ -389,6 +391,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                     error={field.state.meta.errors.join(', ')}
                   >
                     <Input
+                      data-testid="distinguishing-marks-input"
                       id="Rada"
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
@@ -420,7 +423,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                         field.handleChange(Number(value) as Species)
                       }
                     >
-                      <SelectTrigger className="bg-background w-full">
+                      <SelectTrigger data-testid="species-select" className="bg-background w-full">
                         <SelectValue placeholder="Wybierz gatunek" />
                       </SelectTrigger>
                       <SelectContent>
@@ -493,6 +496,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                         </InfoCard>
                       </div>
                       <Button
+                        data-testid="generate-signature-btn"
                         type="button"
                         variant="outline"
                         className="h-9 w-[200px]"
@@ -533,7 +537,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                         field.handleChange(Number(value) as Sexes)
                       }
                     >
-                      <SelectTrigger className="bg-background w-full">
+                      <SelectTrigger data-testid="sex-select" className="bg-background w-full">
                         <SelectValue placeholder="Wybierz płeć" />
                       </SelectTrigger>
                       <SelectContent>
@@ -558,6 +562,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                     error={field.state.meta.errors[0]}
                   >
                     <Input
+                      data-testid="color-input"
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                       id="Umaszczenie"
@@ -589,6 +594,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                     error={field.state.meta.errors[0]}
                   >
                     <Input
+                      data-testid="birth-date-input"
                       min="2000-01-01"
                       type="date"
                       value={field.state.value ?? undefined}
@@ -832,6 +838,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
           </Button>
 
           <Button
+            data-testid="submit-edit-animal"
             type="submit"
             className="flex-1 h-12 text-lg font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
             disabled={isPending || !isDirty}

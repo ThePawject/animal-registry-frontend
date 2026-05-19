@@ -305,7 +305,7 @@ function AnimalTable() {
         id: 'actions',
         header: 'Akcje',
         cell: ({ row }) => (
-          <Button asChild variant="outline" size="sm" className="w-full">
+          <Button asChild variant="outline" size="sm" className="w-full" data-testid="animal-details-link">
             <Link
               to="/animal/$animalId"
               params={{ animalId: row.original.id }}
@@ -547,7 +547,7 @@ function AnimalTable() {
       </div>
 
       <div className="rounded-md border w-full overflow-x-auto">
-        <table className="w-full">
+        <table data-testid="animals-table" className="w-full">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>

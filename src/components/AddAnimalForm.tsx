@@ -249,6 +249,7 @@ export default function AddAnimalForm() {
                   >
                     <Input
                       id="Imię"
+                      data-testid="name-input"
                       value={field.state.value ?? undefined}
                       onChange={(e) => field.handleChange(e.target.value)}
                       className="bg-background"
@@ -300,7 +301,7 @@ export default function AddAnimalForm() {
                         field.handleChange(Number(value) as Species)
                       }
                     >
-                      <SelectTrigger className="bg-background w-full">
+                      <SelectTrigger data-testid="species-select" className="bg-background w-full">
                         <SelectValue placeholder="Wybierz gatunek" />
                       </SelectTrigger>
                       <SelectContent>
@@ -334,6 +335,7 @@ export default function AddAnimalForm() {
                   >
                     <Input
                       id="Rasa"
+                      data-testid="breed-input"
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                       className="bg-background"
@@ -361,6 +363,7 @@ export default function AddAnimalForm() {
                     error={field.state.meta.errors.join(', ')}
                   >
                     <Input
+                      data-testid="distinguishing-marks-input"
                       id="Rada"
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
@@ -429,6 +432,7 @@ export default function AddAnimalForm() {
                         </InfoCard>
                       </div>
                       <Button
+                        data-testid="generate-signature-btn"
                         type="button"
                         variant="outline"
                         disabled={
@@ -468,7 +472,7 @@ export default function AddAnimalForm() {
                         field.handleChange(Number(value) as Sexes)
                       }
                     >
-                      <SelectTrigger className="bg-background w-full">
+                      <SelectTrigger data-testid="sex-select" className="bg-background w-full">
                         <SelectValue placeholder="Wybierz płeć" />
                       </SelectTrigger>
                       <SelectContent>
@@ -493,6 +497,7 @@ export default function AddAnimalForm() {
                     error={field.state.meta.errors[0]}
                   >
                     <Input
+                      data-testid="color-input"
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                       id="Umaszczenie"
@@ -526,6 +531,7 @@ export default function AddAnimalForm() {
                     error={field.state.meta.errors[0]}
                   >
                     <Input
+                      data-testid="birth-date-input"
                       min="2000-01-01"
                       type="date"
                       value={field.state.value ?? undefined}
@@ -725,6 +731,7 @@ export default function AddAnimalForm() {
           </Button>
 
           <Button
+            data-testid="submit-add-animal"
             type="submit"
             className="flex-1 h-12 text-lg font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
             disabled={isPending}

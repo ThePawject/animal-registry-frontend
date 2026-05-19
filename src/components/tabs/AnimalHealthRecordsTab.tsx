@@ -256,6 +256,7 @@ export default function AnimalHealthRecordsTab({
           children={(field) => {
             return (
               <Textarea
+                data-testid="edit-health-record-description-input"
                 maxLength={500}
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
@@ -428,6 +429,7 @@ export default function AnimalHealthRecordsTab({
               <div className="flex flex-col gap-2 min-w-[200px] min-h-16 items-center">
                 <div className="flex gap-2 w-full">
                   <Button
+                    data-testid="cancel-edit-health-record-btn"
                     variant="outline"
                     size="sm"
                     onClick={handleCancelEdit}
@@ -436,6 +438,7 @@ export default function AnimalHealthRecordsTab({
                     <X className="w-4 h-4 mr-1" /> Anuluj
                   </Button>
                   <Button
+                    data-testid="save-edit-health-record-btn"
                     variant="outline"
                     size="sm"
                     disabled={isEditingRecord}
@@ -456,6 +459,7 @@ export default function AnimalHealthRecordsTab({
           return (
             <div className="flex gap-2 min-w-[200px] min-h-16 items-center">
               <Button
+                data-testid="edit-health-record-btn"
                 variant="outline"
                 size="sm"
                 onClick={() => handleEditClick(row.original)}
@@ -464,6 +468,7 @@ export default function AnimalHealthRecordsTab({
                 <Pencil className="w-4 h-4 mr-1" /> Edytuj
               </Button>
               <Button
+                data-testid="delete-health-record-btn"
                 variant="destructive"
                 size="sm"
                 type="button"
@@ -504,6 +509,7 @@ export default function AnimalHealthRecordsTab({
           <h2 className="text-2xl font-bold">Karty zdrowia</h2>
 
           <Button
+            data-testid="add-health-record-btn"
             onClick={handleShowAddForm}
             className="bg-emerald-600 hover:bg-emerald-700 text-white"
           >
@@ -522,7 +528,7 @@ export default function AnimalHealthRecordsTab({
           )}
 
           <div className="rounded-md border bg-white dark:bg-black/30 overflow-x-auto m-0">
-            <table className="text-sm min-w-[600px] w-full">
+            <table data-testid="health-records-table" className="text-sm min-w-[600px] w-full">
               <thead>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
@@ -598,6 +604,7 @@ export default function AnimalHealthRecordsTab({
               Anuluj
             </Button>
             <Button
+              data-testid="confirm-delete-health-record-btn"
               variant="destructive"
               onClick={handleConfirmDelete}
               disabled={isDeleting}

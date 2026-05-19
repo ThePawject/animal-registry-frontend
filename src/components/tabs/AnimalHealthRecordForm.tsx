@@ -128,6 +128,7 @@ export default function AnimalHealthRecordForm({
                     error={field.state.meta.errors[0]}
                   >
                     <Input
+                      data-testid="health-record-date-input"
                       type="date"
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
@@ -155,6 +156,7 @@ export default function AnimalHealthRecordForm({
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                       id="Wykonane przez"
+                      data-testid="performed-by-input"
                       className="bg-background"
                       placeholder="Podaj nazwę lekarza/osoby"
                     />
@@ -182,6 +184,7 @@ export default function AnimalHealthRecordForm({
                 error={field.state.meta.errors[0]}
               >
                 <Textarea
+                  data-testid="health-record-description-input"
                   maxLength={500}
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
@@ -269,6 +272,7 @@ export default function AnimalHealthRecordForm({
 
         <div className="flex gap-4 pt-4">
           <Button
+            data-testid="cancel-add-health-record-btn"
             type="button"
             variant="outline"
             className="flex-1 text-lg font-semibold h-12"
@@ -278,6 +282,7 @@ export default function AnimalHealthRecordForm({
           </Button>
 
           <Button
+            data-testid="submit-add-health-record"
             type="submit"
             className="flex-1 h-12 text-lg font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
             disabled={isPending}

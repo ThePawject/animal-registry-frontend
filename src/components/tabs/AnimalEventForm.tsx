@@ -91,7 +91,7 @@ export default function AnimalEventForm({
                         field.handleChange(Number(value) as AnimalEventType)
                       }
                     >
-                      <SelectTrigger className="bg-background w-full">
+                      <SelectTrigger data-testid="event-type-select" className="bg-background w-full">
                         <SelectValue placeholder="Wybierz typ wydarzenia" />
                       </SelectTrigger>
                       <SelectContent>
@@ -131,6 +131,7 @@ export default function AnimalEventForm({
                     error={field.state.meta.errors[0]}
                   >
                     <Input
+                      data-testid="event-date-input"
                       type="date"
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
@@ -161,6 +162,7 @@ export default function AnimalEventForm({
                 error={field.state.meta.errors[0]}
               >
                 <Textarea
+                  data-testid="event-description-input"
                   maxLength={500}
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
@@ -175,6 +177,7 @@ export default function AnimalEventForm({
 
         <div className="flex gap-4 pt-4">
           <Button
+            data-testid="cancel-add-event-btn"
             type="button"
             variant="outline"
             className="flex-1 text-lg font-semibold h-12"
@@ -184,6 +187,7 @@ export default function AnimalEventForm({
           </Button>
 
           <Button
+            data-testid="submit-add-event"
             type="submit"
             className="flex-1 h-12 text-lg font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
             disabled={isPending}

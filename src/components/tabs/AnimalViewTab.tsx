@@ -42,15 +42,16 @@ function formatDate(date: string | Date | null | undefined): string {
 interface InfoRowProps {
   label: string
   info: string
+  testId?: string
 }
 
-function InfoRow({ label, info }: InfoRowProps) {
+function InfoRow({ label, info, testId }: InfoRowProps) {
   return (
     <div className="flex flex-col gap-1">
       <span className="text text-muted-foreground uppercase font-medium">
         {label}
       </span>
-      <span className="text-lg text-black font-semibold wrap-break-word">
+      <span data-testid={testId} className="text-lg text-black font-semibold wrap-break-word">
         {!info || info.length === 0 ? 'Brak' : info}
       </span>
     </div>
@@ -83,6 +84,7 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
     <div className="flex flex-col gap-8 px-8 md:px-0 pb-8">
       <div className="flex gap-4 w-full flex-col md:flex-row">
         <Link
+          data-testid="edit-tab-link"
           to="/animal/$animalId/edit"
           params={{ animalId: animal.id }}
           className="bg-white flex flex-1 gap-3 text-slate-700 items-center border border-slate-300 rounded-lg p-2 py-3 w-full hover:bg-emerald-600 hover:text-white justify-center"
@@ -91,6 +93,7 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
           <span className="text-lg font-medium">Edytuj dane</span>
         </Link>
         <Link
+          data-testid="events-tab-link"
           to="/animal/$animalId/events"
           params={{ animalId: animal.id }}
           className="bg-white flex flex-1 gap-3 text-slate-700 items-center border border-slate-300 rounded-lg p-2 py-3 w-full hover:bg-emerald-600 hover:text-white justify-center"
@@ -99,6 +102,7 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
           <span className="text-lg font-medium">Wydarzenia</span>
         </Link>
         <Link
+          data-testid="medical-records-tab-link"
           to="/animal/$animalId/medical-records"
           params={{ animalId: animal.id }}
           className="bg-white flex flex-1 gap-3 text-slate-700 items-center border border-slate-300 rounded-lg p-2 py-3 w-full hover:bg-emerald-600 hover:text-white justify-center"
@@ -116,6 +120,7 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
           <span className="text-lg font-medium h-7">Pobierz raport</span>
         </Button>
         <Button
+          data-testid="delete-animal-btn"
           onClick={() => {
             setIsDeleteModalOpen(true)
           }}
@@ -134,19 +139,20 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
           />
           <div className="flex flex-col justify-between w-full gap-6">
             <div className="flex flex-col gap-1">
-              <h2 className="text-3xl font-semibold">
+              <h2 data-testid="animal-name-heading" className="text-3xl font-semibold">
                 {animal.name || 'Brak'}
               </h2>
             </div>
             <div className="grid gap-8 grid-cols-2 md:grid-cols-4">
-              <InfoRow label="Gatunek" info={SPECIES_MAP[animal.species]} />
-              <InfoRow label="Płeć" info={SEX_MAP[animal.sex]} />
-              <InfoRow label="Sygnatura" info={animal.signature} />
-              <InfoRow label="Umaszczenie" info={animal.color} />
-              <InfoRow label="Rasa" info={animal.breed} />
+              <InfoRow label="Gatunek" info={SPECIES_MAP[animal.species]} testId="animal-species" />
+              <InfoRow label="Płeć" info={SEX_MAP[animal.sex]} testId="animal-sex" />
+              <InfoRow label="Sygnatura" info={animal.signature} testId="animal-signature" />
+              <InfoRow label="Umaszczenie" info={animal.color} testId="animal-color" />
+              <InfoRow label="Rasa" info={animal.breed} testId="animal-breed" />
               <InfoRow
                 label="Znaki szczególne"
                 info={animal.distinguishingMarks}
+                testId="animal-distinguishing-marks"
               />
               <InfoRow
                 label="Data urodzenia"
@@ -226,7 +232,7 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Potwierdzenie usunięcia</DialogTitle>
+            <DialogTitle data-testid="delete-dialog-title">Potwierdzenie usunięcia</DialogTitle>
             <DialogDescription>
               Czy na pewno chcesz usunąć {animal.name}? Ta operacja jest
               nieodwracalna.
@@ -234,12 +240,14 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
           </DialogHeader>
           <div className="flex gap-4 mt-4 justify-end">
             <Button
+              data-testid="cancel-delete-animal-btn"
               variant="outline"
               onClick={() => setIsDeleteModalOpen(false)}
             >
               Anuluj
             </Button>
             <Button
+              data-testid="confirm-delete-animal-btn"
               variant="destructive"
               onClick={() => {
                 deleteAnimal({ animalId: animal.id })

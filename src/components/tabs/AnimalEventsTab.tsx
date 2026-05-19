@@ -133,7 +133,7 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
                     field.handleChange(Number(value) as AnimalEventType)
                   }
                 >
-                  <SelectTrigger className="bg-background w-full">
+                  <SelectTrigger data-testid="event-type-edit-select" className="bg-background w-full">
                     <SelectValue placeholder="Wybierz typ wydarzenia" />
                   </SelectTrigger>
                   <SelectContent>
@@ -215,6 +215,7 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
           children={(field) => {
             return (
               <Textarea
+                data-testid="edit-event-description-input"
                 maxLength={500}
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
@@ -285,6 +286,7 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
             return (
               <div className="flex gap-2 min-w-[200px] min-h-16 items-center">
                 <Button
+                  data-testid="cancel-edit-event-btn"
                   variant="outline"
                   size="sm"
                   onClick={handleCancelEdit}
@@ -293,6 +295,7 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
                   <X className="w-4 h-4 mr-1" /> Anuluj
                 </Button>
                 <Button
+                  data-testid="save-edit-event-btn"
                   variant="outline"
                   size="sm"
                   disabled={isEditingEvent}
@@ -309,6 +312,7 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
           return (
             <div className="flex gap-2 min-w-[200px] min-h-16 items-center">
               <Button
+                data-testid="edit-event-btn"
                 variant="outline"
                 size="sm"
                 onClick={() => handleEditClick(row.original)}
@@ -317,6 +321,7 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
                 <Pencil className="w-4 h-4 mr-1" /> Edytuj
               </Button>
               <Button
+                data-testid="delete-event-btn"
                 variant="destructive"
                 size="sm"
                 type="button"
@@ -350,6 +355,7 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
           <h2 className="text-2xl font-bold">Wydarzenia</h2>
 
           <Button
+            data-testid="add-event-btn"
             onClick={handleShowAddForm}
             className="bg-emerald-600 hover:bg-emerald-700 text-white"
           >
@@ -368,7 +374,7 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
           )}
 
           <div className="rounded-md border bg-white dark:bg-black/30 overflow-x-auto m-0">
-            <table className="text-sm min-w-[600px] w-full">
+            <table data-testid="events-table" className="text-sm min-w-[600px] w-full">
               <thead>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
@@ -444,6 +450,7 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
               Anuluj
             </Button>
             <Button
+              data-testid="confirm-delete-event-btn"
               variant="destructive"
               onClick={handleConfirmDelete}
               disabled={isDeleting}
