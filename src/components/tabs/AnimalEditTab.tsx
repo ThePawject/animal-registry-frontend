@@ -662,6 +662,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                 <Card className="relative flex flex-col gap-2 p-0 pt-4 rounded-none w-full items-center h-120">
                   <div className="w-full flex flex-col md:flex-row justify-between px-4 items-center gap-2">
                     <Button
+                      data-testid="set-main-photo-btn"
                       type="button"
                       variant="outline"
                       size="sm"
@@ -722,6 +723,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                       </Button>
                     ) : null}
                     <Button
+                      data-testid="delete-photo-btn"
                       type="button"
                       variant="destructive"
                       size="sm"
@@ -788,6 +790,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                   </div>
                   <div className="flex flex-1 items-center justify-center p-4 min-h-0">
                     <img
+                      data-testid="photo-preview"
                       src={getDisplayedImageUrl() || undefined}
                       alt="Główne zdjęcie"
                       className="object-contain max-w-full max-h-full rounded-lg"
@@ -801,6 +804,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
               )}
               <div className="w-full flex flex-col items-center gap-2">
                 <Button
+                  data-testid="add-photos-btn"
                   type="button"
                   variant="outline"
                   className="w-full max-w-sm mt-4 text-lg"
@@ -809,6 +813,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                   Dodaj zdjęcia
                 </Button>
                 <input
+                  data-testid="photos-input"
                   type="file"
                   multiple
                   accept={inputUploadAccept}

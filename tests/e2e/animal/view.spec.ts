@@ -4,25 +4,18 @@ import {
   navigateToAnimalByName,
   deleteCurrentAnimal,
 } from '../handlers/animal.handler'
+import { ANIMALS } from '../config'
 
 test('view animal details - all data visible', async ({
   authenticatedPage: page,
 }) => {
-  await createAnimal(page, {
-    name: 'PodgladTest E2E',
-    species: 'Kot',
-    sex: 'Samica',
-    breed: 'Perski',
-    color: 'Biały',
-    distinguishingMarks: 'Czarny nos',
-    birthDate: '2021-06-10',
-  })
-  await navigateToAnimalByName(page, 'PodgladTest E2E')
+  await createAnimal(page, ANIMALS.viewAllData)
+  await navigateToAnimalByName(page, ANIMALS.viewAllData.name!)
 
-  await expect(page.getByTestId('animal-name-heading')).toContainText('PodgladTest E2E')
-  await expect(page.getByTestId('animal-breed')).toContainText('Perski')
-  await expect(page.getByTestId('animal-color')).toContainText('Biały')
-  await expect(page.getByTestId('animal-distinguishing-marks')).toContainText('Czarny nos')
+  await expect(page.getByTestId('animal-name-heading')).toContainText(ANIMALS.viewAllData.name!)
+  await expect(page.getByTestId('animal-breed')).toContainText(ANIMALS.viewAllData.breed!)
+  await expect(page.getByTestId('animal-color')).toContainText(ANIMALS.viewAllData.color!)
+  await expect(page.getByTestId('animal-distinguishing-marks')).toContainText(ANIMALS.viewAllData.distinguishingMarks!)
   await expect(page.getByTestId('edit-tab-link')).toBeVisible()
   await expect(page.getByTestId('events-tab-link')).toBeVisible()
   await expect(page.getByTestId('medical-records-tab-link')).toBeVisible()
@@ -35,8 +28,8 @@ test('view animal details - all data visible', async ({
 test('view animal - navigate between tabs', async ({
   authenticatedPage: page,
 }) => {
-  await createAnimal(page, { name: 'TabyTest E2E', species: 'Pies' })
-  await navigateToAnimalByName(page, 'TabyTest E2E')
+  await createAnimal(page, ANIMALS.viewTabs)
+  await navigateToAnimalByName(page, ANIMALS.viewTabs.name!)
   const animalUrl = page.url()
 
   await page.getByTestId('events-tab-link').click()

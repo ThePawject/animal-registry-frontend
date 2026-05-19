@@ -134,6 +134,7 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
       <Card className="w-full flex gap-5 p-0 relative">
         <div className="flex flex-col md:flex-row gap-8 p-8">
           <img
+            data-testid="animal-main-photo"
             src={mainPhotoUrl || imageUrls[0]}
             className="w-64 h-64 object-cover rounded-lg shadow-md"
           />

@@ -1,11 +1,12 @@
 import { test, expect } from '../fixtures'
 import { createAnimal, navigateToAnimalByName } from '../handlers/animal.handler'
+import { ANIMALS } from '../config'
 
 test('delete animal - confirm in dialog', async ({
   authenticatedPage: page,
 }) => {
-  await createAnimal(page, { name: 'DoUsunięcia E2E', species: 'Pies' })
-  await navigateToAnimalByName(page, 'DoUsunięcia E2E')
+  await createAnimal(page, ANIMALS.deleteConfirm)
+  await navigateToAnimalByName(page, ANIMALS.deleteConfirm.name!)
 
   await page.getByTestId('delete-animal-btn').click()
   await expect(page.getByTestId('delete-dialog-title')).toBeVisible()
@@ -19,8 +20,8 @@ test('delete animal - confirm in dialog', async ({
 test('delete animal - cancel dialog does not delete', async ({
   authenticatedPage: page,
 }) => {
-  await createAnimal(page, { name: 'NieUsuwaj E2E', species: 'Pies' })
-  await navigateToAnimalByName(page, 'NieUsuwaj E2E')
+  await createAnimal(page, ANIMALS.deleteCancel)
+  await navigateToAnimalByName(page, ANIMALS.deleteCancel.name!)
 
   const currentUrl = page.url()
 
