@@ -8,8 +8,8 @@ export default defineConfig({
   outputDir: './playwright-results',
   globalSetup: './tests/e2e/global-setup.ts',
   fullyParallel: true,
-  retries: 1,
-  workers: 3,
+  retries: 0,
+  workers: 1,
   timeout: 60000,
   reporter: [['html', { outputFolder: 'playwright-report' }]],
   use: {

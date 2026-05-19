@@ -20,7 +20,7 @@ test('edit animal - change name and breed', async ({
   await page.getByTestId('breed-input').fill(EDIT_RESULTS.nameBreed.breed)
 
   await page.getByTestId('submit-edit-animal').click()
-  await page.waitForURL(/\/animal\/[^/]+$/, { timeout: 30000 })
+  await page.waitForURL(/\/animal\/[^/]+$/)
   await page.waitForLoadState('networkidle')
 
   await expect(page.getByTestId('animal-name-heading')).toContainText(EDIT_RESULTS.nameBreed.name)
@@ -47,7 +47,7 @@ test('edit animal - change species and sex', async ({
   await page.getByRole('option', { name: EDIT_RESULTS.speciesSex.sex }).click()
 
   await page.getByTestId('submit-edit-animal').click()
-  await page.waitForURL(/\/animal\/[^/]+$/, { timeout: 30000 })
+  await page.waitForURL(/\/animal\/[^/]+$/)
   await page.waitForLoadState('networkidle')
 
   // verify via edit form selects

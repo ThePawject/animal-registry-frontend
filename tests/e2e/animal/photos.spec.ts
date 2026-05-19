@@ -21,7 +21,7 @@ test('upload photo when creating animal', async ({ authenticatedPage: page }) =>
   await expect(page.getByTestId('photo-preview')).toBeVisible()
 
   await page.getByTestId('submit-add-animal').click()
-  await page.waitForURL(/localhost:3000\/?(\?.*)?$/, { timeout: 30000 })
+  await page.waitForURL(/localhost:3000\/?(\?.*)?$/)
 
   // cleanup
   await navigateToAnimalByName(page, ANIMALS.photoUpload.name!)
@@ -59,7 +59,7 @@ test('upload photo in edit tab', async ({ authenticatedPage: page }) => {
   await expect(page.getByTestId('photo-preview')).toBeVisible()
 
   await page.getByTestId('submit-edit-animal').click()
-  await page.waitForURL(/\/animal\/[^/]+$/, { timeout: 30000 })
+  await page.waitForURL(/\/animal\/[^/]+$/)
   await page.waitForLoadState('networkidle')
 
   await expect(page.getByTestId('animal-main-photo')).toBeVisible()

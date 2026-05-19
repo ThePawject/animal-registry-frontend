@@ -53,7 +53,7 @@ export async function fillAnimalForm(page: Page, data: AnimalData) {
 
 export async function submitAnimalForm(page: Page) {
   await page.getByTestId('submit-add-animal').click()
-  await page.waitForURL(/localhost:3000\/?(\?.*)?$/, { timeout: 30000 })
+  await page.waitForURL(/localhost:3000\/?(\?.*)?$/)
 }
 
 export async function createAnimal(page: Page, data: AnimalData) {
@@ -72,5 +72,5 @@ export async function navigateToAnimalByName(page: Page, name: string) {
 export async function deleteCurrentAnimal(page: Page) {
   await page.getByTestId('delete-animal-btn').click()
   await page.getByTestId('confirm-delete-animal-btn').click()
-  await page.waitForURL(/localhost:3000\/?(\?.*)?$/, { timeout: 20000 })
+  await page.waitForURL(/localhost:3000\/?(\?.*)?$/)
 }
