@@ -6,6 +6,9 @@ type Fixtures = {
 
 export const test = base.extend<Fixtures>({
   authenticatedPage: async ({ page }, use) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('animal-search-info-dismissed', 'true')
+    })
     await page.goto('/')
     await page.waitForLoadState('networkidle')
     await use(page)

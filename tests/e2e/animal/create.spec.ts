@@ -34,10 +34,9 @@ test('created animal appears in the list', async ({
 }) => {
   await createAnimal(page, ANIMALS.createList)
 
-  await page.waitForLoadState('networkidle')
-  await expect(page.getByTestId('animals-table')).toContainText(ANIMALS.createList.name!)
+  await page.getByTestId('animal-search-input').fill(ANIMALS.createList.name!)
+  await expect(page.getByTestId('animals-table').locator('tbody tr').filter({ hasText: ANIMALS.createList.name! }).first()).toBeVisible()
 
-  // cleanup
   await navigateToAnimalByName(page, ANIMALS.createList.name!)
   await deleteCurrentAnimal(page)
 })

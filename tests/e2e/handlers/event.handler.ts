@@ -7,14 +7,18 @@ export type EventData = {
 }
 
 export async function navigateToAnimalView(page: Page) {
-  // strip sub-path (e.g. /events) and go to animal root
-  const url = page.url().replace(/\/(events|medical-records|edit).*$/, '')
-  await page.goto(url)
+  const match = page.url().match(/\/animal\/([^/?]+)/)
+  if (!match) throw new Error('navigateToAnimalView: no animal ID in URL')
+  await page.goto(`/animal/${match[1]}`)
   await page.waitForLoadState('networkidle')
+  await page.getByTestId('delete-animal-btn').waitFor({ state: 'visible' })
+  await page.waitForTimeout(200)
 }
 
 export async function navigateToEvents(page: Page) {
-  await page.getByTestId('events-tab-link').click()
+  const match = page.url().match(/\/animal\/([^/?]+)/)
+  if (!match) throw new Error('navigateToEvents: no animal ID in URL')
+  await page.goto(`/animal/${match[1]}/events`)
   await page.waitForLoadState('networkidle')
 }
 
@@ -42,6 +46,13 @@ export async function editFirstEvent(page: Page, newDescription: string) {
 export async function deleteFirstEvent(page: Page) {
   const firstRow = page.getByTestId('events-table').locator('tbody tr').first()
   await firstRow.getByTestId('delete-event-btn').click()
+  await page.getByTestId('confirm-delete-event-btn').click()
+  await page.waitForLoadState('networkidle')
+}
+
+export async function deleteEventByDescription(page: Page, description: string) {
+  const row = page.getByTestId('events-table').locator('tbody tr').filter({ hasText: description })
+  await row.getByTestId('delete-event-btn').click()
   await page.getByTestId('confirm-delete-event-btn').click()
   await page.waitForLoadState('networkidle')
 }

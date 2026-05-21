@@ -435,6 +435,7 @@ function AnimalTable() {
         <div className="flex flex-col md:flex-row gap-3 items-start md:items-center w-full">
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <Input
+              data-testid="animal-search-input"
               placeholder="Szukaj zwierząt..."
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}

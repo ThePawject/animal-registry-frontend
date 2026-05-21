@@ -15,6 +15,20 @@ export async function navigateToCreateAnimal(page: Page) {
   await page.waitForLoadState('networkidle')
 }
 
+async function generateSignature(page: Page) {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    await page.getByTestId('generate-signature-btn').click()
+    const ok = await page.waitForFunction(
+      () => {
+        const input = document.querySelector('#Oznaczenie') as HTMLInputElement
+        return input && input.value.length > 0
+      },
+      { timeout: 10000 }
+    ).then(() => true).catch(() => false)
+    if (ok) break
+  }
+}
+
 export async function fillAnimalForm(page: Page, data: AnimalData) {
   if (data.name) {
     await page.getByTestId('name-input').fill(data.name)
@@ -23,11 +37,7 @@ export async function fillAnimalForm(page: Page, data: AnimalData) {
   await page.getByTestId('species-select').click()
   await page.getByRole('option', { name: data.species }).click()
 
-  await page.getByTestId('generate-signature-btn').click()
-  await page.waitForFunction(() => {
-    const input = document.querySelector('#Oznaczenie') as HTMLInputElement
-    return input && input.value.length > 0
-  })
+  await generateSignature(page)
 
   if (data.sex) {
     await page.getByTestId('sex-select').click()
@@ -52,8 +62,37 @@ export async function fillAnimalForm(page: Page, data: AnimalData) {
 }
 
 export async function submitAnimalForm(page: Page) {
-  await page.getByTestId('submit-add-animal').click()
-  await page.waitForURL(/localhost:3000\/?(\?.*)?$/)
+  const deadline = Date.now() + 120000
+  while (true) {
+    const [response] = await Promise.all([
+      page.waitForResponse(
+        (resp) => /\/animals($|\?)/.test(new URL(resp.url()).pathname) && resp.request().method() === 'POST',
+        { timeout: 120000 }
+      ),
+      page.getByTestId('submit-add-animal').click(),
+    ])
+
+    if (response.ok()) {
+      await page.waitForURL(/localhost:3000\/?(\?.*)?$/)
+      return
+    }
+
+    if (response.status() === 400 && Date.now() < deadline) {
+      const body = await response.json().catch(() => ({}))
+      const errors: string[] = body?.errors?.generalErrors ?? []
+      if (errors.some((e) => e.includes('is already in use'))) {
+        await generateSignature(page)
+        continue
+      }
+    }
+
+    if (response.status() >= 500 && Date.now() < deadline) {
+      await page.waitForTimeout(5000)
+      continue
+    }
+
+    throw new Error(`submitAnimalForm failed with status ${response.status()}`)
+  }
 }
 
 export async function createAnimal(page: Page, data: AnimalData) {
@@ -63,9 +102,28 @@ export async function createAnimal(page: Page, data: AnimalData) {
 }
 
 export async function navigateToAnimalByName(page: Page, name: string) {
+  await page.goto('/')
   await page.waitForLoadState('networkidle')
+  await page.getByTestId('animal-search-input').pressSequentially(name, { delay: 50 })
   const row = page.getByTestId('animals-table').locator('tbody tr').filter({ hasText: name }).first()
-  await row.getByTestId('animal-details-link').click()
+  await row.waitFor({ state: 'visible' })
+  await page.waitForTimeout(200)
+  const href = await row.getByTestId('animal-details-link').getAttribute('href')
+  if (!href) throw new Error(`navigateToAnimalByName: no href for "${name}"`)
+  await page.goto(href)
+  await page.waitForLoadState('networkidle')
+}
+
+export async function navigateToEditTab(page: Page) {
+  const match = page.url().match(/\/animal\/([^/?]+)/)
+  if (!match) throw new Error('navigateToEditTab: no animal ID in URL')
+  await page.goto(`/animal/${match[1]}/edit`)
+  await page.waitForLoadState('networkidle')
+}
+
+export async function submitEditAnimalForm(page: Page) {
+  await page.getByTestId('submit-edit-animal').click()
+  await page.waitForURL(/\/animal\/[^/]+$/)
   await page.waitForLoadState('networkidle')
 }
 
@@ -73,4 +131,9 @@ export async function deleteCurrentAnimal(page: Page) {
   await page.getByTestId('delete-animal-btn').click()
   await page.getByTestId('confirm-delete-animal-btn').click()
   await page.waitForURL(/localhost:3000\/?(\?.*)?$/)
+}
+
+export async function cancelDeleteAnimal(page: Page) {
+  await page.getByTestId('delete-animal-btn').click()
+  await page.getByTestId('cancel-delete-animal-btn').click()
 }

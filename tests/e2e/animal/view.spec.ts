@@ -3,7 +3,10 @@ import {
   createAnimal,
   navigateToAnimalByName,
   deleteCurrentAnimal,
+  navigateToEditTab,
 } from '../handlers/animal.handler'
+import { navigateToEvents, navigateToAnimalView } from '../handlers/event.handler'
+import { navigateToMedicalRecords } from '../handlers/health-record.handler'
 import { ANIMALS } from '../config'
 
 test('view animal details - all data visible', async ({
@@ -21,7 +24,6 @@ test('view animal details - all data visible', async ({
   await expect(page.getByTestId('medical-records-tab-link')).toBeVisible()
   await expect(page.getByTestId('delete-animal-btn')).toBeVisible()
 
-  // cleanup
   await deleteCurrentAnimal(page)
 })
 
@@ -30,25 +32,20 @@ test('view animal - navigate between tabs', async ({
 }) => {
   await createAnimal(page, ANIMALS.viewTabs)
   await navigateToAnimalByName(page, ANIMALS.viewTabs.name!)
-  const animalUrl = page.url()
 
-  await page.getByTestId('events-tab-link').click()
+  await navigateToEvents(page)
   await expect(page).toHaveURL(/\/events/)
 
-  await page.goto(animalUrl)
-  await page.waitForLoadState('networkidle')
+  await navigateToAnimalView(page)
 
-  await page.getByTestId('medical-records-tab-link').click()
+  await navigateToMedicalRecords(page)
   await expect(page).toHaveURL(/\/medical-records/)
 
-  await page.goto(animalUrl)
-  await page.waitForLoadState('networkidle')
+  await navigateToAnimalView(page)
 
-  await page.getByTestId('edit-tab-link').click()
+  await navigateToEditTab(page)
   await expect(page).toHaveURL(/\/edit/)
 
-  // cleanup
-  await page.goto(animalUrl)
-  await page.waitForLoadState('networkidle')
+  await navigateToAnimalView(page)
   await deleteCurrentAnimal(page)
 })

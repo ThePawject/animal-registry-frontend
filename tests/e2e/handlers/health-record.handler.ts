@@ -7,7 +7,9 @@ export type HealthRecordData = {
 }
 
 export async function navigateToMedicalRecords(page: Page) {
-  await page.getByTestId('medical-records-tab-link').click()
+  const match = page.url().match(/\/animal\/([^/?]+)/)
+  if (!match) throw new Error('navigateToMedicalRecords: no animal ID in URL')
+  await page.goto(`/animal/${match[1]}/medical-records`)
   await page.waitForLoadState('networkidle')
 }
 

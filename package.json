@@ -12,7 +12,7 @@
     "check": "prettier --write . && eslint --fix",
     "pre-commit": "pnpm run lint && pnpm exec tsc --noEmit && pnpm exec prettier --check . && pnpm run build",
     "test:e2e": "playwright test",
-    "test:e2e:docs": "playwright test tests/e2e/docs"
+    "test:e2e:ui": "SKIP_WARMUP=1 playwright test --ui"
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.13.0",

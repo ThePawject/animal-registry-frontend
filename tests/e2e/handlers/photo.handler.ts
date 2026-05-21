@@ -5,7 +5,7 @@ import type { Page } from '@playwright/test'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 export const TEST_PHOTO_PATH = path.join(__dirname, '../fixtures/test-photo.jpg')
 
-export async function uploadPhoto(page: Page, photoPath = TEST_PHOTO_PATH) {
+export async function uploadPhoto(page: Page, photoPath: string | string[] = TEST_PHOTO_PATH) {
   await page.getByTestId('photos-input').setInputFiles(photoPath)
   await page.waitForFunction(() =>
     document.querySelector('[data-testid="photo-preview"]') !== null

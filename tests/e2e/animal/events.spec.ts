@@ -1,6 +1,6 @@
 import { test, expect } from '../fixtures'
 import { createAnimal, navigateToAnimalByName, deleteCurrentAnimal } from '../handlers/animal.handler'
-import { navigateToEvents, navigateToAnimalView, addEvent, editFirstEvent, deleteFirstEvent } from '../handlers/event.handler'
+import { navigateToEvents, navigateToAnimalView, addEvent, editFirstEvent, deleteEventByDescription } from '../handlers/event.handler'
 import { ANIMALS, EVENTS } from '../config'
 
 test('add event to animal', async ({ authenticatedPage: page }) => {
@@ -39,12 +39,12 @@ test('delete event', async ({ authenticatedPage: page }) => {
   await navigateToEvents(page)
 
   await addEvent(page, EVENTS.delete)
-  await expect(page.getByTestId('events-table')).toContainText(EVENTS.delete.description)
 
-  await deleteFirstEvent(page)
+  await expect(page.getByTestId('events-table').locator('tbody tr').filter({ hasText: EVENTS.delete.description })).toBeVisible()
+  await deleteEventByDescription(page, EVENTS.delete.description)
+
   await expect(page.getByTestId('events-table')).not.toContainText(EVENTS.delete.description)
 
-  // cleanup
   await navigateToAnimalView(page)
   await deleteCurrentAnimal(page)
 })

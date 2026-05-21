@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures'
-import { createAnimal, navigateToAnimalByName } from '../handlers/animal.handler'
+import { createAnimal, navigateToAnimalByName, deleteCurrentAnimal, cancelDeleteAnimal } from '../handlers/animal.handler'
 import { ANIMALS } from '../config'
 
 test('delete animal - confirm in dialog', async ({
@@ -25,14 +25,10 @@ test('delete animal - cancel dialog does not delete', async ({
 
   const currentUrl = page.url()
 
-  await page.getByTestId('delete-animal-btn').click()
-  await page.getByTestId('cancel-delete-animal-btn').click()
+  await cancelDeleteAnimal(page)
 
   await expect(page).toHaveURL(currentUrl)
   await expect(page.getByTestId('delete-animal-btn')).toBeVisible()
 
-  // cleanup
-  await page.getByTestId('delete-animal-btn').click()
-  await page.getByTestId('confirm-delete-animal-btn').click()
-  await page.waitForURL(/localhost:3000\/?(\?.*)?$/)
+  await deleteCurrentAnimal(page)
 })

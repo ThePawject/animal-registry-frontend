@@ -13,7 +13,6 @@ test('add health record', async ({ authenticatedPage: page }) => {
 
   await expect(page.getByTestId('health-records-table')).toContainText(HEALTH_RECORDS.add.description)
 
-  // cleanup
   await navigateToAnimalView(page)
   await deleteCurrentAnimal(page)
 })
@@ -28,7 +27,6 @@ test('edit health record', async ({ authenticatedPage: page }) => {
 
   await expect(page.getByTestId('health-records-table')).toContainText(HEALTH_RECORDS.edit.editedDescription!)
 
-  // cleanup
   await navigateToAnimalView(page)
   await deleteCurrentAnimal(page)
 })
@@ -44,7 +42,6 @@ test('delete health record', async ({ authenticatedPage: page }) => {
   await deleteFirstHealthRecord(page)
   await expect(page.getByTestId('health-records-table')).not.toContainText(HEALTH_RECORDS.delete.description)
 
-  // cleanup
   await navigateToAnimalView(page)
   await deleteCurrentAnimal(page)
 })
