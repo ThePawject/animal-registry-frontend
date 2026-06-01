@@ -57,7 +57,7 @@ export const ANIMAL_EVENT_TYPE_MAP = {
   8: 'Szczepienie przeciw wściekliźnie',
   9: 'Adopcja',
   10: 'Spacer',
-  11: 'Nowy numer kennel',
+  11: 'Nowy numer kojca',
   12: 'Odbiór przez właściciela',
   13: 'Ważenie',
   14: 'Eutanazja',
