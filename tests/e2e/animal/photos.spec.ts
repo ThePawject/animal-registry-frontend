@@ -10,9 +10,11 @@ import {
   submitEditAnimalForm,
 } from '../handlers/animal.handler'
 import { uploadPhoto, deletePhoto, setMainPhoto, TEST_PHOTO_PATH } from '../handlers/photo.handler'
-import { ANIMALS } from '../config'
+import { ANIMALS, requiredAnimalName } from '../config'
 
 test('upload photo when creating animal', async ({ authenticatedPage: page }) => {
+  const animalName = requiredAnimalName(ANIMALS.photoUpload, 'ANIMALS.photoUpload')
+
   await navigateToCreateAnimal(page)
   await fillAnimalForm(page, ANIMALS.photoUpload)
   await uploadPhoto(page)
@@ -21,7 +23,7 @@ test('upload photo when creating animal', async ({ authenticatedPage: page }) =>
 
   await submitAnimalForm(page)
 
-  await navigateToAnimalByName(page, ANIMALS.photoUpload.name!)
+  await navigateToAnimalByName(page, animalName)
   await deleteCurrentAnimal(page)
 })
 
@@ -38,8 +40,10 @@ test('delete photo before submitting', async ({ authenticatedPage: page }) => {
 })
 
 test('upload photo in edit tab', async ({ authenticatedPage: page }) => {
+  const animalName = requiredAnimalName(ANIMALS.photoEdit, 'ANIMALS.photoEdit')
+
   await createAnimal(page, ANIMALS.photoEdit)
-  await navigateToAnimalByName(page, ANIMALS.photoEdit.name!)
+  await navigateToAnimalByName(page, animalName)
 
   await navigateToEditTab(page)
   await uploadPhoto(page)

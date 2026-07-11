@@ -4,10 +4,11 @@ import {
   fillAnimalForm,
   submitAnimalForm,
   createAnimal,
+  searchAnimalRowByName,
   navigateToAnimalByName,
   deleteCurrentAnimal,
 } from '../handlers/animal.handler'
-import { ANIMALS } from '../config'
+import { ANIMALS, requiredAnimalName } from '../config'
 
 test('create animal - minimum required fields (species + signature)', async ({
   authenticatedPage: page,
@@ -32,11 +33,13 @@ test('create animal - all fields filled', async ({
 test('created animal appears in the list', async ({
   authenticatedPage: page,
 }) => {
+  const animalName = requiredAnimalName(ANIMALS.createList, 'ANIMALS.createList')
+
   await createAnimal(page, ANIMALS.createList)
 
-  await page.getByTestId('animal-search-input').fill(ANIMALS.createList.name!)
-  await expect(page.getByTestId('animals-table').locator('tbody tr').filter({ hasText: ANIMALS.createList.name! }).first()).toBeVisible()
+  const row = await searchAnimalRowByName(page, animalName)
+  await expect(row).toBeVisible()
 
-  await navigateToAnimalByName(page, ANIMALS.createList.name!)
+  await navigateToAnimalByName(page, animalName)
   await deleteCurrentAnimal(page)
 })

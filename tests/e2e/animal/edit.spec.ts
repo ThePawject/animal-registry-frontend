@@ -5,15 +5,19 @@ import {
   deleteCurrentAnimal,
   navigateToEditTab,
   submitEditAnimalForm,
+  navigateToAnimalView,
+  selectAnimalSpecies,
+  selectAnimalSex,
 } from '../handlers/animal.handler'
-import { navigateToAnimalView } from '../handlers/event.handler'
-import { ANIMALS, EDIT_RESULTS } from '../config'
+import { ANIMALS, EDIT_RESULTS, requiredAnimalName } from '../config'
 
 test('edit animal - change name and breed', async ({
   authenticatedPage: page,
 }) => {
+  const animalName = requiredAnimalName(ANIMALS.editNameBreed, 'ANIMALS.editNameBreed')
+
   await createAnimal(page, ANIMALS.editNameBreed)
-  await navigateToAnimalByName(page, ANIMALS.editNameBreed.name!)
+  await navigateToAnimalByName(page, animalName)
 
   await navigateToEditTab(page)
 
@@ -31,16 +35,15 @@ test('edit animal - change name and breed', async ({
 test('edit animal - change species and sex', async ({
   authenticatedPage: page,
 }) => {
+  const animalName = requiredAnimalName(ANIMALS.editSpeciesSex, 'ANIMALS.editSpeciesSex')
+
   await createAnimal(page, ANIMALS.editSpeciesSex)
-  await navigateToAnimalByName(page, ANIMALS.editSpeciesSex.name!)
+  await navigateToAnimalByName(page, animalName)
 
   await navigateToEditTab(page)
 
-  await page.getByTestId('species-select').click()
-  await page.getByRole('option', { name: EDIT_RESULTS.speciesSex.species }).click()
-
-  await page.getByTestId('sex-select').click()
-  await page.getByRole('option', { name: EDIT_RESULTS.speciesSex.sex }).click()
+  await selectAnimalSpecies(page, EDIT_RESULTS.speciesSex.species)
+  await selectAnimalSex(page, EDIT_RESULTS.speciesSex.sex)
 
   await submitEditAnimalForm(page)
 

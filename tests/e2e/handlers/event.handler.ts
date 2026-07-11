@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test'
+import { getCurrentAnimalId } from './animal.handler'
 
 export type EventData = {
   type: string
@@ -6,20 +7,14 @@ export type EventData = {
   description: string
 }
 
-export async function navigateToAnimalView(page: Page) {
-  const match = page.url().match(/\/animal\/([^/?]+)/)
-  if (!match) throw new Error('navigateToAnimalView: no animal ID in URL')
-  await page.goto(`/animal/${match[1]}`)
+export async function navigateToEvents(page: Page) {
+  const animalId = getCurrentAnimalId(page, 'navigateToEvents')
+  await page.goto(`/animal/${animalId}/events`)
   await page.waitForLoadState('networkidle')
-  await page.getByTestId('delete-animal-btn').waitFor({ state: 'visible' })
-  await page.waitForTimeout(200)
 }
 
-export async function navigateToEvents(page: Page) {
-  const match = page.url().match(/\/animal\/([^/?]+)/)
-  if (!match) throw new Error('navigateToEvents: no animal ID in URL')
-  await page.goto(`/animal/${match[1]}/events`)
-  await page.waitForLoadState('networkidle')
+export async function findEventRowByDescription(page: Page, description: string) {
+  return page.getByTestId('events-table').locator('tbody tr').filter({ hasText: description }).first()
 }
 
 export async function addEvent(page: Page, data: EventData) {
@@ -51,7 +46,7 @@ export async function deleteFirstEvent(page: Page) {
 }
 
 export async function deleteEventByDescription(page: Page, description: string) {
-  const row = page.getByTestId('events-table').locator('tbody tr').filter({ hasText: description })
+  const row = await findEventRowByDescription(page, description)
   await row.getByTestId('delete-event-btn').click()
   await page.getByTestId('confirm-delete-event-btn').click()
   await page.waitForLoadState('networkidle')

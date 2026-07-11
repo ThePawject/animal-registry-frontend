@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test'
+import { getCurrentAnimalId } from './animal.handler'
 
 export type HealthRecordData = {
   date: string
@@ -7,9 +8,8 @@ export type HealthRecordData = {
 }
 
 export async function navigateToMedicalRecords(page: Page) {
-  const match = page.url().match(/\/animal\/([^/?]+)/)
-  if (!match) throw new Error('navigateToMedicalRecords: no animal ID in URL')
-  await page.goto(`/animal/${match[1]}/medical-records`)
+  const animalId = getCurrentAnimalId(page, 'navigateToMedicalRecords')
+  await page.goto(`/animal/${animalId}/medical-records`)
   await page.waitForLoadState('networkidle')
 }
 
@@ -26,6 +26,10 @@ export async function addHealthRecord(page: Page, data: HealthRecordData) {
 
   await page.getByTestId('submit-add-health-record').click()
   await page.waitForLoadState('networkidle')
+}
+
+export async function findHealthRecordRowByDescription(page: Page, description: string) {
+  return page.getByTestId('health-records-table').locator('tbody tr').filter({ hasText: description }).first()
 }
 
 export async function editFirstHealthRecord(page: Page, newDescription: string) {

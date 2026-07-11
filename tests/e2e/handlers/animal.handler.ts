@@ -10,6 +10,25 @@ export type AnimalData = {
   birthDate?: string
 }
 
+export type AnimalSpecies = AnimalData['species']
+export type AnimalSex = NonNullable<AnimalData['sex']>
+
+export function getCurrentAnimalId(page: Page, context: string) {
+  const match = page.url().match(/\/animal\/([^/?]+)/)
+  if (!match) throw new Error(`${context}: no animal ID in URL`)
+  return match[1]
+}
+
+export async function selectAnimalSpecies(page: Page, species: AnimalSpecies) {
+  await page.getByTestId('species-select').click()
+  await page.getByRole('option', { name: species }).click()
+}
+
+export async function selectAnimalSex(page: Page, sex: AnimalSex) {
+  await page.getByTestId('sex-select').click()
+  await page.getByRole('option', { name: sex }).click()
+}
+
 export async function navigateToCreateAnimal(page: Page) {
   await page.goto('/create')
   await page.waitForLoadState('networkidle')
@@ -34,14 +53,12 @@ export async function fillAnimalForm(page: Page, data: AnimalData) {
     await page.getByTestId('name-input').fill(data.name)
   }
 
-  await page.getByTestId('species-select').click()
-  await page.getByRole('option', { name: data.species }).click()
+  await selectAnimalSpecies(page, data.species)
 
   await generateSignature(page)
 
   if (data.sex) {
-    await page.getByTestId('sex-select').click()
-    await page.getByRole('option', { name: data.sex }).click()
+    await selectAnimalSex(page, data.sex)
   }
 
   if (data.breed) {
@@ -101,23 +118,34 @@ export async function createAnimal(page: Page, data: AnimalData) {
   await submitAnimalForm(page)
 }
 
-export async function navigateToAnimalByName(page: Page, name: string) {
+export async function searchAnimalRowByName(page: Page, name: string) {
   await page.goto('/')
   await page.waitForLoadState('networkidle')
   await page.getByTestId('animal-search-input').pressSequentially(name, { delay: 50 })
-  const row = page.getByTestId('animals-table').locator('tbody tr').filter({ hasText: name }).first()
+  return page.getByTestId('animals-table').locator('tbody tr').filter({ hasText: name }).first()
+}
+
+export async function navigateToAnimalByName(page: Page, name: string) {
+  const row = await searchAnimalRowByName(page, name)
   await row.waitFor({ state: 'visible' })
-  await page.waitForTimeout(200)
-  const href = await row.getByTestId('animal-details-link').getAttribute('href')
+  const detailsLink = row.getByTestId('animal-details-link')
+  await detailsLink.waitFor({ state: 'visible' })
+  const href = await detailsLink.getAttribute('href')
   if (!href) throw new Error(`navigateToAnimalByName: no href for "${name}"`)
   await page.goto(href)
   await page.waitForLoadState('networkidle')
 }
 
+export async function navigateToAnimalView(page: Page) {
+  const animalId = getCurrentAnimalId(page, 'navigateToAnimalView')
+  await page.goto(`/animal/${animalId}`)
+  await page.waitForLoadState('networkidle')
+  await page.getByTestId('delete-animal-btn').waitFor({ state: 'visible' })
+}
+
 export async function navigateToEditTab(page: Page) {
-  const match = page.url().match(/\/animal\/([^/?]+)/)
-  if (!match) throw new Error('navigateToEditTab: no animal ID in URL')
-  await page.goto(`/animal/${match[1]}/edit`)
+  const animalId = getCurrentAnimalId(page, 'navigateToEditTab')
+  await page.goto(`/animal/${animalId}/edit`)
   await page.waitForLoadState('networkidle')
 }
 
@@ -127,13 +155,26 @@ export async function submitEditAnimalForm(page: Page) {
   await page.waitForLoadState('networkidle')
 }
 
-export async function deleteCurrentAnimal(page: Page) {
+export async function openDeleteAnimalDialog(page: Page) {
   await page.getByTestId('delete-animal-btn').click()
+  await page.getByTestId('delete-dialog-title').waitFor({ state: 'visible' })
+}
+
+export async function confirmDeleteAnimal(page: Page) {
   await page.getByTestId('confirm-delete-animal-btn').click()
   await page.waitForURL(/localhost:3000\/?(\?.*)?$/)
 }
 
-export async function cancelDeleteAnimal(page: Page) {
-  await page.getByTestId('delete-animal-btn').click()
+export async function cancelDeleteAnimalDialog(page: Page) {
   await page.getByTestId('cancel-delete-animal-btn').click()
+}
+
+export async function deleteCurrentAnimal(page: Page) {
+  await openDeleteAnimalDialog(page)
+  await confirmDeleteAnimal(page)
+}
+
+export async function cancelDeleteAnimal(page: Page) {
+  await openDeleteAnimalDialog(page)
+  await cancelDeleteAnimalDialog(page)
 }

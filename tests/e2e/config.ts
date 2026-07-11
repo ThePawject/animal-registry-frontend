@@ -54,3 +54,17 @@ export const EDIT_RESULTS = {
   nameBreed: { name: 'ZEdytowany E2E', breed: 'Labrador' },
   speciesSex: { species: 'Kot', sex: 'Samica' },
 }
+
+export function requiredAnimalName(animal: AnimalData, source: string) {
+  if (!animal.name) {
+    throw new Error(`Missing required animal name for ${source}`)
+  }
+  return animal.name
+}
+
+export function requiredValue(value: string | undefined, source: string) {
+  if (!value) {
+    throw new Error(`Missing required value for ${source}`)
+  }
+  return value
+}

@@ -1,12 +1,19 @@
 import { test, expect } from '../fixtures'
-import { createAnimal, navigateToAnimalByName, deleteCurrentAnimal } from '../handlers/animal.handler'
-import { navigateToAnimalView } from '../handlers/event.handler'
-import { navigateToMedicalRecords, addHealthRecord, editFirstHealthRecord, deleteFirstHealthRecord } from '../handlers/health-record.handler'
-import { ANIMALS, HEALTH_RECORDS } from '../config'
+import { createAnimal, navigateToAnimalByName, deleteCurrentAnimal, navigateToAnimalView } from '../handlers/animal.handler'
+import {
+  navigateToMedicalRecords,
+  addHealthRecord,
+  editFirstHealthRecord,
+  deleteFirstHealthRecord,
+  findHealthRecordRowByDescription,
+} from '../handlers/health-record.handler'
+import { ANIMALS, HEALTH_RECORDS, requiredAnimalName, requiredValue } from '../config'
 
 test('add health record', async ({ authenticatedPage: page }) => {
+  const animalName = requiredAnimalName(ANIMALS.medRecordAdd, 'ANIMALS.medRecordAdd')
+
   await createAnimal(page, ANIMALS.medRecordAdd)
-  await navigateToAnimalByName(page, ANIMALS.medRecordAdd.name!)
+  await navigateToAnimalByName(page, animalName)
   await navigateToMedicalRecords(page)
 
   await addHealthRecord(page, HEALTH_RECORDS.add)
@@ -18,26 +25,32 @@ test('add health record', async ({ authenticatedPage: page }) => {
 })
 
 test('edit health record', async ({ authenticatedPage: page }) => {
+  const animalName = requiredAnimalName(ANIMALS.medRecordEdit, 'ANIMALS.medRecordEdit')
+  const editedDescription = requiredValue(HEALTH_RECORDS.edit.editedDescription, 'HEALTH_RECORDS.edit.editedDescription')
+
   await createAnimal(page, ANIMALS.medRecordEdit)
-  await navigateToAnimalByName(page, ANIMALS.medRecordEdit.name!)
+  await navigateToAnimalByName(page, animalName)
   await navigateToMedicalRecords(page)
 
   await addHealthRecord(page, HEALTH_RECORDS.edit)
-  await editFirstHealthRecord(page, HEALTH_RECORDS.edit.editedDescription!)
+  await editFirstHealthRecord(page, editedDescription)
 
-  await expect(page.getByTestId('health-records-table')).toContainText(HEALTH_RECORDS.edit.editedDescription!)
+  await expect(page.getByTestId('health-records-table')).toContainText(editedDescription)
 
   await navigateToAnimalView(page)
   await deleteCurrentAnimal(page)
 })
 
 test('delete health record', async ({ authenticatedPage: page }) => {
+  const animalName = requiredAnimalName(ANIMALS.medRecordDelete, 'ANIMALS.medRecordDelete')
+
   await createAnimal(page, ANIMALS.medRecordDelete)
-  await navigateToAnimalByName(page, ANIMALS.medRecordDelete.name!)
+  await navigateToAnimalByName(page, animalName)
   await navigateToMedicalRecords(page)
 
   await addHealthRecord(page, HEALTH_RECORDS.delete)
-  await expect(page.getByTestId('health-records-table')).toContainText(HEALTH_RECORDS.delete.description)
+  const healthRecordRow = await findHealthRecordRowByDescription(page, HEALTH_RECORDS.delete.description)
+  await expect(healthRecordRow).toBeVisible()
 
   await deleteFirstHealthRecord(page)
   await expect(page.getByTestId('health-records-table')).not.toContainText(HEALTH_RECORDS.delete.description)
