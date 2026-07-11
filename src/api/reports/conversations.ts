@@ -1,6 +1,10 @@
 import axios from 'axios'
 import { apiClient } from '../useAxiosWithAuth'
-import type { ReportDateRangeParams, ReportSelectedParams } from './types'
+import type {
+  EventReportParams,
+  ReportDateRangeParams,
+  ReportSelectedParams,
+} from './types'
 
 interface ReportsResponse {
   blob: Blob
@@ -28,9 +32,13 @@ function extractFilename(headers: any): string {
 }
 
 export const reportsService = {
-  async getReports(): Promise<ReportsResponse> {
+  async getReports(params?: EventReportParams): Promise<ReportsResponse> {
     try {
       const response = await apiClient.get('reports/events', {
+        params,
+        paramsSerializer: {
+          indexes: null,
+        },
         responseType: 'blob',
       })
 

@@ -1,6 +1,10 @@
 import { useMutation } from '@tanstack/react-query'
 import { reportsService } from './conversations'
-import type { ReportDateRangeParams, ReportSelectedParams } from './types'
+import type {
+  EventReportParams,
+  ReportDateRangeParams,
+  ReportSelectedParams,
+} from './types'
 
 interface ReportsData {
   blob: Blob
@@ -9,7 +13,8 @@ interface ReportsData {
 
 export const useReports = (onSuccess: (data: ReportsData) => void) => {
   return useMutation({
-    mutationFn: async () => reportsService.getReports(),
+    mutationFn: async (params?: EventReportParams) =>
+      reportsService.getReports(params),
     onSuccess: (data) => {
       onSuccess(data)
     },

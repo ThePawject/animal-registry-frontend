@@ -10,3 +10,11 @@ export type ReportDateRangeParams = {
 export type ReportSelectedParams = {
   ids: Array<string>
 }
+
+export type EventReportPeriod = 'Week' | 'Month' | 'Quarter' | 'Custom'
+
+export type EventReportParams = {
+  periods: Array<EventReportPeriod>
+  customStartDate?: string
+  customEndDate?: string
+}
