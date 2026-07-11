@@ -71,13 +71,15 @@ export default function EventReportModal({
     setValidationError(null)
   }
 
-  const { mutate: getReports, isPending, error } = useReports(
-    ({ blob, filename }) => {
-      createAndDownloadReport(blob, filename)
-      resetForm()
-      onClose()
-    },
-  )
+  const {
+    mutate: getReports,
+    isPending,
+    error,
+  } = useReports(({ blob, filename }) => {
+    createAndDownloadReport(blob, filename)
+    resetForm()
+    onClose()
+  })
 
   const handleOpenChange = (openState: boolean) => {
     if (!openState) {
@@ -112,7 +114,9 @@ export default function EventReportModal({
 
     const includesCustom = selectedPeriods.includes('Custom')
     if (includesCustom && (!customStartDate || !customEndDate)) {
-      setValidationError('Wybierz datę początkową i końcową dla własnego zakresu.')
+      setValidationError(
+        'Wybierz datę początkową i końcową dla własnego zakresu.',
+      )
       return
     }
 
