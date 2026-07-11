@@ -1,5 +1,13 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest'
 import EventReportModal from './EventReportModal'
 import type { EventReportParams } from '@/api/reports/types'
 
@@ -70,7 +78,9 @@ describe('EventReportModal', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Generuj raport' }))
 
     expect(
-      screen.getByText('Wybierz datę początkową i końcową dla własnego zakresu.'),
+      screen.getByText(
+        'Wybierz datę początkową i końcową dla własnego zakresu.',
+      ),
     ).toBeTruthy()
     expect(mutateMock).not.toHaveBeenCalled()
   })

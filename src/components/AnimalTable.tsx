@@ -36,10 +36,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAnimals } from '@/api/animals/queries'
 import { formatDate } from '@/lib/utils'
-import {
-  useReportsBySelectedIds,
-  useReportsDump,
-} from '@/api/reports/queries'
+import { useReportsBySelectedIds, useReportsDump } from '@/api/reports/queries'
 
 export const createAndDownloadReport = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob)
