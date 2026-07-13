@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from './ui/select'
 import DateRangeFilterModal from './modals/DateRangeFilterModal'
+import EventReportModal from './modals/EventReportModal'
 import { InfoCard } from './InfoCard'
 import type { IndexSearch } from '@/routes/index'
 import type { ColumnDef } from '@tanstack/react-table'
@@ -35,11 +36,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAnimals } from '@/api/animals/queries'
 import { formatDate } from '@/lib/utils'
-import {
-  useReports,
-  useReportsBySelectedIds,
-  useReportsDump,
-} from '@/api/reports/queries'
+import { useReportsBySelectedIds, useReportsDump } from '@/api/reports/queries'
 
 export const createAndDownloadReport = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob)
@@ -90,9 +87,6 @@ function AnimalTable() {
     isInShelter: search.isInShelter ?? null,
   })
 
-  const { mutate: getReports, isPending: isReportsPending } = useReports(
-    ({ blob, filename }) => createAndDownloadReport(blob, filename),
-  )
   const { mutate: getReportsDump, isPending: isReportsDumpPending } =
     useReportsDump(({ blob, filename }) =>
       createAndDownloadReport(blob, filename),
@@ -108,6 +102,7 @@ function AnimalTable() {
     ? Math.ceil(animalsPage.totalCount / pageSize)
     : 1
   const [rowSelection, setRowSelection] = React.useState({})
+  const [openEventReportModal, setOpenEventReportModal] = React.useState(false)
   const [openDateRangeModal, setOpenDateRangeModal] = React.useState(false)
 
   const columns = React.useMemo<Array<ColumnDef<Animal, any>>>(
@@ -369,15 +364,10 @@ function AnimalTable() {
           variant="outline"
           title="Wygeneruj PDF z zestawieniem zdarzeń za wybrany okres (Raport-Zdarzen)"
           onClick={() => {
-            getReports()
+            setOpenEventReportModal(true)
           }}
-          disabled={isReportsPending}
         >
-          {isReportsPending ? (
-            <LucideLoaderCircle className="w-4 h-4 animate-spin" />
-          ) : (
-            'Raport zdarzeń'
-          )}
+          Raport zdarzeń
         </Button>
         <Button
           variant="outline"
@@ -670,6 +660,10 @@ function AnimalTable() {
       <DateRangeFilterModal
         open={openDateRangeModal}
         onClose={() => setOpenDateRangeModal(false)}
+      />
+      <EventReportModal
+        open={openEventReportModal}
+        onClose={() => setOpenEventReportModal(false)}
       />
     </div>
   )
