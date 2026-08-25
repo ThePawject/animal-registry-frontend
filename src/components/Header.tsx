@@ -19,7 +19,7 @@ export default function Header({ shelterName }: HeaderProps) {
       <header className="p-4 flex items-center bg-emerald-800 text-white shadow-md">
         <div className="container mx-auto flex items-center w-full">
           <h1 className="text-xl font-semibold">
-            <Link to="/" className="flex gap-2 items-center">
+            <Link to="/panel" className="flex gap-2 items-center">
               <img
                 src="/animal-shelter-logo.png"
                 alt="Elektroniczny Rejestr Zwierząt"

@@ -2,7 +2,7 @@ import { Outlet, createFileRoute } from '@tanstack/react-router'
 import { animalsService } from '@/api/animals/conversations'
 import { animalsKeys } from '@/api/animals/queries'
 
-export const Route = createFileRoute('/animal/$animalId')({
+export const Route = createFileRoute('/_app/animal/$animalId')({
   component: RouteComponent,
   loader: async ({ params, context }) => {
     const token = await context.getAccessToken()

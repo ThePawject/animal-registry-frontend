@@ -62,7 +62,7 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
   const [selectedIdx, setSelectedIdx] = useState(0)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const { mutate: deleteAnimal } = useDeleteAnimal(() => {
-    router.navigate({ to: '/' })
+    router.navigate({ to: '/panel' })
   })
   const { mutate, isPending } = useReportsBySelectedIds(({ blob, filename }) =>
     createAndDownloadReport(blob, filename),
