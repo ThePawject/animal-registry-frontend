@@ -178,7 +178,7 @@ export default function AddAnimalForm() {
       await mutateAsync(value)
       cleanupFileUrls()
       form.reset()
-      router.navigate({ to: '/' })
+      router.navigate({ to: '/panel' })
     },
   })
 
@@ -718,7 +718,7 @@ export default function AddAnimalForm() {
             variant="outline"
             className="flex-1 text-lg font-semibold h-12"
             onClick={() => {
-              router.navigate({ to: '/' })
+              router.navigate({ to: '/panel' })
             }}
           >
             Anuluj

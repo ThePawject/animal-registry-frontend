@@ -9,83 +9,99 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as CreateIndexRouteImport } from './routes/create/index'
-import { Route as AnimalAnimalIdRouteRouteImport } from './routes/animal.$animalId/route'
-import { Route as AnimalAnimalIdIndexRouteImport } from './routes/animal.$animalId/index'
-import { Route as AnimalAnimalIdEditRouteImport } from './routes/animal.$animalId/edit'
-import { Route as AnimalAnimalIdMedicalRecordsIndexRouteImport } from './routes/animal.$animalId/medical-records/index'
-import { Route as AnimalAnimalIdEventsIndexRouteImport } from './routes/animal.$animalId/events/index'
+import { Route as AppPanelRouteImport } from './routes/_app/panel'
+import { Route as AppCreateIndexRouteImport } from './routes/_app/create/index'
+import { Route as AppAnimalAnimalIdRouteRouteImport } from './routes/_app/animal.$animalId/route'
+import { Route as AppAnimalAnimalIdIndexRouteImport } from './routes/_app/animal.$animalId/index'
+import { Route as AppAnimalAnimalIdEditRouteImport } from './routes/_app/animal.$animalId/edit'
+import { Route as AppAnimalAnimalIdMedicalRecordsIndexRouteImport } from './routes/_app/animal.$animalId/medical-records/index'
+import { Route as AppAnimalAnimalIdEventsIndexRouteImport } from './routes/_app/animal.$animalId/events/index'
 
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CreateIndexRoute = CreateIndexRouteImport.update({
+const AppPanelRoute = AppPanelRouteImport.update({
+  id: '/panel',
+  path: '/panel',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCreateIndexRoute = AppCreateIndexRouteImport.update({
   id: '/create/',
   path: '/create/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppRoute,
 } as any)
-const AnimalAnimalIdRouteRoute = AnimalAnimalIdRouteRouteImport.update({
+const AppAnimalAnimalIdRouteRoute = AppAnimalAnimalIdRouteRouteImport.update({
   id: '/animal/$animalId',
   path: '/animal/$animalId',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppRoute,
 } as any)
-const AnimalAnimalIdIndexRoute = AnimalAnimalIdIndexRouteImport.update({
+const AppAnimalAnimalIdIndexRoute = AppAnimalAnimalIdIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AnimalAnimalIdRouteRoute,
+  getParentRoute: () => AppAnimalAnimalIdRouteRoute,
 } as any)
-const AnimalAnimalIdEditRoute = AnimalAnimalIdEditRouteImport.update({
+const AppAnimalAnimalIdEditRoute = AppAnimalAnimalIdEditRouteImport.update({
   id: '/edit',
   path: '/edit',
-  getParentRoute: () => AnimalAnimalIdRouteRoute,
+  getParentRoute: () => AppAnimalAnimalIdRouteRoute,
 } as any)
-const AnimalAnimalIdMedicalRecordsIndexRoute =
-  AnimalAnimalIdMedicalRecordsIndexRouteImport.update({
+const AppAnimalAnimalIdMedicalRecordsIndexRoute =
+  AppAnimalAnimalIdMedicalRecordsIndexRouteImport.update({
     id: '/medical-records/',
     path: '/medical-records/',
-    getParentRoute: () => AnimalAnimalIdRouteRoute,
+    getParentRoute: () => AppAnimalAnimalIdRouteRoute,
   } as any)
-const AnimalAnimalIdEventsIndexRoute =
-  AnimalAnimalIdEventsIndexRouteImport.update({
+const AppAnimalAnimalIdEventsIndexRoute =
+  AppAnimalAnimalIdEventsIndexRouteImport.update({
     id: '/events/',
     path: '/events/',
-    getParentRoute: () => AnimalAnimalIdRouteRoute,
+    getParentRoute: () => AppAnimalAnimalIdRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/animal/$animalId': typeof AnimalAnimalIdRouteRouteWithChildren
-  '/create/': typeof CreateIndexRoute
-  '/animal/$animalId/edit': typeof AnimalAnimalIdEditRoute
-  '/animal/$animalId/': typeof AnimalAnimalIdIndexRoute
-  '/animal/$animalId/events/': typeof AnimalAnimalIdEventsIndexRoute
-  '/animal/$animalId/medical-records/': typeof AnimalAnimalIdMedicalRecordsIndexRoute
+  '/panel': typeof AppPanelRoute
+  '/animal/$animalId': typeof AppAnimalAnimalIdRouteRouteWithChildren
+  '/create/': typeof AppCreateIndexRoute
+  '/animal/$animalId/edit': typeof AppAnimalAnimalIdEditRoute
+  '/animal/$animalId/': typeof AppAnimalAnimalIdIndexRoute
+  '/animal/$animalId/events/': typeof AppAnimalAnimalIdEventsIndexRoute
+  '/animal/$animalId/medical-records/': typeof AppAnimalAnimalIdMedicalRecordsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/create': typeof CreateIndexRoute
-  '/animal/$animalId/edit': typeof AnimalAnimalIdEditRoute
-  '/animal/$animalId': typeof AnimalAnimalIdIndexRoute
-  '/animal/$animalId/events': typeof AnimalAnimalIdEventsIndexRoute
-  '/animal/$animalId/medical-records': typeof AnimalAnimalIdMedicalRecordsIndexRoute
+  '/panel': typeof AppPanelRoute
+  '/create': typeof AppCreateIndexRoute
+  '/animal/$animalId/edit': typeof AppAnimalAnimalIdEditRoute
+  '/animal/$animalId': typeof AppAnimalAnimalIdIndexRoute
+  '/animal/$animalId/events': typeof AppAnimalAnimalIdEventsIndexRoute
+  '/animal/$animalId/medical-records': typeof AppAnimalAnimalIdMedicalRecordsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/animal/$animalId': typeof AnimalAnimalIdRouteRouteWithChildren
-  '/create/': typeof CreateIndexRoute
-  '/animal/$animalId/edit': typeof AnimalAnimalIdEditRoute
-  '/animal/$animalId/': typeof AnimalAnimalIdIndexRoute
-  '/animal/$animalId/events/': typeof AnimalAnimalIdEventsIndexRoute
-  '/animal/$animalId/medical-records/': typeof AnimalAnimalIdMedicalRecordsIndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/_app/panel': typeof AppPanelRoute
+  '/_app/animal/$animalId': typeof AppAnimalAnimalIdRouteRouteWithChildren
+  '/_app/create/': typeof AppCreateIndexRoute
+  '/_app/animal/$animalId/edit': typeof AppAnimalAnimalIdEditRoute
+  '/_app/animal/$animalId/': typeof AppAnimalAnimalIdIndexRoute
+  '/_app/animal/$animalId/events/': typeof AppAnimalAnimalIdEventsIndexRoute
+  '/_app/animal/$animalId/medical-records/': typeof AppAnimalAnimalIdMedicalRecordsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/panel'
     | '/animal/$animalId'
     | '/create/'
     | '/animal/$animalId/edit'
@@ -95,6 +111,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/panel'
     | '/create'
     | '/animal/$animalId/edit'
     | '/animal/$animalId'
@@ -103,22 +120,30 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/animal/$animalId'
-    | '/create/'
-    | '/animal/$animalId/edit'
-    | '/animal/$animalId/'
-    | '/animal/$animalId/events/'
-    | '/animal/$animalId/medical-records/'
+    | '/_app'
+    | '/_app/panel'
+    | '/_app/animal/$animalId'
+    | '/_app/create/'
+    | '/_app/animal/$animalId/edit'
+    | '/_app/animal/$animalId/'
+    | '/_app/animal/$animalId/events/'
+    | '/_app/animal/$animalId/medical-records/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AnimalAnimalIdRouteRoute: typeof AnimalAnimalIdRouteRouteWithChildren
-  CreateIndexRoute: typeof CreateIndexRoute
+  AppRoute: typeof AppRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -126,73 +151,96 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/create/': {
-      id: '/create/'
+    '/_app/panel': {
+      id: '/_app/panel'
+      path: '/panel'
+      fullPath: '/panel'
+      preLoaderRoute: typeof AppPanelRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/create/': {
+      id: '/_app/create/'
       path: '/create'
       fullPath: '/create/'
-      preLoaderRoute: typeof CreateIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppCreateIndexRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/animal/$animalId': {
-      id: '/animal/$animalId'
+    '/_app/animal/$animalId': {
+      id: '/_app/animal/$animalId'
       path: '/animal/$animalId'
       fullPath: '/animal/$animalId'
-      preLoaderRoute: typeof AnimalAnimalIdRouteRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppAnimalAnimalIdRouteRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/animal/$animalId/': {
-      id: '/animal/$animalId/'
+    '/_app/animal/$animalId/': {
+      id: '/_app/animal/$animalId/'
       path: '/'
       fullPath: '/animal/$animalId/'
-      preLoaderRoute: typeof AnimalAnimalIdIndexRouteImport
-      parentRoute: typeof AnimalAnimalIdRouteRoute
+      preLoaderRoute: typeof AppAnimalAnimalIdIndexRouteImport
+      parentRoute: typeof AppAnimalAnimalIdRouteRoute
     }
-    '/animal/$animalId/edit': {
-      id: '/animal/$animalId/edit'
+    '/_app/animal/$animalId/edit': {
+      id: '/_app/animal/$animalId/edit'
       path: '/edit'
       fullPath: '/animal/$animalId/edit'
-      preLoaderRoute: typeof AnimalAnimalIdEditRouteImport
-      parentRoute: typeof AnimalAnimalIdRouteRoute
+      preLoaderRoute: typeof AppAnimalAnimalIdEditRouteImport
+      parentRoute: typeof AppAnimalAnimalIdRouteRoute
     }
-    '/animal/$animalId/medical-records/': {
-      id: '/animal/$animalId/medical-records/'
+    '/_app/animal/$animalId/medical-records/': {
+      id: '/_app/animal/$animalId/medical-records/'
       path: '/medical-records'
       fullPath: '/animal/$animalId/medical-records/'
-      preLoaderRoute: typeof AnimalAnimalIdMedicalRecordsIndexRouteImport
-      parentRoute: typeof AnimalAnimalIdRouteRoute
+      preLoaderRoute: typeof AppAnimalAnimalIdMedicalRecordsIndexRouteImport
+      parentRoute: typeof AppAnimalAnimalIdRouteRoute
     }
-    '/animal/$animalId/events/': {
-      id: '/animal/$animalId/events/'
+    '/_app/animal/$animalId/events/': {
+      id: '/_app/animal/$animalId/events/'
       path: '/events'
       fullPath: '/animal/$animalId/events/'
-      preLoaderRoute: typeof AnimalAnimalIdEventsIndexRouteImport
-      parentRoute: typeof AnimalAnimalIdRouteRoute
+      preLoaderRoute: typeof AppAnimalAnimalIdEventsIndexRouteImport
+      parentRoute: typeof AppAnimalAnimalIdRouteRoute
     }
   }
 }
 
-interface AnimalAnimalIdRouteRouteChildren {
-  AnimalAnimalIdEditRoute: typeof AnimalAnimalIdEditRoute
-  AnimalAnimalIdIndexRoute: typeof AnimalAnimalIdIndexRoute
-  AnimalAnimalIdEventsIndexRoute: typeof AnimalAnimalIdEventsIndexRoute
-  AnimalAnimalIdMedicalRecordsIndexRoute: typeof AnimalAnimalIdMedicalRecordsIndexRoute
+interface AppAnimalAnimalIdRouteRouteChildren {
+  AppAnimalAnimalIdEditRoute: typeof AppAnimalAnimalIdEditRoute
+  AppAnimalAnimalIdIndexRoute: typeof AppAnimalAnimalIdIndexRoute
+  AppAnimalAnimalIdEventsIndexRoute: typeof AppAnimalAnimalIdEventsIndexRoute
+  AppAnimalAnimalIdMedicalRecordsIndexRoute: typeof AppAnimalAnimalIdMedicalRecordsIndexRoute
 }
 
-const AnimalAnimalIdRouteRouteChildren: AnimalAnimalIdRouteRouteChildren = {
-  AnimalAnimalIdEditRoute: AnimalAnimalIdEditRoute,
-  AnimalAnimalIdIndexRoute: AnimalAnimalIdIndexRoute,
-  AnimalAnimalIdEventsIndexRoute: AnimalAnimalIdEventsIndexRoute,
-  AnimalAnimalIdMedicalRecordsIndexRoute:
-    AnimalAnimalIdMedicalRecordsIndexRoute,
+const AppAnimalAnimalIdRouteRouteChildren: AppAnimalAnimalIdRouteRouteChildren =
+  {
+    AppAnimalAnimalIdEditRoute: AppAnimalAnimalIdEditRoute,
+    AppAnimalAnimalIdIndexRoute: AppAnimalAnimalIdIndexRoute,
+    AppAnimalAnimalIdEventsIndexRoute: AppAnimalAnimalIdEventsIndexRoute,
+    AppAnimalAnimalIdMedicalRecordsIndexRoute:
+      AppAnimalAnimalIdMedicalRecordsIndexRoute,
+  }
+
+const AppAnimalAnimalIdRouteRouteWithChildren =
+  AppAnimalAnimalIdRouteRoute._addFileChildren(
+    AppAnimalAnimalIdRouteRouteChildren,
+  )
+
+interface AppRouteChildren {
+  AppPanelRoute: typeof AppPanelRoute
+  AppAnimalAnimalIdRouteRoute: typeof AppAnimalAnimalIdRouteRouteWithChildren
+  AppCreateIndexRoute: typeof AppCreateIndexRoute
 }
 
-const AnimalAnimalIdRouteRouteWithChildren =
-  AnimalAnimalIdRouteRoute._addFileChildren(AnimalAnimalIdRouteRouteChildren)
+const AppRouteChildren: AppRouteChildren = {
+  AppPanelRoute: AppPanelRoute,
+  AppAnimalAnimalIdRouteRoute: AppAnimalAnimalIdRouteRouteWithChildren,
+  AppCreateIndexRoute: AppCreateIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AnimalAnimalIdRouteRoute: AnimalAnimalIdRouteRouteWithChildren,
-  CreateIndexRoute: CreateIndexRoute,
+  AppRoute: AppRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

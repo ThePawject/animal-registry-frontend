@@ -14,7 +14,7 @@ export const Breadcrumbs = () => {
   const breadcrumbItems = matches
     .filter((match) => match.loaderData?.title)
     .map(({ pathname, loaderData }) => ({
-      href: pathname,
+      href: loaderData && 'href' in loaderData ? loaderData.href : pathname,
       label: loaderData?.title,
     }))
 

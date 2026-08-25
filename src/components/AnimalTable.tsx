@@ -25,7 +25,7 @@ import {
 import DateRangeFilterModal from './modals/DateRangeFilterModal'
 import EventReportModal from './modals/EventReportModal'
 import { InfoCard } from './InfoCard'
-import type { IndexSearch } from '@/routes/index'
+import type { IndexSearch } from '@/routes/_app/panel'
 import type { ColumnDef } from '@tanstack/react-table'
 import type { Animal, Species } from '@/api/animals/types'
 import { SPECIES_MAP } from '@/api/animals/types'
@@ -50,11 +50,11 @@ export const createAndDownloadReport = (blob: Blob, filename: string) => {
 
 const SEARCH_INFO_KEY = 'animal-search-info-dismissed'
 
-const routeApi = getRouteApi('/')
+const routeApi = getRouteApi('/_app/panel')
 
 function AnimalTable() {
   const search = routeApi.useSearch()
-  const navigate = useNavigate({ from: '/' })
+  const navigate = useNavigate({ from: '/panel' })
 
   const setSearch = (
     patch: Partial<{

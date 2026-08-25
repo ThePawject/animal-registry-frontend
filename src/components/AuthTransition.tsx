@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { Link } from '@tanstack/react-router'
 import { useAuth0 } from '@auth0/auth0-react'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
@@ -101,6 +102,12 @@ export function AuthTransition({
             >
               Zaloguj się
             </Button>
+            <Link
+              to="/"
+              className="text-sm text-center text-emerald-700 underline-offset-4 hover:underline"
+            >
+              Dowiedz się więcej o MojeSchronisko.pl
+            </Link>
           </Card>
         </motion.div>
         <motion.div
