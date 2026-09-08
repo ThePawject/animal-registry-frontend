@@ -1,4 +1,4 @@
-export const CONTACT_EMAIL = 'kontakt@mojeschronisko.pl'
+export const CONTACT_EMAIL = 'biuro@mojeschronisko.pl'
 
 export const SAMPLE_REPORT_URL = '/landing/przykladowy-raport.pdf'
 
