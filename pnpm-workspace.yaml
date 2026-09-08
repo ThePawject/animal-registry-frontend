@@ -4,3 +4,7 @@ onlyBuiltDependencies:
   - sharp
   - unrs-resolver
   - workerd
+
+overrides:
+  rollup: '>=4.59.0'
+  esbuild: '>=0.28.1'
