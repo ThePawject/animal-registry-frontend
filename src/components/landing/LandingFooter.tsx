@@ -44,7 +44,7 @@ export function LandingFooter() {
                   href="#kontakt"
                   className="text-slate-600 transition-colors hover:text-emerald-800"
                 >
-                  Formularz zapytania
+                  Napisz do nas
                 </a>
               </li>
             </ul>
