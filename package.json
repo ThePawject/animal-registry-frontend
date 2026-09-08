@@ -2,6 +2,7 @@
   "name": "animal-shelter",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@10.34.5",
   "scripts": {
     "dev": "vite dev --port 3000",
     "build": "vite build",
@@ -72,14 +73,5 @@
     "vitest": "^3.0.5",
     "web-vitals": "^5.1.0",
     "wrangler": "^4.40.3"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "browser-tabs-lock",
-      "esbuild",
-      "sharp",
-      "unrs-resolver",
-      "workerd"
-    ]
   }
 }
