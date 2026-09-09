@@ -1,4 +1,5 @@
 import { Check } from 'lucide-react'
+import { Reveal, RevealGroup, RevealItem } from './Reveal'
 import { FeatureCarousel } from './FeatureCarousel'
 
 const BENEFITS = [
@@ -12,7 +13,7 @@ export function Features() {
   return (
     <section id="funkcje" className="scroll-mt-20 bg-slate-50 py-20 md:py-28">
       <div className="mx-auto max-w-6xl px-6">
-        <div className="mx-auto max-w-2xl text-center">
+        <Reveal className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
             Wszystko, czego schronisko potrzebuje na co dzień
           </h2>
@@ -20,13 +21,13 @@ export function Features() {
             Funkcje powstawały razem ze schroniskami, które z aplikacji
             korzystają. Poniżej zrzuty z działającego panelu.
           </p>
-        </div>
+        </Reveal>
 
-        <div className="mt-14">
+        <Reveal className="mt-14">
           <FeatureCarousel />
-        </div>
+        </Reveal>
 
-        <div className="mt-16 rounded-2xl border border-slate-200 bg-white p-8 md:p-10">
+        <Reveal className="mt-16 rounded-2xl border border-slate-200 bg-white p-8 md:p-10">
           <h3 className="text-xl font-semibold text-slate-900">
             Przejrzysty interfejs, dane pod ręką
           </h3>
@@ -35,19 +36,19 @@ export function Features() {
             szczepienia zajmowało chwilę i nie było kolejnym obowiązkiem na
             koniec dnia.
           </p>
-          <ul className="mt-7 grid gap-4 sm:grid-cols-2">
+          <RevealGroup as="ul" className="mt-7 grid gap-4 sm:grid-cols-2">
             {BENEFITS.map((benefit) => (
-              <li key={benefit} className="flex gap-3">
+              <RevealItem as="li" key={benefit} className="flex gap-3">
                 <span className="mt-0.5 flex size-5.5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
                   <Check className="size-3.5" strokeWidth={3} />
                 </span>
                 <span className="text-[15px] leading-relaxed text-slate-700">
                   {benefit}
                 </span>
-              </li>
+              </RevealItem>
             ))}
-          </ul>
-        </div>
+          </RevealGroup>
+        </Reveal>
       </div>
     </section>
   )

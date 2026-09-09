@@ -1,4 +1,5 @@
 import { ExternalLink, Scale } from 'lucide-react'
+import { Reveal } from './Reveal'
 import { REGULATION_URL } from './constants'
 import { ReportCarousel } from './ReportCarousel'
 
@@ -6,7 +7,7 @@ export function Compliance() {
   return (
     <section id="zgodnosc" className="scroll-mt-20 bg-white py-20 md:py-28">
       <div className="mx-auto max-w-6xl px-6">
-        <div className="mx-auto max-w-3xl text-center">
+        <Reveal className="mx-auto max-w-3xl text-center">
           <span className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3.5 py-1.5 text-xs font-semibold tracking-wide text-emerald-800 uppercase">
             <Scale className="size-3.5" />
             Zgodność z przepisami
@@ -30,9 +31,9 @@ export function Compliance() {
             Treść rozporządzenia (PDF, isap.sejm.gov.pl)
             <ExternalLink className="size-4" />
           </a>
-        </div>
+        </Reveal>
 
-        <div className="mt-14 rounded-2xl border border-slate-200 bg-slate-50 p-6 sm:p-8 md:p-10">
+        <Reveal className="mt-14 rounded-2xl border border-slate-200 bg-slate-50 p-6 sm:p-8 md:p-10">
           <div className="mx-auto max-w-2xl text-center">
             <h3 className="text-xl font-semibold text-slate-900 md:text-2xl">
               Sześć raportów, które generuje aplikacja
@@ -52,7 +53,7 @@ export function Compliance() {
             Raporty w formacie A4, z nagłówkiem schroniska i stopką zawierającą
             datę wygenerowania.
           </p>
-        </div>
+        </Reveal>
       </div>
     </section>
   )

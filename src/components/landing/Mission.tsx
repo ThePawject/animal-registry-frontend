@@ -1,4 +1,5 @@
 import { ArrowRight, Check, HandHeart } from 'lucide-react'
+import { Reveal, RevealGroup, RevealItem } from './Reveal'
 import { Button } from '@/components/ui/button'
 
 const NO_CATCH = [
@@ -31,32 +32,40 @@ export function Mission() {
       className="scroll-mt-20 border-y border-emerald-100 bg-emerald-50/70 py-20 md:py-28"
     >
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16">
-        <div>
-          <span className="flex size-14 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm">
-            <HandHeart className="size-7" />
-          </span>
-          <h2 className="mt-6 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
-            Nasza misja: 0 zł dla schronisk
-          </h2>
-          <p className="mt-5 text-lg leading-relaxed text-slate-600">
-            MojeSchronisko.pl powstaje charytatywnie, jako projekt non-profit.
-            Uważamy, że obowiązek prowadzenia elektronicznej ewidencji nie
-            powinien oznaczać kolejnego kosztu w budżecie schroniska. Dlatego
-            rejestr jest i pozostanie bezpłatny.
-          </p>
-          <Button
-            asChild
-            size="lg"
-            className="mt-8 bg-emerald-800 text-base text-white hover:bg-emerald-900"
-          >
-            <a href="#kontakt">
-              Skontaktuj się
-              <ArrowRight />
-            </a>
-          </Button>
-        </div>
+        <RevealGroup>
+          <RevealItem>
+            <span className="flex size-14 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm">
+              <HandHeart className="size-7" />
+            </span>
+          </RevealItem>
+          <RevealItem>
+            <h2 className="mt-6 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
+              Nasza misja: 0 zł dla schronisk
+            </h2>
+          </RevealItem>
+          <RevealItem>
+            <p className="mt-5 text-lg leading-relaxed text-slate-600">
+              MojeSchronisko.pl powstaje charytatywnie, jako projekt non-profit.
+              Uważamy, że obowiązek prowadzenia elektronicznej ewidencji nie
+              powinien oznaczać kolejnego kosztu w budżecie schroniska. Dlatego
+              rejestr jest i pozostanie bezpłatny.
+            </p>
+          </RevealItem>
+          <RevealItem>
+            <Button
+              asChild
+              size="lg"
+              className="mt-8 bg-emerald-800 text-base text-white hover:bg-emerald-900"
+            >
+              <a href="#kontakt">
+                Skontaktuj się
+                <ArrowRight />
+              </a>
+            </Button>
+          </RevealItem>
+        </RevealGroup>
 
-        <div className="rounded-2xl border border-emerald-100 bg-white p-7 shadow-sm md:p-9">
+        <Reveal className="rounded-2xl border border-emerald-100 bg-white p-7 shadow-sm md:p-9">
           <h3 className="text-sm font-semibold tracking-widest text-emerald-700 uppercase">
             Co to znaczy w praktyce
           </h3>
@@ -75,7 +84,7 @@ export function Mission() {
               </li>
             ))}
           </ul>
-        </div>
+        </Reveal>
       </div>
     </section>
   )
