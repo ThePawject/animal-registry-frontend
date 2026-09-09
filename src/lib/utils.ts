@@ -9,6 +9,23 @@ export function cn(...inputs: Array<ClassValue>) {
   return twMerge(clsx(inputs))
 }
 
+export const PINNED_COLUMN_ID = 'actions'
+
+export function pinnedCellClass(
+  columnId: string | undefined,
+  hasHiddenContent = false,
+) {
+  if (columnId !== PINNED_COLUMN_ID) return undefined
+
+  return cn(
+    'sticky right-0 z-10 bg-inherit',
+    'before:pointer-events-none before:absolute before:inset-y-0 before:right-full before:w-2.5',
+    'before:bg-gradient-to-l before:from-black/18 before:to-transparent dark:before:from-black/60',
+    'before:opacity-0 before:transition-opacity before:duration-200',
+    hasHiddenContent && 'before:opacity-100',
+  )
+}
+
 export function decodeJwt(token: string) {
   try {
     const payload = token.split('.')[1]

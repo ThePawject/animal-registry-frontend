@@ -35,7 +35,8 @@ import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAnimals } from '@/api/animals/queries'
-import { formatDate } from '@/lib/utils'
+import { cn, formatDate, pinnedCellClass } from '@/lib/utils'
+import { useHorizontalOverflow } from '@/hooks/useHorizontalOverflow'
 import { useReportsBySelectedIds, useReportsDump } from '@/api/reports/queries'
 
 export const createAndDownloadReport = (blob: Blob, filename: string) => {
@@ -104,6 +105,9 @@ function AnimalTable() {
   const [rowSelection, setRowSelection] = React.useState({})
   const [openEventReportModal, setOpenEventReportModal] = React.useState(false)
   const [openDateRangeModal, setOpenDateRangeModal] = React.useState(false)
+
+  const { ref: scrollRef, hasOverflow } =
+    useHorizontalOverflow<HTMLDivElement>()
 
   const columns = React.useMemo<Array<ColumnDef<Animal, any>>>(
     () => [
@@ -306,8 +310,8 @@ function AnimalTable() {
               params={{ animalId: row.original.id }}
               className="flex items-center w-full"
             >
-              <Eye className="w-4 h-4 mr-2" />
-              Szczegóły
+              <Eye className="w-4 h-4 md:mr-2" />
+              <span className="sr-only md:not-sr-only">Szczegóły</span>
             </Link>
           </Button>
         ),
@@ -536,15 +540,18 @@ function AnimalTable() {
         </div>
       </div>
 
-      <div className="rounded-md border w-full overflow-x-auto">
+      <div ref={scrollRef} className="rounded-md border w-full overflow-x-auto">
         <table className="w-full">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
+              <tr key={headerGroup.id} className="bg-muted">
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
-                    className="border-b bg-muted/50 px-4 py-3 text-left font-medium text-sm"
+                    className={cn(
+                      'border-b bg-inherit px-4 py-3 text-left font-medium text-sm',
+                      pinnedCellClass(header.column.id, hasOverflow),
+                    )}
                   >
                     {header.isPlaceholder
                       ? null
@@ -560,9 +567,18 @@ function AnimalTable() {
           <tbody>
             {isPending ? (
               Array.from({ length: pageSize }).map((_, index) => (
-                <tr key={`skeleton-${index}`} className="border-b">
-                  {columns.map((_, colIndex) => (
-                    <td key={`skeleton-cell-${colIndex}`} className="px-4 py-3">
+                <tr
+                  key={`skeleton-${index}`}
+                  className="border-b bg-background"
+                >
+                  {columns.map((column, colIndex) => (
+                    <td
+                      key={`skeleton-cell-${colIndex}`}
+                      className={cn(
+                        'px-4 py-3',
+                        pinnedCellClass(column.id, hasOverflow),
+                      )}
+                    >
                       <Skeleton className="h-10 w-full" />
                     </td>
                   ))}
@@ -573,10 +589,16 @@ function AnimalTable() {
                 <tr
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className="border-b transition-colors hover:bg-muted/50"
+                  className="border-b bg-background transition-colors hover:bg-muted"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-4 py-3 align-middle">
+                    <td
+                      key={cell.id}
+                      className={cn(
+                        'px-4 py-3 align-middle',
+                        pinnedCellClass(cell.column.id, hasOverflow),
+                      )}
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),

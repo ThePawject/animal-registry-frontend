@@ -27,3 +27,14 @@ class IntersectionObserverStub {
 
 globalThis.IntersectionObserver =
   IntersectionObserverStub as unknown as typeof IntersectionObserver
+
+class ResizeObserverStub {
+  observe() {}
+
+  unobserve() {}
+
+  disconnect() {}
+}
+
+globalThis.ResizeObserver =
+  ResizeObserverStub as unknown as typeof ResizeObserver

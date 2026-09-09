@@ -2,6 +2,7 @@ import React from 'react'
 import {
   flexRender,
   getCoreRowModel,
+  getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
 import {
@@ -15,8 +16,15 @@ import {
 } from 'lucide-react'
 import { useForm } from '@tanstack/react-form'
 import { ErrorPopover } from '../ErrorPopover'
+import {
+  SortableHeader,
+  compareText,
+  getAriaSort,
+  sortByDate,
+  sortByText,
+} from '../SortableHeader'
 import AnimalHealthRecordForm from './AnimalHealthRecordForm'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef, SortingFn, SortingState } from '@tanstack/react-table'
 import type { AnimalById, AnimalHealthRecord } from '@/api/animals/types'
 import {
   ALLOWED_DOCUMENT_EXTENSIONS,
@@ -38,10 +46,25 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Card } from '@/components/ui/card'
-import { cn } from '@/lib/utils'
+import { PINNED_COLUMN_ID, cn, pinnedCellClass } from '@/lib/utils'
+import { useHorizontalOverflow } from '@/hooks/useHorizontalOverflow'
 
 interface AnimalHealthRecordsTabProps {
   animal: AnimalById
+}
+
+const ACTIONS_COLUMN_WIDTH = 240
+const ACTIONS_WIDTH_SAVED = 120
+
+const sortByDocument: SortingFn<AnimalHealthRecord> = (rowA, rowB) => {
+  const documentA = rowA.original.document
+  const documentB = rowB.original.document
+
+  if (!documentA || !documentB) {
+    return Number(Boolean(documentA)) - Number(Boolean(documentB))
+  }
+
+  return compareText(documentA.fileName, documentB.fileName)
 }
 
 const defaultEditFormData: Omit<AnimalHealthRecord, 'id'> = {
@@ -104,10 +127,13 @@ export default function AnimalHealthRecordsTab({
     },
   })
 
-  const healthRecords = animal.healthRecords.sort(
-    (a, b) =>
-      new Date(b.occurredOn).getTime() - new Date(a.occurredOn).getTime(),
-  )
+  const healthRecords = animal.healthRecords
+
+  const [sorting, setSorting] = React.useState<SortingState>([
+    { id: 'occurredOn', desc: true },
+  ])
+  const { ref: scrollRef, hasOverflow } =
+    useHorizontalOverflow<HTMLDivElement>()
 
   const handleEditClick = (record: AnimalHealthRecord) => {
     setEditingRecordId(record.id)
@@ -199,7 +225,7 @@ export default function AnimalHealthRecordsTab({
   const RecordDateCell = ({ record }: { record: AnimalHealthRecord }) => {
     if (editingRecordId === record.id) {
       return (
-        <div className="min-w-[140px]">
+        <div className="w-full">
           <form.Field
             name="occurredOn"
             validators={{
@@ -260,7 +286,7 @@ export default function AnimalHealthRecordsTab({
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
                 id="Opis"
-                className="bg-background wrap-anywhere min-h-0 w-fit min-w-[300px]"
+                className="bg-background wrap-anywhere min-h-0 w-full"
                 placeholder="Wpisz opis"
               />
             )
@@ -300,12 +326,12 @@ export default function AnimalHealthRecordsTab({
 
     if (isEditing) {
       return (
-        <div className="space-y-2 min-w-[220px]">
+        <div className="space-y-2 w-full">
           {currentDoc ? (
             <>
               <div className="text-sm font-medium flex items-center gap-1 text-gray-600">
-                <ExternalLink className="w-4 h-4" />
-                {currentDoc.fileName}
+                <ExternalLink className="w-4 h-4 shrink-0" />
+                <span className="truncate">{currentDoc.fileName}</span>
               </div>
               <div className="flex gap-2">
                 <Button
@@ -368,11 +394,11 @@ export default function AnimalHealthRecordsTab({
     return (
       <button
         type="button"
-        className="text-blue-600 hover:underline text-sm font-medium flex items-center gap-1 cursor-pointer"
+        className="text-blue-600 hover:underline text-sm font-medium flex w-full items-center gap-1 cursor-pointer"
         onClick={() => window.open(originalDocument.url, '_blank')}
       >
-        <ExternalLink className="w-4 h-4" />
-        {originalDocument.fileName}
+        <ExternalLink className="w-4 h-4 shrink-0" />
+        <span className="truncate">{originalDocument.fileName}</span>
       </button>
     )
   }
@@ -395,27 +421,40 @@ export default function AnimalHealthRecordsTab({
     () => [
       {
         accessorKey: 'occurredOn',
-        header: () => <div className="w-max">Data</div>,
+        header: ({ column }) => (
+          <SortableHeader column={column}>Data</SortableHeader>
+        ),
         cell: ({ row }) => <RecordDateCell record={row.original} />,
-        size: 140,
+        sortingFn: sortByDate,
+        sortDescFirst: true,
+        size: 170,
       },
       {
         accessorKey: 'description',
         header: 'Opis',
         cell: ({ row }) => <RecordDescriptionCell record={row.original} />,
-        size: 300,
+        enableSorting: false,
+        size: 340,
       },
       {
         accessorKey: 'performedBy',
-        header: () => <div className="w-max">Wykonane przez</div>,
+        header: ({ column }) => (
+          <SortableHeader column={column}>Wykonane przez</SortableHeader>
+        ),
         cell: ({ row }) => <RecordPerformedByCell record={row.original} />,
-        size: 180,
+        sortingFn: sortByText,
+        sortDescFirst: false,
+        size: 190,
       },
       {
         accessorKey: 'document',
-        header: 'Dokument',
+        header: ({ column }) => (
+          <SortableHeader column={column}>Dokument</SortableHeader>
+        ),
         cell: ({ row }) => <RecordDocumentCell record={row.original} />,
-        size: 220,
+        sortingFn: sortByDocument,
+        sortDescFirst: false,
+        size: 250,
       },
       {
         id: 'actions',
@@ -425,25 +464,28 @@ export default function AnimalHealthRecordsTab({
 
           if (isEditing) {
             return (
-              <div className="flex flex-col gap-2 min-w-[200px] min-h-16 items-center">
+              <div className="flex flex-col gap-2 w-full min-h-16 items-center justify-center">
                 <div className="flex gap-2 w-full">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleCancelEdit}
-                    className="h-8 flex-1"
+                    className="h-8 md:flex-1"
                   >
-                    <X className="w-4 h-4 mr-1" /> Anuluj
+                    <X className="w-4 h-4 md:mr-1" />
+                    <span className="sr-only md:not-sr-only">Anuluj</span>
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     disabled={isEditingRecord}
                     onClick={() => form.handleSubmit()}
-                    className="h-8 flex-1 bg-emerald-600 hover:bg-emerald-700 text-white hover:text-white"
+                    className="h-8 md:flex-1 bg-emerald-600 hover:bg-emerald-700 text-white hover:text-white"
                   >
-                    <Check className="w-4 h-4 mr-1" />{' '}
-                    {isEditingRecord ? 'Zapisywanie...' : 'Zapisz'}
+                    <Check className="w-4 h-4 md:mr-1" />
+                    <span className="sr-only md:not-sr-only">
+                      {isEditingRecord ? 'Zapisywanie...' : 'Zapisz'}
+                    </span>
                   </Button>
                 </div>
                 {editError && (
@@ -454,14 +496,15 @@ export default function AnimalHealthRecordsTab({
           }
 
           return (
-            <div className="flex gap-2 min-w-[200px] min-h-16 items-center">
+            <div className="flex gap-2 w-full min-h-16 items-center">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handleEditClick(row.original)}
-                className="h-8 flex-1"
+                className="h-8 md:flex-1"
               >
-                <Pencil className="w-4 h-4 mr-1" /> Edytuj
+                <Pencil className="w-4 h-4 md:mr-1" />
+                <span className="sr-only md:not-sr-only">Edytuj</span>
               </Button>
               <Button
                 variant="destructive"
@@ -469,16 +512,17 @@ export default function AnimalHealthRecordsTab({
                 type="button"
                 onClick={() => handleDeleteClick(row.original)}
                 disabled={isDeleting}
-                className="h-8 flex-1"
+                className="h-8 md:flex-1"
               >
-                <Trash2 className="w-4 h-4 mr-1" /> Usuń
+                <Trash2 className="w-4 h-4 md:mr-1" />
+                <span className="sr-only md:not-sr-only">Usuń</span>
               </Button>
             </div>
           )
         },
         enableSorting: false,
         enableHiding: false,
-        size: 220,
+        size: ACTIONS_COLUMN_WIDTH,
       },
     ],
     [
@@ -494,7 +538,11 @@ export default function AnimalHealthRecordsTab({
   const table = useReactTable({
     data: healthRecords,
     columns,
+    state: { sorting },
+    onSortingChange: setSorting,
+    enableSortingRemoval: false,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
   })
 
   return (
@@ -521,15 +569,47 @@ export default function AnimalHealthRecordsTab({
             </div>
           )}
 
-          <div className="rounded-md border bg-white dark:bg-black/30 overflow-x-auto m-0">
-            <table className="text-sm min-w-[600px] w-full">
+          <div
+            ref={scrollRef}
+            className="rounded-md border bg-white dark:bg-black/30 overflow-x-auto m-0"
+          >
+            <table
+              className="text-sm w-full table-fixed min-w-[var(--table-narrow)] md:min-w-[var(--table-wide)]"
+              style={
+                {
+                  '--table-wide': `${table.getTotalSize()}px`,
+                  '--table-narrow': `${table.getTotalSize() - ACTIONS_WIDTH_SAVED}px`,
+                } as React.CSSProperties
+              }
+            >
+              <colgroup>
+                {table.getAllLeafColumns().map((column) => (
+                  <col
+                    key={column.id}
+                    className={
+                      column.id === PINNED_COLUMN_ID
+                        ? 'w-30 md:w-60'
+                        : undefined
+                    }
+                    style={
+                      column.id === PINNED_COLUMN_ID
+                        ? undefined
+                        : { width: column.getSize() }
+                    }
+                  />
+                ))}
+              </colgroup>
               <thead>
                 {table.getHeaderGroups().map((headerGroup) => (
-                  <tr key={headerGroup.id}>
+                  <tr key={headerGroup.id} className="bg-muted">
                     {headerGroup.headers.map((header) => (
                       <th
                         key={header.id}
-                        className="border-b bg-muted/50 px-4 py-3 text-left font-semibold text-sm"
+                        aria-sort={getAriaSort(header.column)}
+                        className={cn(
+                          'border-b bg-inherit px-4 py-3 text-left font-semibold text-sm',
+                          pinnedCellClass(header.column.id, hasOverflow),
+                        )}
                       >
                         {header.isPlaceholder
                           ? null
@@ -556,10 +636,16 @@ export default function AnimalHealthRecordsTab({
                   table.getRowModel().rows.map((row) => (
                     <tr
                       key={row.id}
-                      className="border-b transition-colors hover:bg-muted/50"
+                      className="border-b bg-background transition-colors hover:bg-muted"
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} className="px-4 py-3 align-middle">
+                        <td
+                          key={cell.id}
+                          className={cn(
+                            'px-4 py-3 align-middle',
+                            pinnedCellClass(cell.column.id, hasOverflow),
+                          )}
+                        >
                           {flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext(),
