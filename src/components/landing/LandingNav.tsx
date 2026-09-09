@@ -14,7 +14,7 @@ export function LandingNav() {
       <nav className="mx-auto flex max-w-6xl items-center gap-4 px-6 py-3">
         <a href="#gora" className="shrink-0" aria-label="MojeSchronisko.pl">
           <img
-            src="/animal-shelter-logo.png"
+            src="/animal-shelter-logo.webp"
             alt=""
             width={40}
             height={40}
