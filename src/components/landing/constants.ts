@@ -1,9 +1,5 @@
 export const CONTACT_EMAIL = 'biuro@mojeschronisko.pl'
 
-export const SAMPLE_REPORT_URL = '/landing/przykladowy-raport.pdf'
-
-export const REPORT_PREVIEW = '/landing/przykladowy-raport-podglad.webp'
-
 export const REGULATION_URL =
   'https://isap.sejm.gov.pl/isap.nsf/download.xsp/WDU20220000175/O/D20220175.pdf'
 
