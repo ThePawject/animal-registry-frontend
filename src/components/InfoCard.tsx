@@ -1,5 +1,5 @@
 import { Info } from 'lucide-react'
-import { HoverCard, HoverCardContent, HoverCardTrigger } from './ui/hover-card'
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
@@ -19,16 +19,10 @@ export function InfoCard({
   children,
 }: InfoCardProps) {
   return (
-    <HoverCard
-      openDelay={100}
-      closeDelay={200}
-      open={infoOpen}
-      onOpenChange={setInfoOpen}
-    >
-      <HoverCardTrigger asChild>
+    <Popover open={infoOpen} onOpenChange={setInfoOpen}>
+      <PopoverTrigger asChild>
         <button
           type="button"
-          onClick={() => setInfoOpen?.(!infoOpen)}
           className={cn(
             'p-2 rounded-full hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring',
             className,
@@ -37,10 +31,10 @@ export function InfoCard({
         >
           <Info className={cn('size-8 text-blue-600', iconClassName)} />
         </button>
-      </HoverCardTrigger>
-      <HoverCardContent className="w-96" side="right" align="start">
+      </PopoverTrigger>
+      <PopoverContent className="w-96" side="right" align="start">
         {children}
-      </HoverCardContent>
-    </HoverCard>
+      </PopoverContent>
+    </Popover>
   )
 }

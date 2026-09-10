@@ -80,7 +80,11 @@ function AnimalTable() {
   const page = search.page ?? 1
   const pageSize = search.pageSize ?? 20
 
-  const { data: animalsPage, isPending } = useAnimals({
+  const {
+    data: animalsPage,
+    isPending,
+    isPlaceholderData,
+  } = useAnimals({
     keyWordSearch: search.query ?? null,
     page,
     pageSize,
@@ -540,7 +544,13 @@ function AnimalTable() {
         </div>
       </div>
 
-      <div ref={scrollRef} className="rounded-md border w-full overflow-x-auto">
+      <div
+        ref={scrollRef}
+        className={cn(
+          'rounded-md border w-full overflow-x-auto transition-opacity',
+          isPlaceholderData && 'opacity-60',
+        )}
+      >
         <table className="w-full">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -646,7 +656,7 @@ function AnimalTable() {
             <Button
               variant="outline"
               size="sm"
-              disabled={page === 1 || isPending}
+              disabled={page === 1 || isPending || isPlaceholderData}
               onClick={() => setSearch({ page: 1 })}
             >
               <ChevronFirst className="w-4 h-4" />
@@ -655,7 +665,7 @@ function AnimalTable() {
               variant="outline"
               size="sm"
               onClick={() => setSearch({ page: Math.max(1, page - 1) })}
-              disabled={page === 1 || isPending}
+              disabled={page === 1 || isPending || isPlaceholderData}
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
@@ -663,7 +673,7 @@ function AnimalTable() {
               variant="outline"
               size="sm"
               onClick={() => setSearch({ page: page + 1 })}
-              disabled={page === totalPages || isPending}
+              disabled={page === totalPages || isPending || isPlaceholderData}
             >
               <ChevronRight className="w-4 h-4" />
             </Button>
@@ -671,7 +681,7 @@ function AnimalTable() {
               variant="outline"
               size="sm"
               onClick={() => setSearch({ page: totalPages })}
-              disabled={page === totalPages || isPending}
+              disabled={page === totalPages || isPending || isPlaceholderData}
             >
               <ChevronFirst className="w-4 h-4 rotate-180" />
             </Button>
