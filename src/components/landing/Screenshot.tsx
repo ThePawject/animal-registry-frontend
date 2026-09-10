@@ -1,6 +1,5 @@
 import { Maximize2 } from 'lucide-react'
 import type { Screenshot as ScreenshotData } from './screenshots'
-import { ModalCloseButton } from '@/components/ModalCloseButton'
 import {
   Dialog,
   DialogContent,
@@ -28,18 +27,14 @@ function ScreenshotDialog({
       >
         {children}
       </DialogTrigger>
-      <DialogContent
-        showCloseButton={false}
-        className="max-w-[min(1500px,calc(100%-2rem))] p-4 pt-16 sm:p-6 sm:pt-16"
-      >
+      <DialogContent className="max-w-[min(1500px,calc(100%-2rem))] p-4 pt-12 sm:p-6 sm:pt-12">
         <DialogTitle className="sr-only">{screenshot.alt}</DialogTitle>
-        <ModalCloseButton />
         <img
           src={screenshot.src}
           alt={screenshot.alt}
           width={screenshot.width}
           height={screenshot.height}
-          className="mx-auto h-auto max-h-[calc(90vh-6rem)] w-auto max-w-full rounded-lg border border-slate-200 object-contain"
+          className="mx-auto h-auto max-h-[calc(90vh-5rem)] w-auto max-w-full rounded-lg border border-slate-200 object-contain"
         />
       </DialogContent>
     </Dialog>

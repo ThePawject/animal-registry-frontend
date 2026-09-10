@@ -1,7 +1,6 @@
 import React from 'react'
 import { Calendar, LucideLoaderCircle } from 'lucide-react'
 import { createAndDownloadReport } from '../AnimalTable'
-import { ModalCloseButton } from '../ModalCloseButton'
 import type { EventReportParams, EventReportPeriod } from '@/api/reports/types'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -139,13 +138,8 @@ export default function EventReportModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent
-        showCloseButton={false}
-        className="p-0 bg-transparent shadow-none border-none max-w-lg"
-      >
+      <DialogContent className="p-0 bg-transparent shadow-none border-none max-w-lg">
         <div className="relative">
-          <ModalCloseButton onClick={onClose} />
-
           <Card className="overflow-hidden py-0 gap-0">
             <div className="flex-1 p-4 shadow-md">
               <DialogTitle className="text-2xl font-semibold">
