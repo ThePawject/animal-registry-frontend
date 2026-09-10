@@ -1,6 +1,7 @@
 import React from 'react'
-import { Calendar, FileText, XIcon } from 'lucide-react'
+import { Calendar, FileText } from 'lucide-react'
 import { useForm, useStore } from '@tanstack/react-form'
+import { ModalCloseButton } from '../ModalCloseButton'
 import { Textarea } from '../ui/textarea'
 import type { AnimalHealthRecord } from '@/api/animals/types'
 import {
@@ -121,15 +122,7 @@ export default function AnimalHealthRecordFormModal({
         className="p-0 bg-transparent shadow-none border-none max-w-lg"
       >
         <div className="relative">
-          <DialogClose asChild>
-            <button
-              onClick={onClose}
-              className="absolute z-20 top-4 right-4 rounded-full focus:ring-2 focus:ring-ring focus:outline-none bg-red-600 hover:bg-red-700 p-2 shadow-md"
-              aria-label="Close"
-            >
-              <XIcon className="w-5 h-5 text-white" />
-            </button>
-          </DialogClose>
+          <ModalCloseButton onClick={onClose} />
 
           <Card className="overflow-hidden py-0 gap-0">
             <div className="flex-1 p-4 shadow-md">
