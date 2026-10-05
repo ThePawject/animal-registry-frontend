@@ -1,4 +1,5 @@
 import { ArrowRight, BadgeCheck, HandHeart, ShieldCheck } from 'lucide-react'
+import { Reveal, RevealGroup, RevealItem } from './Reveal'
 import { Button } from '@/components/ui/button'
 
 const HIGHLIGHTS = [
@@ -31,17 +32,24 @@ export function Hero() {
       />
       <div className="relative mx-auto max-w-6xl px-6 pt-16 pb-14 md:pt-24">
         <div className="mx-auto max-w-3xl text-center">
-          <h1 className="text-4xl leading-[1.1] font-bold tracking-tight text-slate-900 md:text-6xl">
-            Cała ewidencja schroniska w jednym bezpłatnym rejestrze
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-600">
-            Karty zwierząt, historia zdarzeń, dokumentacja medyczna i raporty
-            pod kontrolę, wszystko w jednej aplikacji. Tworzymy
-            MojeSchronisko.pl charytatywnie i udostępniamy schroniskom
-            całkowicie bezpłatnie.
-          </p>
+          <Reveal>
+            <h1 className="text-4xl leading-[1.1] font-bold tracking-tight text-slate-900 md:text-6xl">
+              Cała ewidencja schroniska w jednym bezpłatnym rejestrze
+            </h1>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-600">
+              Karty zwierząt, historia zdarzeń, dokumentacja medyczna i raporty
+              pod kontrolę, wszystko w jednej aplikacji. Tworzymy
+              MojeSchronisko.pl charytatywnie i udostępniamy schroniskom
+              całkowicie bezpłatnie.
+            </p>
+          </Reveal>
 
-          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Reveal
+            delay={0.2}
+            className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row"
+          >
             <Button
               asChild
               size="lg"
@@ -60,12 +68,19 @@ export function Hero() {
             >
               <a href="#funkcje">Zobacz funkcje</a>
             </Button>
-          </div>
+          </Reveal>
         </div>
 
-        <ul className="mx-auto mt-14 grid max-w-5xl gap-8 sm:grid-cols-3">
+        <RevealGroup
+          as="ul"
+          className="mx-auto mt-14 grid max-w-5xl gap-8 sm:grid-cols-3"
+        >
           {HIGHLIGHTS.map(({ icon: Icon, title, description }) => (
-            <li key={title} className="flex flex-col items-center text-center">
+            <RevealItem
+              as="li"
+              key={title}
+              className="flex flex-col items-center text-center"
+            >
               <span className="flex size-14 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm ring-1 ring-emerald-100">
                 <Icon className="size-7" />
               </span>
@@ -75,9 +90,9 @@ export function Hero() {
               <p className="mt-1.5 text-[15px] leading-relaxed text-slate-600">
                 {description}
               </p>
-            </li>
+            </RevealItem>
           ))}
-        </ul>
+        </RevealGroup>
       </div>
     </section>
   )

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 export function LoadingSpinner() {
   const logoContent = (
     <img
-      src="/animal-shelter-logo.png"
+      src="/animal-shelter-logo.webp"
       alt="MojeSchronisko"
       className="size-48 object-contain relative z-10"
     />

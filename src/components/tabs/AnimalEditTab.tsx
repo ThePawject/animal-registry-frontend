@@ -17,6 +17,7 @@ import type {
   AnimalById,
   EditAnimal,
   EditAnimalForm,
+  Photo,
   Sexes,
   Species,
 } from '@/api/animals/types'
@@ -92,6 +93,24 @@ function ThumbnailImage({
 }
 const inputUploadAccept = '.jpg,.jpeg,.png,.webp'
 
+const photoKey = (photo: Photo | File) =>
+  photo instanceof File
+    ? `file:${photo.name}:${photo.size}:${photo.lastModified}`
+    : `id:${photo.id}`
+
+const formSnapshot = (values: EditAnimalForm) => {
+  const { photos, ...rest } = values
+  return JSON.stringify(
+    { ...rest, photos: photos.map(photoKey) },
+    (_key, value: unknown) =>
+      value && typeof value === 'object' && !Array.isArray(value)
+        ? Object.fromEntries(
+            Object.entries(value).sort(([a], [b]) => a.localeCompare(b)),
+          )
+        : value,
+  )
+}
+
 const mapAnimalToFormData = (animal: AnimalById): EditAnimalForm => {
   const { photos, mainPhotoId, birthDate, ...rest } = animal
 
@@ -109,8 +128,9 @@ type AnimalEditTabProps = {
 
 export function AnimalEditTab({ animal }: AnimalEditTabProps) {
   const router = useRouter()
-  const { mutateAsync, isPending, error } = useEditAnimal(() => {
+  const { mutateAsync, isPending, error } = useEditAnimal(async () => {
     cleanupFileUrls()
+    await router.invalidate()
     router.navigate({
       to: `/animal/$animalId`,
       params: { animalId: animal.id },
@@ -217,7 +237,12 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
   })
 
   const currentSpecies = useStore(form.store, (state) => state.values.species)
-  const isDirty = useStore(form.store, (state) => state.isDirty)
+  const values = useStore(form.store, (state) => state.values)
+  const initialSnapshot = React.useMemo(
+    () => formSnapshot(mapAnimalToFormData(animal)),
+    [animal],
+  )
+  const hasChanges = formSnapshot(values) !== initialSnapshot
 
   const uploadInputRef = React.useRef<HTMLInputElement>(null)
 
@@ -834,7 +859,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
           <Button
             type="submit"
             className="flex-1 h-12 text-lg font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
-            disabled={isPending || !isDirty}
+            disabled={isPending || !hasChanges}
           >
             {isPending ? 'Zapisywanie...' : 'Zapisz zmiany'}
           </Button>

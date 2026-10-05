@@ -1,5 +1,5 @@
 import React from 'react'
-import { Calendar, LucideLoaderCircle, XIcon } from 'lucide-react'
+import { Calendar, LucideLoaderCircle } from 'lucide-react'
 import { createAndDownloadReport } from '../AnimalTable'
 import type { EventReportParams, EventReportPeriod } from '@/api/reports/types'
 import { Button } from '@/components/ui/button'
@@ -138,21 +138,8 @@ export default function EventReportModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent
-        showCloseButton={false}
-        className="p-0 bg-transparent shadow-none border-none max-w-lg"
-      >
+      <DialogContent className="p-0 bg-transparent shadow-none border-none max-w-lg">
         <div className="relative">
-          <DialogClose asChild>
-            <button
-              onClick={onClose}
-              className="absolute z-20 top-4 right-4 rounded-full focus:ring-2 focus:ring-ring focus:outline-none bg-red-600 hover:bg-red-700 p-2 shadow-md"
-              aria-label="Close"
-            >
-              <XIcon className="w-5 h-5 text-white" />
-            </button>
-          </DialogClose>
-
           <Card className="overflow-hidden py-0 gap-0">
             <div className="flex-1 p-4 shadow-md">
               <DialogTitle className="text-2xl font-semibold">

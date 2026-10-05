@@ -9,7 +9,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-emerald-100 w-full">
       <div className="flex flex-col md:flex-row items-center justify-center gap-8">
         <img
-          src="./animal-shelter-logo.png"
+          src="./animal-shelter-logo.webp"
           alt="Elektroniczny Rejestr Zwierząt"
           className="w-60 h-60 mb-2"
         />

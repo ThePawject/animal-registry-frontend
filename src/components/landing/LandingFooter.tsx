@@ -10,7 +10,7 @@ export function LandingFooter() {
           <div>
             <div className="flex items-center gap-2.5">
               <img
-                src="/animal-shelter-logo.png"
+                src="/animal-shelter-logo.webp"
                 alt=""
                 width={40}
                 height={40}

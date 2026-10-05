@@ -2,13 +2,21 @@ import React from 'react'
 import {
   flexRender,
   getCoreRowModel,
+  getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
 import { Check, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { useForm } from '@tanstack/react-form'
 import { ErrorPopover } from '../ErrorPopover'
+import {
+  SortableHeader,
+  getAriaSort,
+  sortByDate,
+  sortByMappedText,
+  sortByText,
+} from '../SortableHeader'
 import AnimalEventForm from './AnimalEventForm'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef, SortingState } from '@tanstack/react-table'
 import type {
   AnimalById,
   AnimalEvent,
@@ -34,10 +42,17 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Card } from '@/components/ui/card'
+import { PINNED_COLUMN_ID, cn, pinnedCellClass } from '@/lib/utils'
+import { useHorizontalOverflow } from '@/hooks/useHorizontalOverflow'
 
 interface AnimalEventsTabProps {
   animal: AnimalById
 }
+
+const ACTIONS_COLUMN_WIDTH = 240
+const ACTIONS_WIDTH_SAVED = 120
+
+const sortByEventType = sortByMappedText<AnimalEvent>(ANIMAL_EVENT_TYPE_MAP)
 
 const defaultEditFormData: Omit<AnimalEvent, 'id'> = {
   type: 1,
@@ -77,10 +92,13 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
     },
   })
 
-  const events = animal.events.sort(
-    (a, b) =>
-      new Date(b.occurredOn).getTime() - new Date(a.occurredOn).getTime(),
-  )
+  const events = animal.events
+
+  const [sorting, setSorting] = React.useState<SortingState>([
+    { id: 'occurredOn', desc: true },
+  ])
+  const { ref: scrollRef, hasOverflow } =
+    useHorizontalOverflow<HTMLDivElement>()
 
   const handleEditClick = (event: AnimalEvent) => {
     setEditingEventId(event.id)
@@ -155,13 +173,13 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
       )
     }
 
-    return <div className="w-max">{ANIMAL_EVENT_TYPE_MAP[event.type]}</div>
+    return <div>{ANIMAL_EVENT_TYPE_MAP[event.type]}</div>
   }
 
   const EventDateCell = ({ event }: { event: AnimalEvent }) => {
     if (editingEventId === event.id) {
       return (
-        <div className="min-w-[140px]">
+        <div className="w-full">
           <form.Field
             name="occurredOn"
             validators={{
@@ -219,7 +237,7 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
                 id="Opis"
-                className="bg-background wrap-anywhere min-h-0 w-fit min-w-[300px]"
+                className="bg-background wrap-anywhere min-h-0 w-full"
                 placeholder="Wpisz opis"
               />
             )
@@ -252,28 +270,41 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
   const columns = React.useMemo<Array<ColumnDef<AnimalEvent, any>>>(
     () => [
       {
-        accessorKey: 'type',
-        header: () => <div className="w-max">Typ wydarzenia</div>,
-        cell: ({ row }) => <EventTypeCell event={row.original} />,
-        size: 180,
+        accessorKey: 'occurredOn',
+        header: ({ column }) => (
+          <SortableHeader column={column}>Data wydarzenia</SortableHeader>
+        ),
+        cell: ({ row }) => <EventDateCell event={row.original} />,
+        sortingFn: sortByDate,
+        sortDescFirst: true,
+        size: 170,
       },
       {
-        accessorKey: 'occurredOn',
-        header: () => <div className="w-max">Data wydarzenia</div>,
-        cell: ({ row }) => <EventDateCell event={row.original} />,
-        size: 140,
+        accessorKey: 'type',
+        header: ({ column }) => (
+          <SortableHeader column={column}>Typ wydarzenia</SortableHeader>
+        ),
+        cell: ({ row }) => <EventTypeCell event={row.original} />,
+        sortingFn: sortByEventType,
+        sortDescFirst: false,
+        size: 220,
       },
       {
         accessorKey: 'description',
         header: 'Opis',
         cell: ({ row }) => <EventDescriptionCell event={row.original} />,
-        size: 300,
+        enableSorting: false,
+        size: 340,
       },
       {
         accessorKey: 'performedBy',
-        header: () => <div className="w-max">Wykonane przez</div>,
+        header: ({ column }) => (
+          <SortableHeader column={column}>Wykonane przez</SortableHeader>
+        ),
         cell: ({ row }) => <EventPerformedByCell event={row.original} />,
-        size: 180,
+        sortingFn: sortByText,
+        sortDescFirst: false,
+        size: 190,
       },
       {
         id: 'actions',
@@ -283,38 +314,42 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
 
           if (isEditing) {
             return (
-              <div className="flex gap-2 min-w-[200px] min-h-16 items-center">
+              <div className="flex gap-2 w-full min-h-16 items-center">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleCancelEdit}
-                  className="h-8 flex-1"
+                  className="h-8 md:flex-1"
                 >
-                  <X className="w-4 h-4 mr-1" /> Anuluj
+                  <X className="w-4 h-4 md:mr-1" />
+                  <span className="sr-only md:not-sr-only">Anuluj</span>
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   disabled={isEditingEvent}
                   onClick={() => form.handleSubmit()}
-                  className="h-8 flex-1 bg-emerald-600 hover:bg-emerald-700 text-white hover:text-white"
+                  className="h-8 md:flex-1 bg-emerald-600 hover:bg-emerald-700 text-white hover:text-white"
                 >
-                  <Check className="w-4 h-4 mr-1" />{' '}
-                  {isEditingEvent ? 'Zapisywanie...' : 'Zapisz'}
+                  <Check className="w-4 h-4 md:mr-1" />
+                  <span className="sr-only md:not-sr-only">
+                    {isEditingEvent ? 'Zapisywanie...' : 'Zapisz'}
+                  </span>
                 </Button>
               </div>
             )
           }
 
           return (
-            <div className="flex gap-2 min-w-[200px] min-h-16 items-center">
+            <div className="flex gap-2 w-full min-h-16 items-center">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handleEditClick(row.original)}
-                className="h-8 flex-1"
+                className="h-8 md:flex-1"
               >
-                <Pencil className="w-4 h-4 mr-1" /> Edytuj
+                <Pencil className="w-4 h-4 md:mr-1" />
+                <span className="sr-only md:not-sr-only">Edytuj</span>
               </Button>
               <Button
                 variant="destructive"
@@ -322,16 +357,17 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
                 type="button"
                 onClick={() => handleDeleteClick(row.original)}
                 disabled={isDeleting}
-                className="h-8 flex-1"
+                className="h-8 md:flex-1"
               >
-                <Trash2 className="w-4 h-4 mr-1" /> Usuń
+                <Trash2 className="w-4 h-4 md:mr-1" />
+                <span className="sr-only md:not-sr-only">Usuń</span>
               </Button>
             </div>
           )
         },
         enableSorting: false,
         enableHiding: false,
-        size: 220,
+        size: ACTIONS_COLUMN_WIDTH,
       },
     ],
     [editingEventId, isDeleting],
@@ -340,7 +376,11 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
   const table = useReactTable({
     data: events,
     columns,
+    state: { sorting },
+    onSortingChange: setSorting,
+    enableSortingRemoval: false,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
   })
 
   return (
@@ -367,15 +407,47 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
             </div>
           )}
 
-          <div className="rounded-md border bg-white dark:bg-black/30 overflow-x-auto m-0">
-            <table className="text-sm min-w-[600px] w-full">
+          <div
+            ref={scrollRef}
+            className="rounded-md border bg-white dark:bg-black/30 overflow-x-auto m-0"
+          >
+            <table
+              className="text-sm w-full table-fixed min-w-[var(--table-narrow)] md:min-w-[var(--table-wide)]"
+              style={
+                {
+                  '--table-wide': `${table.getTotalSize()}px`,
+                  '--table-narrow': `${table.getTotalSize() - ACTIONS_WIDTH_SAVED}px`,
+                } as React.CSSProperties
+              }
+            >
+              <colgroup>
+                {table.getAllLeafColumns().map((column) => (
+                  <col
+                    key={column.id}
+                    className={
+                      column.id === PINNED_COLUMN_ID
+                        ? 'w-30 md:w-60'
+                        : undefined
+                    }
+                    style={
+                      column.id === PINNED_COLUMN_ID
+                        ? undefined
+                        : { width: column.getSize() }
+                    }
+                  />
+                ))}
+              </colgroup>
               <thead>
                 {table.getHeaderGroups().map((headerGroup) => (
-                  <tr key={headerGroup.id}>
+                  <tr key={headerGroup.id} className="bg-muted">
                     {headerGroup.headers.map((header) => (
                       <th
                         key={header.id}
-                        className="border-b bg-muted/50 px-4 py-3 text-left font-semibold text-sm"
+                        aria-sort={getAriaSort(header.column)}
+                        className={cn(
+                          'border-b bg-inherit px-4 py-3 text-left font-semibold text-sm',
+                          pinnedCellClass(header.column.id, hasOverflow),
+                        )}
                       >
                         {header.isPlaceholder
                           ? null
@@ -402,10 +474,16 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
                   table.getRowModel().rows.map((row) => (
                     <tr
                       key={row.id}
-                      className="border-b transition-colors hover:bg-muted/50"
+                      className="border-b bg-background transition-colors hover:bg-muted"
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} className="px-4 py-3 align-middle">
+                        <td
+                          key={cell.id}
+                          className={cn(
+                            'px-4 py-3 align-middle',
+                            pinnedCellClass(cell.column.id, hasOverflow),
+                          )}
+                        >
                           {flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext(),

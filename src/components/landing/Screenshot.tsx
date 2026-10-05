@@ -27,14 +27,14 @@ function ScreenshotDialog({
       >
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-[min(1500px,calc(100%-2rem))] p-4 sm:p-6">
+      <DialogContent className="max-w-[min(1500px,calc(100%-2rem))] p-4 pt-12 sm:p-6 sm:pt-12">
         <DialogTitle className="sr-only">{screenshot.alt}</DialogTitle>
         <img
           src={screenshot.src}
           alt={screenshot.alt}
           width={screenshot.width}
           height={screenshot.height}
-          className="h-auto w-full rounded-lg border border-slate-200"
+          className="mx-auto h-auto max-h-[calc(90vh-5rem)] w-auto max-w-full rounded-lg border border-slate-200 object-contain"
         />
       </DialogContent>
     </Dialog>

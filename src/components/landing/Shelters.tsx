@@ -1,4 +1,5 @@
 import { ArrowUpRight, MapPin } from 'lucide-react'
+import { Reveal, RevealGroup, RevealItem } from './Reveal'
 import { Card } from '@/components/ui/card'
 
 const SHELTERS = [
@@ -24,7 +25,7 @@ export function Shelters() {
   return (
     <section className="border-y border-slate-200 bg-white py-20 md:py-24">
       <div className="mx-auto max-w-6xl px-6">
-        <div className="mx-auto max-w-2xl text-center">
+        <Reveal className="mx-auto max-w-2xl text-center">
           <p className="text-xs font-semibold tracking-widest text-emerald-700 uppercase">
             Kto już korzysta
           </p>
@@ -36,36 +37,35 @@ export function Shelters() {
             obowiązkiem. Ich uwagi z codziennej pracy wyznaczają kolejność
             naszych prac.
           </p>
-        </div>
+        </Reveal>
 
-        <div className="mt-12 grid gap-6 md:grid-cols-2">
+        <RevealGroup className="mt-12 grid gap-6 md:grid-cols-2">
           {SHELTERS.map((shelter) => (
-            <Card
-              key={shelter.name}
-              className="gap-4 border-slate-200 p-7 shadow-sm"
-            >
-              <h3 className="text-xl font-semibold text-slate-900">
-                {shelter.name}
-              </h3>
-              <p className="flex items-center gap-2 text-sm text-slate-500">
-                <MapPin className="size-4 shrink-0 text-emerald-700" />
-                {shelter.location}
-              </p>
-              <p className="text-[15px] leading-relaxed text-slate-600">
-                {shelter.description}
-              </p>
-              <a
-                href={shelter.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-auto inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-800 underline-offset-4 hover:underline"
-              >
-                {shelter.urlLabel}
-                <ArrowUpRight className="size-4" />
-              </a>
-            </Card>
+            <RevealItem key={shelter.name}>
+              <Card className="h-full gap-4 border-slate-200 p-7 shadow-sm">
+                <h3 className="text-xl font-semibold text-slate-900">
+                  {shelter.name}
+                </h3>
+                <p className="flex items-center gap-2 text-sm text-slate-500">
+                  <MapPin className="size-4 shrink-0 text-emerald-700" />
+                  {shelter.location}
+                </p>
+                <p className="text-[15px] leading-relaxed text-slate-600">
+                  {shelter.description}
+                </p>
+                <a
+                  href={shelter.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-auto inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-800 underline-offset-4 hover:underline"
+                >
+                  {shelter.urlLabel}
+                  <ArrowUpRight className="size-4" />
+                </a>
+              </Card>
+            </RevealItem>
           ))}
-        </div>
+        </RevealGroup>
       </div>
     </section>
   )

@@ -21,7 +21,7 @@ export default function Header({ shelterName }: HeaderProps) {
           <h1 className="text-xl font-semibold">
             <Link to="/panel" className="flex gap-2 items-center">
               <img
-                src="/animal-shelter-logo.png"
+                src="/animal-shelter-logo.webp"
                 alt="Elektroniczny Rejestr Zwierząt"
                 className="h-10"
               />

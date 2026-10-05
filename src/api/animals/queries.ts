@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { animalsService } from './conversations'
 import type {
   AddAnimal,
@@ -30,6 +35,7 @@ export const useAnimals = (params: FetchAnimalsParams, enabled?: boolean) =>
     queryFn: async () => animalsService.getAnimals(params),
     refetchOnWindowFocus: false,
     staleTime: 1000,
+    placeholderData: keepPreviousData,
     enabled,
   })
 
@@ -54,18 +60,18 @@ type EditAnimalVariables = {
   animalId: string
   data: EditAnimal
 }
-export const useEditAnimal = (onSuccess: () => void) => {
+export const useEditAnimal = (onSuccess: () => void | Promise<void>) => {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async ({ animalId, data }: EditAnimalVariables) =>
       animalsService.editAnimal(animalId, data),
-    onSuccess: (_data, variables) => {
+    onSuccess: async (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: animalsKeys.one(String(variables.animalId)),
       })
       queryClient.invalidateQueries({ queryKey: animalsKeys.all })
-      onSuccess()
+      await onSuccess()
     },
   })
 }

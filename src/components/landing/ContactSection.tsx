@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Check, Copy, Mail } from 'lucide-react'
+import { Reveal } from './Reveal'
 import { CONTACT_EMAIL, buildContactMailto } from './constants'
 import { Button } from '@/components/ui/button'
 
@@ -30,7 +31,7 @@ export function ContactSection() {
       className="scroll-mt-20 bg-emerald-800 py-20 md:py-28"
     >
       <div className="mx-auto max-w-3xl px-6">
-        <div className="text-center">
+        <Reveal className="text-center">
           <h2 className="text-3xl font-bold tracking-tight text-white md:text-4xl">
             Porozmawiajmy o Waszym schronisku
           </h2>
@@ -39,9 +40,9 @@ export function ContactSection() {
             Was środowisko demonstracyjne z przykładowymi danymi, żebyście mogli
             sami sprawdzić aplikację.
           </p>
-        </div>
+        </Reveal>
 
-        <div className="mt-10 flex flex-col items-center gap-6 rounded-2xl bg-white p-7 text-center shadow-xl md:p-10">
+        <Reveal className="mt-10 flex flex-col items-center gap-6 rounded-2xl bg-white p-7 text-center shadow-xl md:p-10">
           <Mail className="size-10 text-emerald-700" />
 
           <div className="flex flex-col items-center gap-1">
@@ -75,7 +76,7 @@ export function ContactSection() {
             Podajcie nazwę schroniska i osobę kontaktową, a odezwiemy się na ten
             sam adres.
           </p>
-        </div>
+        </Reveal>
       </div>
     </section>
   )
