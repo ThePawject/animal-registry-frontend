@@ -73,10 +73,10 @@ const sortByDocument: SortingFn<AnimalHealthRecord> = (rowA, rowB) => {
   return compareText(documentA.fileName, documentB.fileName)
 }
 
-const defaultEditFormData: Omit<AnimalHealthRecord, 'id'> = {
+const createDefaultEditFormData = (): Omit<AnimalHealthRecord, 'id'> => ({
   occurredOn: todayIsoDate(),
   description: '',
-}
+})
 
 export default function AnimalHealthRecordsTab({
   animal,
@@ -100,7 +100,7 @@ export default function AnimalHealthRecordsTab({
   const [editError, setEditError] = React.useState<string | null>(null)
 
   const form = useForm({
-    defaultValues: defaultEditFormData,
+    defaultValues: createDefaultEditFormData(),
     onSubmit: ({ value }) => {
       const recordData: AnimalHealthRecord = {
         id: editingRecordId!,
@@ -160,8 +160,8 @@ export default function AnimalHealthRecordsTab({
     setEditingFileError(null)
     setRemoveDocument(false)
     setEditError(null)
-    form.setFieldValue('occurredOn', todayIsoDate())
-    form.setFieldValue('description', defaultEditFormData.description)
+    form.setFieldValue('occurredOn', createDefaultEditFormData().occurredOn)
+    form.setFieldValue('description', createDefaultEditFormData().description)
   }
 
   const handleShowAddForm = () => {
@@ -169,10 +169,10 @@ export default function AnimalHealthRecordsTab({
     setEditingFile(null)
     setEditingFileError(null)
     setRemoveDocument(false)
-    form.setFieldValue('occurredOn', todayIsoDate(), {
+    form.setFieldValue('occurredOn', createDefaultEditFormData().occurredOn, {
       dontValidate: true,
     })
-    form.setFieldValue('description', defaultEditFormData.description, {
+    form.setFieldValue('description', createDefaultEditFormData().description, {
       dontValidate: true,
     })
     setShowAddForm(true)

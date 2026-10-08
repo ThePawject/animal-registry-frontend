@@ -60,11 +60,11 @@ const ACTIONS_WIDTH_SAVED = 120
 
 const sortByEventType = sortByMappedText<AnimalEvent>(ANIMAL_EVENT_TYPE_MAP)
 
-const defaultEditFormData: Omit<AnimalEvent, 'id'> = {
+const createDefaultEditFormData = (): Omit<AnimalEvent, 'id'> => ({
   type: 1,
   occurredOn: todayIsoDate(),
   description: '',
-}
+})
 
 export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
   const { mutate: deleteEvent, isPending: isDeleting } = useDeleteAnimalEvent()
@@ -79,7 +79,7 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
   )
 
   const form = useForm({
-    defaultValues: defaultEditFormData,
+    defaultValues: createDefaultEditFormData(),
     onSubmit: ({ value }) => {
       const eventData: AnimalEvent = {
         id: editingEventId!,
@@ -117,18 +117,20 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
 
   const handleCancelEdit = () => {
     setEditingEventId(null)
-    form.setFieldValue('type', defaultEditFormData.type)
-    form.setFieldValue('occurredOn', todayIsoDate())
-    form.setFieldValue('description', defaultEditFormData.description)
+    form.setFieldValue('type', createDefaultEditFormData().type)
+    form.setFieldValue('occurredOn', createDefaultEditFormData().occurredOn)
+    form.setFieldValue('description', createDefaultEditFormData().description)
   }
 
   const handleShowAddForm = () => {
     setEditingEventId(null)
-    form.setFieldValue('type', defaultEditFormData.type, { dontValidate: true })
-    form.setFieldValue('occurredOn', todayIsoDate(), {
+    form.setFieldValue('type', createDefaultEditFormData().type, {
       dontValidate: true,
     })
-    form.setFieldValue('description', defaultEditFormData.description, {
+    form.setFieldValue('occurredOn', createDefaultEditFormData().occurredOn, {
+      dontValidate: true,
+    })
+    form.setFieldValue('description', createDefaultEditFormData().description, {
       dontValidate: true,
     })
     setShowAddForm(true)

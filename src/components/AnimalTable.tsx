@@ -106,6 +106,13 @@ function AnimalTable() {
   const totalPages = animalsPage
     ? Math.max(1, Math.ceil(animalsPage.totalCount / pageSize))
     : 1
+
+  React.useEffect(() => {
+    if (animalsPage && !isPlaceholderData && page > totalPages) {
+      setSearch({ page: totalPages })
+    }
+  }, [animalsPage, isPlaceholderData, page, totalPages])
+
   const [rowSelection, setRowSelection] = React.useState({})
   const [openEventReportModal, setOpenEventReportModal] = React.useState(false)
   const [openDateRangeModal, setOpenDateRangeModal] = React.useState(false)
@@ -666,7 +673,7 @@ function AnimalTable() {
             <Button
               variant="outline"
               size="sm"
-              disabled={page === 1 || isPending || isPlaceholderData}
+              disabled={page <= 1 || isPending || isPlaceholderData}
               aria-label="Pierwsza strona"
               onClick={() => setSearch({ page: 1 })}
             >
@@ -677,7 +684,7 @@ function AnimalTable() {
               size="sm"
               aria-label="Poprzednia strona"
               onClick={() => setSearch({ page: Math.max(1, page - 1) })}
-              disabled={page === 1 || isPending || isPlaceholderData}
+              disabled={page <= 1 || isPending || isPlaceholderData}
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
@@ -686,7 +693,7 @@ function AnimalTable() {
               size="sm"
               aria-label="Następna strona"
               onClick={() => setSearch({ page: page + 1 })}
-              disabled={page === totalPages || isPending || isPlaceholderData}
+              disabled={page >= totalPages || isPending || isPlaceholderData}
             >
               <ChevronRight className="w-4 h-4" />
             </Button>
@@ -695,7 +702,7 @@ function AnimalTable() {
               size="sm"
               aria-label="Ostatnia strona"
               onClick={() => setSearch({ page: totalPages })}
-              disabled={page === totalPages || isPending || isPlaceholderData}
+              disabled={page >= totalPages || isPending || isPlaceholderData}
             >
               <ChevronFirst className="w-4 h-4 rotate-180" />
             </Button>

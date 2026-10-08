@@ -16,11 +16,11 @@ import {
 } from '@/components/ui/select'
 import { genericErrorMessage, isFutureDate, todayIsoDate } from '@/lib/utils'
 
-const defaultEventFormData: Omit<AnimalEvent, 'id'> = {
+const createDefaultEventFormData = (): Omit<AnimalEvent, 'id'> => ({
   type: 0,
   occurredOn: todayIsoDate(),
   description: '',
-}
+})
 
 interface AnimalEventFormProps {
   animalId: string
@@ -34,7 +34,7 @@ export default function AnimalEventForm({
   const { mutateAsync: addEvent, isPending, error } = useAddAnimalEvent()
 
   const form = useForm({
-    defaultValues: { ...defaultEventFormData, occurredOn: todayIsoDate() },
+    defaultValues: createDefaultEventFormData(),
     onSubmit: async ({ value }) => {
       const eventData: Omit<AnimalEvent, 'id'> = {
         type: value.type,

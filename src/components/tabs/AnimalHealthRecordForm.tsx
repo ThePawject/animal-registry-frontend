@@ -53,11 +53,11 @@ type AnimalHealthRecordFormData = {
   document: File | null
 }
 
-const defaultHealthRecordFormData: AnimalHealthRecordFormData = {
+const createDefaultHealthRecordFormData = (): AnimalHealthRecordFormData => ({
   occurredOn: todayIsoDate(),
   description: '',
   document: null,
-}
+})
 
 interface AnimalHealthRecordFormProps {
   animalId: string
@@ -75,10 +75,7 @@ export default function AnimalHealthRecordForm({
   } = useAddAnimalHealthRecord()
 
   const form = useForm({
-    defaultValues: {
-      ...defaultHealthRecordFormData,
-      occurredOn: todayIsoDate(),
-    },
+    defaultValues: createDefaultHealthRecordFormData(),
     onSubmit: async ({ value }) => {
       const recordData: Omit<AnimalHealthRecord, 'id'> = {
         occurredOn: value.occurredOn,
