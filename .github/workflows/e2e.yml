@@ -1,9 +1,5 @@
 name: e2e
 
-# Runs the Playwright suite against the real backend on a GitHub-hosted
-# runner. The whole stack (SQL Server, Azurite, mock identity provider,
-# backend, Vite) is started by `playwright test` itself; see e2e/README.md.
-
 on:
   pull_request:
     branches:
@@ -41,8 +37,6 @@ jobs:
         working-directory: frontend
 
     steps:
-      # The two repositories are checked out side by side, the same layout
-      # the suite expects on a developer machine.
       - name: Checkout frontend
         uses: actions/checkout@v4
         with:
@@ -78,10 +72,6 @@ jobs:
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
 
-      # Building up front keeps compiler output out of the test log and
-      # makes a broken backend fail here, with a clear message.
-      # NuGet audit is switched off for the same reason as in
-      # e2e/stack/backend.ts: advisories are the backend pipeline's concern.
       - name: Build backend
         run: dotnet build ../animal-registry-backend/AnimalRegistry -p:NuGetAudit=false
 
@@ -95,7 +85,6 @@ jobs:
       - name: Run end-to-end tests
         run: pnpm e2e
         env:
-          # Hosted runners have few cores; two workers keep the stack calm.
           E2E_WORKERS: '2'
 
       - name: Upload HTML report

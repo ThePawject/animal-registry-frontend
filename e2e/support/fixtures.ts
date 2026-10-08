@@ -20,23 +20,6 @@ import { createShelterUser } from './users.ts'
 import type { APIRequestContext } from '@playwright/test'
 import type { TestUser } from './users.ts'
 
-/**
- * The single `test` every spec imports.
- *
- * What a test gets by default:
- *   - `page` is already signed in as `user`, a staff member of a shelter;
- *   - `api` talks to the backend as that same user, for arranging data;
- *   - page objects (`panel`, `animalForm`, ...) are bound to `page`.
- *
- * Options, set with `test.use({ ... })`:
- *   - `shelter: 'shared'` (default) reuses one shelter for all tests of a
- *     worker. Fast, but other tests add animals to it, so only assert on
- *     data the test created itself (search for it by its unique name).
- *   - `shelter: 'isolated'` gives the test a brand new, empty shelter. Use
- *     it whenever a test counts rows, pages or expects an empty state.
- *   - `signedIn: false` starts without a session, for login-flow tests.
- */
-
 type Options = {
   shelter: 'shared' | 'isolated'
   signedIn: boolean
@@ -45,7 +28,6 @@ type Options = {
 type TestFixtures = {
   user: TestUser
   api: ApiClient
-  /** Creates an API client for another user; disposed automatically. */
   apiFor: (user: TestUser) => Promise<ApiClient>
 
   landing: LandingPage
@@ -69,14 +51,12 @@ type WorkerFixtures = {
   blobStorage: APIRequestContext
 }
 
-/** Matches the public URL the backend generates for every stored blob. */
 const BLOB_URL = new RegExp(
   `^https://${BLOB.accountName}\\.blob\\.core\\.windows\\.net/`,
 )
 
 const PLACEHOLDER_IMAGE_URL = /^https:\/\/placehold\.co\//
 
-/** Rewrites a public blob URL to the same blob in the local Azurite. */
 export function toLocalBlobUrl(publicUrl: string) {
   const { pathname } = new URL(publicUrl)
   return `${URLS.azurite}/${BLOB.accountName}${pathname}`
@@ -85,8 +65,6 @@ export function toLocalBlobUrl(publicUrl: string) {
 export const test = base.extend<TestFixtures & Options, WorkerFixtures>({
   shelter: ['shared', { option: true }],
   signedIn: [true, { option: true }],
-
-  // -- worker scope ---------------------------------------------------------
 
   workerUser: [
     // eslint-disable-next-line no-empty-pattern
@@ -113,8 +91,6 @@ export const test = base.extend<TestFixtures & Options, WorkerFixtures>({
     { scope: 'worker' },
   ],
 
-  // -- identity -------------------------------------------------------------
-
   user: async ({ shelter, workerUser }, use) => {
     await use(shelter === 'isolated' ? createShelterUser() : workerUser)
   },
@@ -138,14 +114,6 @@ export const test = base.extend<TestFixtures & Options, WorkerFixtures>({
     await use(await apiFor(user))
   },
 
-  // -- environment ----------------------------------------------------------
-
-  /**
-   * The backend always builds blob URLs for the real Azure host
-   * (`https://<account>.blob.core.windows.net/...`), even when it stores the
-   * files in the local Azurite. Serving those URLs from Azurite keeps photos
-   * and documents working offline, exactly as they do in production.
-   */
   blobProxy: [
     async ({ context, blobStorage }, use) => {
       await context.route(BLOB_URL, async (route) => {
@@ -154,8 +122,6 @@ export const test = base.extend<TestFixtures & Options, WorkerFixtures>({
         )
         await route.fulfill({ response })
       })
-      // The "no photo" placeholder is the app's only other external request;
-      // answering it locally keeps the suite independent of the internet.
       await context.route(PLACEHOLDER_IMAGE_URL, (route) =>
         route.fulfill({
           contentType: 'image/png',
@@ -166,8 +132,6 @@ export const test = base.extend<TestFixtures & Options, WorkerFixtures>({
     },
     { auto: true },
   ],
-
-  // -- page objects ---------------------------------------------------------
 
   landing: async ({ page }, use) => use(new LandingPage(page)),
   auth: async ({ page }, use) => use(new AuthScreens(page)),

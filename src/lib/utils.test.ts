@@ -23,7 +23,6 @@ describe('decodeJwt', () => {
   })
 
   it('reads payloads whose encoding uses the base64url alphabet', () => {
-    // "?" and "~" encode to "_" and "-", which plain base64 does not know.
     const payload = { redirect: 'https://example.com/?a=1', note: '~~~>>>???' }
     const token = tokenWith(payload)
 

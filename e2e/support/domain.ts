@@ -1,9 +1,3 @@
-/**
- * Domain vocabulary shared by test data builders, the API client and page
- * objects. Numeric values are the backend enums; labels are what the UI
- * shows (see `src/api/animals/types.ts`).
- */
-
 export const SPECIES = { dog: 1, cat: 2 } as const
 export type SpeciesKey = keyof typeof SPECIES
 
@@ -67,7 +61,6 @@ export const SHELTER_STATUS_LABEL = {
   outOfShelter: 'Poza schroniskiem',
 } as const
 
-/** Shown by the app wherever an optional value is missing. */
 export const EMPTY_VALUE = { table: '-', details: 'Brak' } as const
 
 export const GENERIC_ERROR_MESSAGE =

@@ -3,7 +3,6 @@ import type { Locator, Page } from '@playwright/test'
 
 export const CONTACT_EMAIL = 'biuro@mojeschronisko.pl'
 
-/** In-page navigation targets of the landing page. */
 export const LANDING_SECTIONS = {
   features: { link: 'Funkcje', anchor: 'funkcje' },
   compliance: { link: 'Zgodność z prawem', anchor: 'zgodnosc' },
@@ -13,11 +12,6 @@ export const LANDING_SECTIONS = {
 
 export type LandingSection = keyof typeof LANDING_SECTIONS
 
-/**
- * One of the two carousels on the landing page. Both follow the same
- * pattern: a text column describing the current slide, the slides, and
- * previous / next / dot controls.
- */
 export class LandingCarousel {
   readonly title: Locator
   readonly counter: Locator
@@ -40,22 +34,16 @@ export class LandingCarousel {
     })
   }
 
-  /** Asserts which slide is active, by its position and total count. */
   async expectSlide(position: number, total: number) {
     await expect(this.counter).toHaveText(`Slajd ${position} z ${total}`)
   }
 
-  /**
-   * Stops the carousel from advancing on its own: autoplay pauses while the
-   * pointer is over it. Call before asserting on a specific slide.
-   */
   async pauseAutoplay() {
     await this.root.scrollIntoViewIfNeeded()
     await this.root.hover()
   }
 }
 
-/** `/`: the public landing page. */
 export class LandingPage {
   static readonly path = '/'
 
@@ -85,7 +73,6 @@ export class LandingPage {
     this.menuToggle = this.nav.getByRole('button', {
       name: /^(Otwórz|Zamknij) menu$/,
     })
-    // The collapsed menu is rendered next to the <nav>, inside the header.
     this.mobileMenu = page.locator('header > ul')
 
     this.contactSection = page.locator('#kontakt')
@@ -117,7 +104,6 @@ export class LandingPage {
     return this.page.locator(`#${LANDING_SECTIONS[section].anchor}`)
   }
 
-  /** Link to a section in the desktop navigation bar. */
   navLink(section: Exclude<LandingSection, 'contact'>) {
     return this.nav.getByRole('link', {
       name: LANDING_SECTIONS[section].link,

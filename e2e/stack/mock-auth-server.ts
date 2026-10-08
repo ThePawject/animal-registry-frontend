@@ -15,29 +15,7 @@ import { log, onShutdown } from './process.ts'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { KeyObject } from 'node:crypto'
 
-/**
- * A minimal OpenID Connect provider that stands in for Auth0.
- *
- * It speaks exactly the subset of the protocol that `@auth0/auth0-spa-js`
- * (browser) and ASP.NET Core's JWT bearer handler (API) use:
- *
- *   GET  /.well-known/openid-configuration   discovery, read by the API
- *   GET  /.well-known/jwks.json              signing key, read by the API
- *   GET  /authorize                          login page (or silent-auth error)
- *   GET  /authorize/complete                 login form target, issues a code
- *   POST /oauth/token                        code / refresh_token exchange
- *   GET  /v2/logout                          redirects back to the app
- *   POST /e2e/token                          test-only: mint an API token
- *   GET  /health
- *
- * The server keeps no state. Authorization codes and refresh tokens are just
- * the encoded identity, so tests can sign in as any user they invent and a
- * restart never invalidates a session. That is fine for a test double and
- * would be a terrible idea anywhere else.
- */
-
 export type MockIdentity = {
-  /** Stable user id, becomes the `sub` and `user_id` claims. */
   id: string
   email: string
   roles: Array<string>
@@ -54,14 +32,6 @@ type Grant = {
 const KEY_ID = 'e2e-signing-key'
 const TOKEN_LIFETIME_SECONDS = 24 * 60 * 60
 
-// ---------------------------------------------------------------------------
-// Signing key
-// ---------------------------------------------------------------------------
-
-/**
- * The key is cached on disk so that a restarted mock keeps signing with the
- * key an already-running API has cached from the JWKS endpoint.
- */
 function loadOrCreatePrivateKey(): KeyObject {
   if (existsSync(PATHS.signingKey)) {
     return createPrivateKey(readFileSync(PATHS.signingKey, 'utf8'))
@@ -83,10 +53,6 @@ const publicJwk = {
   alg: 'RS256',
   use: 'sig',
 }
-
-// ---------------------------------------------------------------------------
-// Tokens
-// ---------------------------------------------------------------------------
 
 const base64Url = (value: string | Buffer) =>
   Buffer.from(value).toString('base64url')
@@ -140,7 +106,6 @@ function tokenResponse(grant: Grant) {
   return {
     access_token: issueAccessToken(grant),
     id_token: issueIdToken(grant),
-    // Refreshing never needs the nonce again.
     refresh_token: base64Url(JSON.stringify({ ...grant, nonce: undefined })),
     token_type: 'Bearer',
     expires_in: TOKEN_LIFETIME_SECONDS,
@@ -160,10 +125,6 @@ function parseIdentity(email: string, rolesInput: string, id?: string) {
       .filter(Boolean),
   } satisfies MockIdentity
 }
-
-// ---------------------------------------------------------------------------
-// HTTP plumbing
-// ---------------------------------------------------------------------------
 
 class HttpError extends Error {
   constructor(
@@ -217,7 +178,6 @@ const escapeHtml = (value: string) =>
       ]!,
   )
 
-/** Only ever send the browser back to the app under test. */
 function assertAppUrl(value: string | null, parameter: string) {
   if (!value) throw new HttpError(400, `${parameter} is required`)
   if (new URL(value).origin !== URLS.frontend) {
@@ -226,7 +186,6 @@ function assertAppUrl(value: string | null, parameter: string) {
   return value
 }
 
-/** Response used by the Auth0 SDK for popup and silent (iframe) flows. */
 function webMessagePage(targetOrigin: string, payload: Record<string, string>) {
   return `<!doctype html>
 <title>Authorization response</title>
@@ -239,10 +198,6 @@ function webMessagePage(targetOrigin: string, payload: Record<string, string>) {
 </script>`
 }
 
-/**
- * The stand-in for the Auth0 Universal Login page. Tests fill it in through
- * `MockLoginPage`; a human can use it too when poking at the stack manually.
- */
 function loginPage(query: URLSearchParams) {
   const hidden = [...query.entries()]
     .map(
@@ -279,16 +234,10 @@ function loginPage(query: URLSearchParams) {
 </html>`
 }
 
-// ---------------------------------------------------------------------------
-// Routes
-// ---------------------------------------------------------------------------
-
 function handleAuthorize(url: URL, response: ServerResponse) {
   const query = url.searchParams
   const redirectUri = assertAppUrl(query.get('redirect_uri'), 'redirect_uri')
 
-  // Silent authentication has no session to fall back on here; answering
-  // `login_required` is what Auth0 does for a signed-out user.
   if (query.get('prompt') === 'none') {
     return sendHtml(
       response,
@@ -354,7 +303,6 @@ async function handleToken(request: IncomingMessage, response: ServerResponse) {
   throw new HttpError(400, `unsupported grant_type "${String(grantType)}"`)
 }
 
-/** Lets tests call the API directly, e.g. to seed data, without a browser. */
 async function handleTestToken(
   request: IncomingMessage,
   response: ServerResponse,
@@ -415,7 +363,6 @@ async function route(request: IncomingMessage, response: ServerResponse) {
 }
 
 const server = createServer((request, response) => {
-  // The SPA calls /oauth/token cross-origin with a custom Auth0-Client header.
   response.setHeader('Access-Control-Allow-Origin', '*')
   response.setHeader(
     'Access-Control-Allow-Headers',

@@ -3,7 +3,6 @@ import { URLS } from '../config/env.ts'
 import type { Locator, Page } from '@playwright/test'
 import type { TestUser } from '../support/users.ts'
 
-/** The login form served by the mock identity provider (`/authorize`). */
 export class MockLoginPage {
   readonly heading: Locator
   private readonly email: Locator
@@ -30,10 +29,6 @@ export class MockLoginPage {
   }
 }
 
-/**
- * Everything the app itself renders around authentication: the login card
- * guarding `/panel`, the "no role" notice, the header and the re-login modal.
- */
 export class AuthScreens {
   readonly loginCard: Locator
   readonly loginCardSignIn: Locator
@@ -73,7 +68,6 @@ export class AuthScreens {
       .filter({ hasText: 'MojeSchronisko.pl' })
   }
 
-  /** The header greets staff with the name of their shelter. */
   async expectSignedInTo(user: TestUser) {
     await expect(
       this.header.getByRole('link', { name: `Panel ${user.shelterName}` }),

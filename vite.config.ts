@@ -30,7 +30,6 @@ const config = defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test-setup.ts'],
-    // End-to-end specs are run by Playwright (`pnpm e2e`), not by Vitest.
     exclude: [...configDefaults.exclude, 'e2e/**'],
   },
 })

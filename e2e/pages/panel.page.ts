@@ -9,7 +9,6 @@ export type StatusFilter =
   | 'Poza schroniskiem'
 export type PageSize = 10 | 20 | 50
 
-/** Column headers of the animal table, in display order (after the checkbox). */
 export const ANIMAL_TABLE_COLUMNS = [
   'Zdjęcie',
   'Oznaczenie',
@@ -27,13 +26,10 @@ export const ANIMAL_TABLE_COLUMNS = [
 
 type AnimalColumn = (typeof ANIMAL_TABLE_COLUMNS)[number]
 
-/** One row of the animal table. */
 export class AnimalRow {
   constructor(readonly root: Locator) {}
 
-  /** Cell under the given column header. */
   cell(column: AnimalColumn) {
-    // +1 for the leading selection checkbox column, which has no header text.
     return this.root.locator('td').nth(ANIMAL_TABLE_COLUMNS.indexOf(column) + 1)
   }
 
@@ -50,7 +46,6 @@ export class AnimalRow {
   }
 }
 
-/** `/panel`: the animal register with search, filters, paging and reports. */
 export class PanelPage {
   static readonly path = '/panel'
 
@@ -92,8 +87,6 @@ export class PanelPage {
       name: 'Nie pokazuj ponownie',
     })
 
-    // The three selects on the page carry no accessible name; their order in
-    // the DOM (species, status, page size) is the only stable handle.
     const selects = page.getByRole('combobox')
     this.speciesFilter = selects.nth(0)
     this.statusFilter = selects.nth(1)
@@ -111,7 +104,6 @@ export class PanelPage {
     })
 
     this.pageIndicator = page.getByText(/^Strona \d+ z \d+$/)
-    // First / previous / next / last are icon-only buttons.
     this.pagerButtons = this.pageIndicator
       .locator('xpath=following-sibling::div')
       .getByRole('button')
@@ -144,7 +136,6 @@ export class PanelPage {
     return this.pagerButtons.nth(3)
   }
 
-  /** Opens the register, optionally with a deep-linked search state. */
   async goto(search: Record<string, string | number | boolean> = {}) {
     const params = new URLSearchParams(
       Object.entries(search).map(([key, value]) => [key, String(value)]),
@@ -154,22 +145,16 @@ export class PanelPage {
     await this.expectLoaded()
   }
 
-  /**
-   * Waits until the table shows settled data: no skeleton rows from the
-   * first load and no dimmed "previous page" rows from a refetch.
-   */
   async expectLoaded() {
     await expect(this.table).toBeVisible()
     await expect(this.skeletons).toHaveCount(0)
     await expect(this.tableWrapper).not.toHaveClass(/opacity-60/)
   }
 
-  /** Row whose cells contain `text` (a name or a signature). */
   row(text: string) {
     return new AnimalRow(this.rows.filter({ hasText: text }))
   }
 
-  /** Values of one column for all visible rows, top to bottom. */
   async columnValues(column: AnimalColumn) {
     await this.expectLoaded()
     const index = ANIMAL_TABLE_COLUMNS.indexOf(column) + 1
@@ -179,15 +164,9 @@ export class PanelPage {
     )
   }
 
-  /**
-   * Types into the search box and waits for the debounced query to reach
-   * the URL, which is what triggers the request.
-   */
   async search(text: string) {
     await this.searchInput.fill(text)
     if (text) {
-      // The router writes strings that could be mistaken for another JSON
-      // type (e.g. a chip number) in quotes.
       const expected = [text, JSON.stringify(text)]
       await expect(this.page).toHaveURL((url) =>
         expected.includes(url.searchParams.get('query') ?? ''),
@@ -218,7 +197,6 @@ export class PanelPage {
     await this.expectLoaded()
   }
 
-  /** Asserts exactly these animals are listed, in any order. */
   async expectAnimals(names: Array<string>) {
     await this.expectLoaded()
     await expect(this.rows).toHaveCount(names.length)

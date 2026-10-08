@@ -1,7 +1,6 @@
 import { expect } from '@playwright/test'
 import type { Locator, Page } from '@playwright/test'
 
-/** Labels of the fact sheet on the animal card. */
 export type DetailLabel =
   | 'Gatunek'
   | 'Płeć'
@@ -12,10 +11,8 @@ export type DetailLabel =
   | 'Data urodzenia'
   | 'Data dodania'
 
-/** Image shown by the app when an animal has no photo. */
 export const PHOTO_PLACEHOLDER_URL = /placehold\.co/
 
-/** `/animal/:id`: the read-only animal card. */
 export class AnimalDetailsPage {
   static path = (animalId: string) => `/animal/${animalId}`
 
@@ -86,7 +83,6 @@ export class AnimalDetailsPage {
     await expect(this.editLink).toBeVisible()
   }
 
-  /** Value shown next to a label on the fact sheet. */
   detail(label: DetailLabel) {
     return this.summary
       .getByText(label, { exact: true })
@@ -105,7 +101,6 @@ export class AnimalDetailsPage {
   }
 }
 
-/** Breadcrumb trail rendered above every page inside the panel. */
 export class Breadcrumbs {
   readonly root: Locator
 
@@ -113,7 +108,6 @@ export class Breadcrumbs {
     this.root = page.getByRole('navigation', { name: 'breadcrumb' })
   }
 
-  /** Asserts the trail reads exactly `labels`, left to right. */
   async expectTrail(labels: Array<string>) {
     await expect(this.root.locator('[data-slot="breadcrumb-item"]')).toHaveText(
       labels,

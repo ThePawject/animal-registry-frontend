@@ -18,12 +18,6 @@ import { expect, test } from '../support/fixtures.ts'
 import { createColleagueOf } from '../support/users.ts'
 import type { SeededAnimal } from '../support/api-client.ts'
 
-/**
- * The event history of an animal at `/animal/:id/events`: adding, editing
- * inline, deleting and sorting events, and how certain events change the
- * animal's shelter status.
- */
-
 const EVENT_TYPE_PLACEHOLDER = 'Wybierz typ wydarzenia'
 
 test.describe('Animal events', () => {
@@ -308,7 +302,6 @@ test.describe('Sorting events', () => {
     events,
   }) => {
     const animal = await api.createAnimal(buildAnimal())
-    // Created out of order on purpose.
     await api.addEvent(animal.id, {
       type: 'walk',
       occurredOn: daysAgo(5),
@@ -371,7 +364,6 @@ test.describe('Events of a shared shelter', () => {
     events,
   }) => {
     const animal = await api.createAnimal(buildAnimal())
-    // "aaa" / "zzz" make the alphabetical order of the two e-mails certain.
     const first = await apiFor(createColleagueOf(user, 'aaa'))
     const last = await apiFor(createColleagueOf(user, 'zzz'))
     await last.addEvent(animal.id, {

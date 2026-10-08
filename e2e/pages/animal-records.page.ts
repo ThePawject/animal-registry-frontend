@@ -5,13 +5,6 @@ import type { Locator, Page } from '@playwright/test'
 import type { EventTypeKey } from '../support/domain.ts'
 import type { UploadFile } from '../support/files.ts'
 
-/**
- * The "Wydarzenia" (events) and "Medyczne" (health records) tabs share one
- * layout: a sortable table whose rows turn into inline editors, an "add"
- * form that slides in above it and a delete confirmation dialog. The shared
- * behaviour lives in `RecordsTab`; the two page objects add their own fields.
- */
-
 export type SortDirection = 'ascending' | 'descending' | 'none'
 
 export const RECORD_ERRORS = {
@@ -25,7 +18,6 @@ export const RECORD_ERRORS = {
   documentTooLarge: 'Plik jest za duży. Maksymalny rozmiar to 10MB',
 } as const
 
-/** A table row, in either display or inline-edit mode. */
 export class RecordRow {
   readonly editButton: Locator
   readonly deleteButton: Locator
@@ -83,15 +75,10 @@ abstract class RecordsTab {
     })
   }
 
-  /** Row containing `text` (normally the unique description). */
   row(text: string) {
     return new RecordRow(this.rows.filter({ hasText: text }))
   }
 
-  /**
-   * The row currently in inline-edit mode. An edited row no longer contains
-   * its text as text (it moves into inputs), so it cannot be found by content.
-   */
   get editingRow() {
     return new RecordRow(
       this.table.locator('tbody tr').filter({
@@ -100,14 +87,12 @@ abstract class RecordsTab {
     )
   }
 
-  /** Switches the row containing `text` to its inline editor. */
   async edit(text: string) {
     await this.row(text).editButton.click()
     await expect(this.editingRow.saveButton).toBeVisible()
     return this.editingRow
   }
 
-  /** Saves the inline editor and waits for the row to leave edit mode. */
   async saveEdit() {
     await this.editingRow.saveButton.click()
     await expect(this.editingRow.root).toHaveCount(0)
@@ -123,7 +108,6 @@ abstract class RecordsTab {
     await expect(this.rows).toHaveCount(0)
   }
 
-  /** Text of one column for every row, top to bottom. */
   async columnValues(columnIndex: number) {
     const cells = await this.rows
       .locator(`td:nth-child(${columnIndex + 1})`)
@@ -133,7 +117,6 @@ abstract class RecordsTab {
     )
   }
 
-  /** Header cell of a sortable column; carries the `aria-sort` state. */
   private sortHeader(column: string) {
     return this.table.locator('th').filter({
       has: this.page.getByRole('button', {
@@ -142,7 +125,6 @@ abstract class RecordsTab {
     })
   }
 
-  /** Clicks a column header until the table reports the wanted direction. */
   async sortBy(column: string, direction: Exclude<SortDirection, 'none'>) {
     const header = this.sortHeader(column)
     for (let click = 0; click < 2; click++) {
@@ -159,7 +141,6 @@ abstract class RecordsTab {
     )
   }
 
-  /** Opens the confirmation dialog for the row containing `text`. */
   async requestDelete(text: string) {
     await this.row(text).deleteButton.click()
     await expect(this.deleteDialog).toBeVisible()
@@ -170,10 +151,6 @@ abstract class RecordsTab {
     await expect(this.deleteDialog).toBeHidden()
   }
 
-  /**
-   * Validation messages of inline editors are rendered in a popover outside
-   * the table, so they are looked up on the page.
-   */
   inlineError(message: string) {
     return this.page
       .locator('[data-slot="popover-content"]')
@@ -183,12 +160,10 @@ abstract class RecordsTab {
 
 export type EventFormValues = {
   type?: EventTypeKey
-  /** ISO date, `YYYY-MM-DD`. */
   occurredOn?: string
   description?: string
 }
 
-/** Column positions in the events table. */
 export const EVENT_COLUMN = {
   date: 0,
   type: 1,
@@ -196,7 +171,6 @@ export const EVENT_COLUMN = {
   performedBy: 3,
 } as const
 
-/** `/animal/:id/events` */
 export class AnimalEventsPage extends RecordsTab {
   static path = (animalId: string) => `/animal/${animalId}/events`
 
@@ -246,7 +220,6 @@ export class AnimalEventsPage extends RecordsTab {
     }
   }
 
-  /** Adds an event through the form and waits for it to show up. */
   async addEvent(values: Required<EventFormValues>) {
     await this.openAddForm()
     await this.fillAddForm(values)
@@ -257,13 +230,11 @@ export class AnimalEventsPage extends RecordsTab {
 }
 
 export type HealthRecordFormValues = {
-  /** ISO date, `YYYY-MM-DD`. */
   occurredOn?: string
   description?: string
   document?: UploadFile
 }
 
-/** Column positions in the health records table. */
 export const HEALTH_COLUMN = {
   date: 0,
   description: 1,
@@ -271,7 +242,6 @@ export const HEALTH_COLUMN = {
   document: 3,
 } as const
 
-/** Document cell of a health record row, in display or edit mode. */
 export class DocumentCell {
   readonly openButton: Locator
   readonly fileName: Locator
@@ -298,7 +268,6 @@ export class DocumentCell {
   }
 }
 
-/** `/animal/:id/medical-records` */
 export class AnimalHealthRecordsPage extends RecordsTab {
   static path = (animalId: string) => `/animal/${animalId}/medical-records`
 
@@ -326,7 +295,6 @@ export class AnimalHealthRecordsPage extends RecordsTab {
       'Dokument (opcjonalnie)',
     )
     this.documentInput = this.addForm.locator('input[type="file"]')
-    // Icon-only button that appears next to a chosen file.
     this.clearDocumentButton = this.documentField.root.getByRole('button')
     this.saveButton = this.addForm.getByRole('button', { name: 'Zapisz' })
     this.cancelButton = this.addForm.getByRole('button', { name: 'Anuluj' })
@@ -354,7 +322,6 @@ export class AnimalHealthRecordsPage extends RecordsTab {
     }
   }
 
-  /** Adds a record through the form and waits for it to show up. */
   async addRecord(
     values: HealthRecordFormValues & {
       occurredOn: string
@@ -372,14 +339,6 @@ export class AnimalHealthRecordsPage extends RecordsTab {
     return new DocumentCell(row.cell(HEALTH_COLUMN.document))
   }
 
-  /**
-   * Clicks the document link of a row and returns the URL the app asks the
-   * browser to open in a new tab.
-   *
-   * `window.open` is recorded instead of followed: what a headless browser
-   * does with a PDF in a new tab (render, download, blank page) varies, while
-   * the URL handed to it is exactly the app's responsibility.
-   */
   async openDocument(row: RecordRow) {
     await this.page.evaluate(() => {
       const target = window as unknown as { __openedUrls: Array<string> }

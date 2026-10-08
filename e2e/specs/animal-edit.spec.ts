@@ -20,12 +20,6 @@ import {
 } from '../support/domain.ts'
 import { expect, test } from '../support/fixtures.ts'
 
-/**
- * Editing an animal at `/animal/:id/edit`. The form is the same one used
- * for creating, so this spec concentrates on what is specific to editing:
- * pre-filled values, change detection and saving over existing data.
- */
-
 const ORIGINAL = {
   species: 'dog',
   sex: 'male',

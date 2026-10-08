@@ -2,23 +2,12 @@ import { setTimeout as sleep } from 'node:timers/promises'
 import { TIMEOUTS } from '../config/env.ts'
 
 type RetryOptions = {
-  /** What is being attempted; used in the error when every attempt fails. */
   description: string
-  /** Total time budget across all attempts. */
   timeoutMs?: number
-  /** Pause between attempts; grows a little each time. */
   intervalMs?: number
-  /** Return false to rethrow immediately (e.g. a genuine 4xx). */
   shouldRetry?: (error: unknown) => boolean
 }
 
-/**
- * Runs `action` until it succeeds or the time budget is used up.
- *
- * Meant for operations that are safe to repeat and that only fail because
- * the local stack is momentarily busy (a restarting dev server, a cold
- * endpoint). Not a substitute for Playwright's auto-waiting assertions.
- */
 export async function retry<T>(
   action: (attempt: number) => Promise<T>,
   {

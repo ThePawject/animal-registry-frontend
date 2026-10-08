@@ -6,7 +6,6 @@ import type { Locator, Page } from '@playwright/test'
 import type { SexKey, SpeciesKey } from '../support/domain.ts'
 import type { UploadFile } from '../support/files.ts'
 
-/** Values the animal form accepts; every key is optional so tests fill only what they care about. */
 export type AnimalFormValues = {
   name?: string
   transponderCode?: string
@@ -16,7 +15,6 @@ export type AnimalFormValues = {
   signature?: string
   sex?: SexKey
   color?: string
-  /** ISO date, `YYYY-MM-DD`. */
   birthDate?: string
 }
 
@@ -39,11 +37,6 @@ export const PHOTO_ALERTS = {
   tooLarge: /przekraczają one limit 10MB/,
 } as const
 
-/**
- * The animal form. `/create` and `/animal/:id/edit` render the same fields
- * and the same photo manager, so one page object serves both; only the
- * submit button differs.
- */
 export class AnimalFormPage {
   static readonly createPath = '/create'
   static editPath = (animalId: string) => `/animal/${animalId}/edit`
@@ -78,7 +71,6 @@ export class AnimalFormPage {
   constructor(readonly page: Page) {
     const form = page.locator('form')
 
-    // Placeholders are the reliable handle: some ids in the form are reused.
     this.name = form.getByPlaceholder('Wpisz imię zwierzaka')
     this.transponderCode = form.getByPlaceholder('Wpisz numer chipa')
     this.breed = form.getByPlaceholder('Wpisz rasę zwierzaka')
@@ -128,7 +120,6 @@ export class AnimalFormPage {
     await expect(this.saveButton).toBeVisible()
   }
 
-  /** Fills the given fields, leaving the others untouched. */
   async fill(values: AnimalFormValues) {
     if (values.name !== undefined) await this.name.fill(values.name)
     if (values.transponderCode !== undefined) {
@@ -157,16 +148,10 @@ export class AnimalFormPage {
     await chooseOption(this.sexSelect, SEX_LABEL[sex])
   }
 
-  /**
-   * Asks the backend for the next free signature and returns what the form
-   * now shows. Requires a species to be selected first.
-   */
   async generateSignature() {
     const previous = await this.signature.inputValue()
     await this.generateSignatureButton.click()
     await expect(this.signature).toHaveValue(SIGNATURE_PATTERN)
-    // On the edit form the field already holds a valid signature, so also
-    // wait for the request to finish before reading the result.
     await expect(this.generateSignatureButton).toBeEnabled()
     const generated = await this.signature.inputValue()
     return { previous, generated }
@@ -180,7 +165,6 @@ export class AnimalFormPage {
     await this.saveButton.click()
   }
 
-  /** Asserts the form currently shows these values. */
   async expectValues(values: AnimalFormValues) {
     if (values.name !== undefined) {
       await expect(this.name).toHaveValue(values.name)
@@ -214,11 +198,9 @@ export class AnimalFormPage {
   }
 }
 
-/** The photo column of the animal form: thumbnails, preview and actions. */
 export class PhotoManager {
   readonly thumbnails: Locator
   readonly mainThumbnail: Locator
-  readonly selectedThumbnail: Locator
   readonly preview: Locator
   readonly emptyState: Locator
   readonly counter: Locator
@@ -237,11 +219,9 @@ export class PhotoManager {
     this.thumbnails = form
       .getByRole('button')
       .filter({ has: page.getByAltText(/^Miniatura \d+$/) })
-    // The main photo is marked with a yellow star overlay.
     this.mainThumbnail = this.thumbnails.filter({
       has: page.locator('svg.text-yellow-400'),
     })
-    this.selectedThumbnail = form.locator('button.outline-emerald-600')
     this.preview = form.getByAltText('Główne zdjęcie')
     this.emptyState = form.getByText('Brak zdjęcia', { exact: true })
     this.counter = form.getByText(/^\d+ \/ \d+$/)
@@ -260,19 +240,12 @@ export class PhotoManager {
     return this.thumbnails.nth(position - 1)
   }
 
-  /** Adds photos through the hidden file input behind "Dodaj zdjęcia". */
   async upload(files: Array<UploadFile>) {
     await this.fileInput.setInputFiles(files)
   }
 
-  /**
-   * Uploads files the app is expected to refuse and returns the text of the
-   * browser alert it raises.
-   */
   async uploadExpectingAlert(files: Array<UploadFile>) {
     let message: string | undefined
-    // An open alert blocks the page, so it has to be answered from the
-    // event handler rather than after the upload call returns.
     this.page.once('dialog', (dialog) => {
       message = dialog.message()
       void dialog.accept()
@@ -292,7 +265,6 @@ export class PhotoManager {
     await expect(this.thumbnail(position)).toHaveClass(/outline-emerald-600/)
   }
 
-  /** 1-based position of the thumbnail showing the stored photo `url`. */
   async positionOf(url: string) {
     const sources = await this.thumbnails
       .locator('img')
@@ -302,14 +274,12 @@ export class PhotoManager {
     return index + 1
   }
 
-  /** 1-based position of the thumbnail carrying the "main photo" star. */
   async mainPosition() {
     await expect(this.mainThumbnail).toHaveCount(1)
     const alt = await this.mainThumbnail.locator('img').getAttribute('alt')
     return Number(alt?.replace('Miniatura ', ''))
   }
 
-  /** Rendered size of the large preview, to observe a rotation. */
   async previewSize() {
     await expect
       .poll(() =>

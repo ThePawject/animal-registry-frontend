@@ -8,13 +8,8 @@ import type { TestUser } from './users.ts'
 
 export type StorageState = Awaited<ReturnType<BrowserContext['storageState']>>
 
-/** Key the search box uses to remember that its help popover was dismissed. */
 export const SEARCH_INFO_DISMISSED_KEY = 'animal-search-info-dismissed'
 
-/**
- * A browser context without any session. Inside a test `browser.newContext()`
- * inherits the signed-in state of the test, so the empty state is explicit.
- */
 export function newAnonymousContext(browser: Browser) {
   return browser.newContext({
     baseURL: URLS.frontend,
@@ -22,12 +17,6 @@ export function newAnonymousContext(browser: Browser) {
   })
 }
 
-/**
- * Signs in the way a person does: open the panel, press "Zaloguj się", fill
- * in the identity provider's form, land back in the app.
- *
- * `page` must not have a session yet.
- */
 export async function signInThroughUi(page: Page, user: TestUser) {
   const auth = new AuthScreens(page)
   await page.goto(PanelPage.path)
@@ -37,13 +26,6 @@ export async function signInThroughUi(page: Page, user: TestUser) {
   await expect(page).toHaveURL(new RegExp(`^${URLS.frontend}/`))
 }
 
-/**
- * Produces the browser state (cookies + localStorage) of a signed-in user,
- * ready to be handed to `browser.newContext({ storageState })`.
- *
- * The login runs once in a throwaway context; tests then start already
- * signed in instead of repeating the login flow.
- */
 export async function createSignedInState(
   browser: Browser,
   user: TestUser,
@@ -56,8 +38,6 @@ export async function createSignedInState(
         await signInThroughUi(page, user)
         if (user.shelterId) {
           await new PanelPage(page).expectLoaded()
-          // The help popover opens on the first focus of the search box and
-          // would cover the table; individual tests opt back in to test it.
           await page.evaluate(
             (key) => localStorage.setItem(key, 'true'),
             SEARCH_INFO_DISMISSED_KEY,
@@ -72,10 +52,6 @@ export async function createSignedInState(
   )
 }
 
-/**
- * Makes the cached session unusable without a new login, the state a user
- * ends up in when their refresh token has been revoked or has expired.
- */
 export async function expireSession(page: Page) {
   await page.evaluate((clientId) => {
     for (const key of Object.keys(localStorage)) {
@@ -90,7 +66,6 @@ export async function expireSession(page: Page) {
   }, AUTH.clientId)
 }
 
-/** Caches signed-in browser state per user for the lifetime of a worker. */
 export class AuthStateCache {
   private readonly states = new Map<string, Promise<StorageState>>()
 

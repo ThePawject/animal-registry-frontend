@@ -4,11 +4,6 @@ import { PanelPage } from '../pages/panel.page.ts'
 import { PDF_MAGIC } from '../support/files.ts'
 import { expect, test } from '../support/fixtures.ts'
 
-/**
- * The public landing page at `/`: what an anonymous visitor sees before
- * they ever log in. No backend data is involved.
- */
-
 test.use({ signedIn: false })
 
 const FEATURE_SLIDES = [
@@ -25,7 +20,6 @@ const REPORT_SLIDES = [
   { title: 'Raport wybranych zwierząt', file: 'raport-wybrane-zwierzeta.pdf' },
 ]
 
-/** Mirrors `AUTOPLAY_DELAY` in `src/components/landing/CarouselControls.tsx`. */
 const AUTOPLAY_INTERVAL_MS = 5_000
 
 test.describe('Landing page', () => {
@@ -207,7 +201,6 @@ test.describe('Landing page', () => {
     const carousel = landing.featureCarousel
     const total = FEATURE_SLIDES.length
     await carousel.root.scrollIntoViewIfNeeded()
-    // Park the pointer away from the carousel so autoplay is running.
     await page.mouse.move(0, 0)
 
     await test.step('it moves to the next slide by itself', async () => {
@@ -218,8 +211,6 @@ test.describe('Landing page', () => {
     await test.step('hovering it keeps the current slide in place', async () => {
       await carousel.pauseAutoplay()
       const shown = await carousel.counter.innerText()
-      // The only way to observe "nothing happens" is to let more than one
-      // autoplay interval (5 s) pass.
       await page.waitForTimeout(AUTOPLAY_INTERVAL_MS * 1.5)
       await expect(carousel.counter).toHaveText(shown)
     })

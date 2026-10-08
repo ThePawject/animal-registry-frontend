@@ -1,26 +1,17 @@
 import process from 'node:process'
 import { setTimeout as sleep } from 'node:timers/promises'
 
-/** Helpers shared by the long-running scripts in `e2e/stack`. */
-
 export function log(scope: string, message: string) {
   process.stdout.write(`[e2e:${scope}] ${message}\n`)
 }
 
 type WaitForHttpOptions = {
-  /** Total time to keep trying. */
   timeoutMs: number
-  /** A status is "ready" when this returns true. Defaults to any non-5xx. */
   isReady?: (status: number) => boolean
   intervalMs?: number
   scope?: string
 }
 
-/**
- * Polls `url` until it answers. Connection errors and 5xx responses are
- * treated as "not ready yet", so this can be pointed at a service that is
- * still booting.
- */
 export async function waitForHttp(
   url: string,
   {
@@ -57,11 +48,6 @@ export async function waitForHttp(
   )
 }
 
-/**
- * Runs `cleanup` once when the process is asked to stop, then exits.
- * Playwright stops its web servers with SIGTERM (see `gracefulShutdown` in
- * `playwright.config.ts`); Ctrl+C sends SIGINT.
- */
 export function onShutdown(cleanup: () => Promise<void> | void) {
   let shuttingDown = false
 

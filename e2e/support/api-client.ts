@@ -7,14 +7,6 @@ import type { EventTypeKey, SexKey, SpeciesKey } from './domain.ts'
 import type { UploadFile } from './files.ts'
 import type { TestUser } from './users.ts'
 
-/**
- * Talks to the backend directly, as a given user.
- *
- * Tests use it to arrange data (a spec about editing should not depend on
- * the create form working) and to assert on what was actually persisted.
- * The UI under test is never driven through this client.
- */
-
 export type AnimalInput = {
   species: SpeciesKey
   name?: string
@@ -23,9 +15,7 @@ export type AnimalInput = {
   color?: string
   distinguishingMarks?: string
   transponderCode?: string
-  /** ISO date, `YYYY-MM-DD`. */
   birthDate?: string
-  /** Explicit `YYYY/NNNN`; the next free one is generated when omitted. */
   signature?: string
   photos?: Array<UploadFile>
   mainPhotoIndex?: number
@@ -33,13 +23,11 @@ export type AnimalInput = {
 
 export type EventInput = {
   type: EventTypeKey
-  /** ISO date, `YYYY-MM-DD`. */
   occurredOn: string
   description: string
 }
 
 export type HealthRecordInput = {
-  /** ISO date, `YYYY-MM-DD`. */
   occurredOn: string
   description: string
   document?: UploadFile
@@ -82,7 +70,6 @@ export type ApiAnimal = {
   healthRecords: Array<ApiHealthRecord>
 }
 
-/** The animal as created, plus the input it was created from. */
 export type SeededAnimal = AnimalInput & { id: string; signature: string }
 
 class ApiError extends Error {
@@ -102,7 +89,6 @@ export class ApiClient {
     readonly user: TestUser,
   ) {}
 
-  /** Signs `user` in against the mock identity provider and returns a client. */
   static async forUser(user: TestUser) {
     const accessToken = await retry(
       async () => {
@@ -134,8 +120,6 @@ export class ApiClient {
     await this.context.dispose()
   }
 
-  // -- animals --------------------------------------------------------------
-
   async nextSignature(species: SpeciesKey) {
     const body = await this.send<{ signature: string }>(
       'Fetching the next free signature',
@@ -147,11 +131,6 @@ export class ApiClient {
     return body.signature
   }
 
-  /**
-   * Creates an animal. Without an explicit signature the next free one is
-   * used; if a concurrent test grabbed it first, a new one is fetched and the
-   * request is repeated.
-   */
   async createAnimal(input: AnimalInput): Promise<SeededAnimal> {
     return retry(
       async () => {
@@ -188,8 +167,6 @@ export class ApiClient {
       },
       {
         description: `Creating animal "${input.name ?? '(unnamed)'}"`,
-        // Only a signature race is worth repeating, and only when the
-        // signature was ours to pick.
         shouldRetry: (error) =>
           !input.signature &&
           error instanceof ApiError &&
@@ -198,7 +175,6 @@ export class ApiClient {
     )
   }
 
-  /** Creates animals one after another so signatures stay sequential. */
   async createAnimals(inputs: Array<AnimalInput>) {
     const created: Array<SeededAnimal> = []
     for (const input of inputs) created.push(await this.createAnimal(input))
@@ -211,7 +187,6 @@ export class ApiClient {
     )
   }
 
-  /** Status code of a read, for asserting on access rules. */
   async getAnimalStatus(id: string) {
     const response = await this.context.get(`/animals/${id}`)
     return response.status()
@@ -233,8 +208,6 @@ export class ApiClient {
     return body
   }
 
-  // -- events ---------------------------------------------------------------
-
   async addEvent(animalId: string, input: EventInput) {
     await this.send(`Adding a "${input.type}" event`, () =>
       this.context.post(`/animals/${animalId}/events`, {
@@ -246,8 +219,6 @@ export class ApiClient {
       }),
     )
   }
-
-  // -- health records -------------------------------------------------------
 
   async addHealthRecord(animalId: string, input: HealthRecordInput) {
     const form = new FormData()
@@ -266,12 +237,6 @@ export class ApiClient {
     )
   }
 
-  // -- plumbing -------------------------------------------------------------
-
-  /**
-   * Sends a request, repeating it while the backend is unreachable or
-   * answers 5xx. Client errors (4xx) are real answers and surface at once.
-   */
   private send<T = unknown>(
     description: string,
     perform: () => Promise<APIResponse>,

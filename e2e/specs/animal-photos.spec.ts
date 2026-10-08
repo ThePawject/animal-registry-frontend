@@ -6,13 +6,6 @@ import { COLORS, MEGABYTE, pngImage, withSize } from '../support/files.ts'
 import { expect, test } from '../support/fixtures.ts'
 import type { Locator } from '@playwright/test'
 
-/**
- * Animal photos: managing them in the create and edit forms and viewing
- * them in the gallery of the animal card. Uploaded files are generated in
- * memory; the backend converts them to WebP and stores them in Azurite.
- */
-
-/** Resolves once the browser has actually decoded the image. */
 async function expectImageLoaded(image: Locator) {
   await expect
     .poll(() =>

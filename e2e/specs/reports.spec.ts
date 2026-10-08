@@ -13,30 +13,19 @@ import {
 import { expect, test } from '../support/fixtures.ts'
 import type { Page, Request } from '@playwright/test'
 
-/**
- * PDF reports available from the register: the full dump, the report for
- * selected animals, the event report and the date-range report.
- *
- * Each test checks two things: that the app asks the backend for the right
- * report (the request parameters) and that the user ends up with a real PDF.
- */
-
 test.use({ shelter: 'isolated' })
 
-/** Resolves with the first request the app sends to a report endpoint. */
 function waitForReportRequest(page: Page, endpoint: string) {
   return page.waitForRequest(
     (request) => new URL(request.url()).pathname === `/reports/${endpoint}`,
   )
 }
 
-/** Values of a query parameter, whether sent as `key=` or `key[]=`. */
 function queryValues(request: Request, key: string) {
   const params = new URL(request.url()).searchParams
   return [...params.getAll(key), ...params.getAll(`${key}[]`)]
 }
 
-/** Makes a report endpoint fail, as it would during a backend outage. */
 async function failReport(page: Page, endpoint: string) {
   await page.route(`${URLS.backend}/reports/${endpoint}*`, (route) =>
     route.fulfill({
@@ -133,7 +122,6 @@ test.describe('Report of selected animals', () => {
     page,
   }) => {
     const animals = await api.createAnimals(buildAnimals(12, 'Wybor'))
-    // The register is ordered by signature, newest first.
     const onFirstPage = animals.at(-1)!
     const onSecondPage = animals[0]
 

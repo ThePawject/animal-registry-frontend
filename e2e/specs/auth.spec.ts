@@ -16,12 +16,6 @@ import {
   createUserWithoutRole,
 } from '../support/users.ts'
 
-/**
- * Authentication and authorisation: who gets into the panel, what they see
- * there and what happens when a session ends. Auth0 is replaced by the mock
- * identity provider, which signs in whoever the test describes.
- */
-
 test.describe('Signing in', () => {
   test.use({ signedIn: false })
 

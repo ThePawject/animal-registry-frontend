@@ -14,12 +14,6 @@ import {
 } from '../support/domain.ts'
 import { expect, test } from '../support/fixtures.ts'
 
-/**
- * The animal card at `/animal/:id`: the fact sheet, navigation to the other
- * tabs, the single-animal report and deleting the animal. The photo gallery
- * is covered in `animal-photos.spec.ts`.
- */
-
 test.describe('Animal card', () => {
   test('shows everything known about the animal', async ({
     api,

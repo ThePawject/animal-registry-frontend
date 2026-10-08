@@ -23,11 +23,6 @@ import {
 } from '../support/domain.ts'
 import { expect, test } from '../support/fixtures.ts'
 
-/**
- * Adding an animal at `/create`: the happy paths, the signature generator
- * and every validation rule of the form. Photos have their own spec.
- */
-
 test.describe('Adding an animal', () => {
   test.beforeEach(async ({ animalForm }) => {
     await animalForm.gotoCreate()

@@ -1,12 +1,6 @@
 import { Buffer } from 'node:buffer'
 import { deflateSync } from 'node:zlib'
 
-/**
- * In-memory upload fixtures. Generating files instead of committing binaries
- * keeps the repository clean and lets a test ask for exactly the file it
- * needs ("a 3:2 red photo", "an 11 MB document").
- */
-
 export type UploadFile = {
   name: string
   mimeType: string
@@ -45,7 +39,6 @@ function pngChunk(type: string, data: Buffer) {
   return Buffer.concat([length, typeAndData, checksum])
 }
 
-/** A valid, solid-colour PNG the backend can decode and convert to WebP. */
 export function pngImage(
   name: string,
   { color = COLORS.green as Rgb, width = 48, height = 32 } = {},
@@ -53,11 +46,11 @@ export function pngImage(
   const header = Buffer.alloc(13)
   header.writeUInt32BE(width, 0)
   header.writeUInt32BE(height, 4)
-  header.writeUInt8(8, 8) // bit depth
-  header.writeUInt8(2, 9) // colour type: RGB
+  header.writeUInt8(8, 8)
+  header.writeUInt8(2, 9)
 
   const row = Buffer.concat([
-    Buffer.from([0]), // filter: none
+    Buffer.from([0]),
     Buffer.alloc(width * 3, Buffer.from(color)),
   ])
   const pixels = Buffer.concat(Array.from({ length: height }, () => row))
@@ -74,7 +67,6 @@ export function pngImage(
   }
 }
 
-/** A minimal single-page PDF, enough for content-type and viewer checks. */
 export function pdfDocument(name: string, text = 'E2E document'): UploadFile {
   const body = [
     '%PDF-1.4',
@@ -88,12 +80,10 @@ export function pdfDocument(name: string, text = 'E2E document'): UploadFile {
   return { name, mimeType: 'application/pdf', buffer: Buffer.from(body) }
 }
 
-/** A file of a type the app must reject. */
 export function textFile(name: string, content = 'not allowed'): UploadFile {
   return { name, mimeType: 'text/plain', buffer: Buffer.from(content) }
 }
 
-/** Pads a file past a size limit without changing its type. */
 export function withSize(file: UploadFile, bytes: number): UploadFile {
   if (file.buffer.length >= bytes) return file
   return {

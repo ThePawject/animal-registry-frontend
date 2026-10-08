@@ -18,13 +18,6 @@ import {
 import { COLORS, pngImage } from '../support/files.ts'
 import { expect, test } from '../support/fixtures.ts'
 
-/**
- * The animal register at `/panel`: listing, searching, filtering and paging.
- *
- * Every test gets its own empty shelter, so row counts and page counts are
- * exact rather than "at least".
- */
-
 test.use({ shelter: 'isolated' })
 
 test.describe('Animal register', () => {
@@ -66,7 +59,6 @@ test.describe('Animal register', () => {
         birthDate: daysAgo(800),
         photos: [pngImage('portrait.png')],
       }),
-      // Signatures are numbered per species, so both animals are cats.
       { species: 'cat' },
     ])
 
@@ -151,7 +143,6 @@ test.describe('Animal register', () => {
     const animal = await api.createAnimal(buildAnimal())
     let release: () => void = () => undefined
     const held = new Promise<void>((resolve) => (release = resolve))
-    // Hold back only the search request; the app's initial load stays fast.
     await page.route(
       `${URLS.backend}/animals?*keyWordSearch=*`,
       async (route) => {
@@ -320,7 +311,6 @@ test.describe('Searching the register', () => {
     panel,
     page,
   }) => {
-    // Sessions start with the hint dismissed; bring a first-time user back.
     await panel.goto()
     await page.evaluate(
       (key) => localStorage.removeItem(key),

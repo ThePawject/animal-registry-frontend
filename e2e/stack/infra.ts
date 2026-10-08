@@ -10,15 +10,6 @@ import {
 } from '../config/env.ts'
 import { log, onShutdown } from './process.ts'
 
-/**
- * Owns the Docker side of the stack (SQL Server + Azurite).
- *
- * `docker compose up --wait` only returns once both containers report
- * healthy, and only then does this script open its health port. Everything
- * else in the stack waits for that port, so "port is open" really means
- * "the database accepts logins".
- */
-
 const composeEnv = {
   ...process.env,
   E2E_MSSQL_SA_PASSWORD: DATABASE.saPassword,

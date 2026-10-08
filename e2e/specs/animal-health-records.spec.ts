@@ -17,12 +17,6 @@ import {
 import { expect, test, toLocalBlobUrl } from '../support/fixtures.ts'
 import type { ApiClient, SeededAnimal } from '../support/api-client.ts'
 
-/**
- * Health records ("karty zdrowia") of an animal at
- * `/animal/:id/medical-records`: adding records with an optional document,
- * editing them inline (including the attachment), deleting and sorting.
- */
-
 test.describe('Health records', () => {
   let animal: SeededAnimal
 
@@ -233,7 +227,6 @@ test.describe('Editing and deleting health records', () => {
     await healthRecords.goto(animal.id)
   })
 
-  /** The record as the backend has it, looked up by its description. */
   const storedRecord = async (api: ApiClient, description: string) => {
     const { healthRecords } = await api.getAnimal(animal.id)
     const record = healthRecords.find(

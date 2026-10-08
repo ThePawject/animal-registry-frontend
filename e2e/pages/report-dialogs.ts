@@ -16,7 +16,6 @@ export const EVENT_REPORT_ERRORS = {
   customRangeInverted: 'Data początkowa nie może być późniejsza niż końcowa.',
 } as const
 
-/** "Raport zdarzeń": pick one or more periods and download a PDF. */
 export class EventReportDialog {
   readonly root: Locator
   readonly customStartDate: Locator
@@ -63,7 +62,6 @@ export const DATE_RANGE_REPORT_ERRORS = {
   endNotAfterStart: 'Data końcowa musi być późniejsza niż data początkowa',
 } as const
 
-/** "Filtruj raport": animals report for a date range, species and event types. */
 export class DateRangeReportDialog {
   readonly root: Locator
   readonly startDateField: FormFieldLocator
@@ -75,9 +73,6 @@ export class DateRangeReportDialog {
   private readonly title: Locator
 
   constructor(readonly page: Page) {
-    // Found by markup rather than by role: the dialog has no accessible
-    // title, and while one of its multi-selects is open the rest of the
-    // dialog is hidden from the accessibility tree.
     this.root = page
       .locator('[data-slot="dialog-content"]')
       .filter({ hasText: 'Filtruj raport' })
@@ -97,12 +92,9 @@ export class DateRangeReportDialog {
     await this.endDateField.input.fill(endDate)
   }
 
-  /** Adds values to one of the multi-select chip fields. */
   async pick(field: FormFieldLocator, options: Array<string>) {
     const suggestions = this.page.getByRole('listbox')
 
-    // The suggestion list stays open between picks and covers the input, so
-    // it is opened once and every option is chosen from the same list.
     await field.input.click()
     for (const option of options) {
       await this.page.getByRole('option', { name: option, exact: true }).click()
@@ -111,7 +103,6 @@ export class DateRangeReportDialog {
       })
     }
 
-    // Clicking elsewhere in the dialog closes the list, as a user would.
     await this.title.click()
     await expect(suggestions).toBeHidden({ timeout: TIMEOUTS.ui })
   }

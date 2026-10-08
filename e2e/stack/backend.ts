@@ -14,15 +14,6 @@ import {
 } from '../config/env.ts'
 import { log, onShutdown, waitForHttp } from './process.ts'
 
-/**
- * Runs the real backend from the sibling repository against the disposable
- * containers and the mock identity provider.
- *
- * Nothing in the backend repository is modified: every difference from a
- * regular dev run is passed in as configuration through environment
- * variables, which ASP.NET Core layers on top of `appsettings*.json`.
- */
-
 const projectDir = path.join(BACKEND_DIR, 'AnimalRegistry')
 
 const backendEnv: NodeJS.ProcessEnv = {
@@ -31,13 +22,8 @@ const backendEnv: NodeJS.ProcessEnv = {
   ASPNETCORE_URLS: URLS.backend,
   DOTNET_NOLOGO: '1',
   DOTNET_CLI_TELEMETRY_OPTOUT: '1',
-  // The backend treats NuGet vulnerability advisories as build errors. That
-  // gate belongs to the backend's own pipeline: a newly published advisory
-  // must not stop the UI from being tested.
   NuGetAudit: 'false',
 
-  // Development logging prints every SQL statement; keep the test output
-  // readable and only surface startup messages, warnings and errors.
   Logging__LogLevel__Default: 'Warning',
   'Logging__LogLevel__Microsoft.Hosting.Lifetime': 'Information',
   'Logging__LogLevel__Microsoft.EntityFrameworkCore': 'Error',
@@ -60,11 +46,8 @@ const backendEnv: NodeJS.ProcessEnv = {
   BlobStorage__ContainerName: BLOB.containerName,
   BlobStorage__AccountName: BLOB.accountName,
 
-  // The API validates tokens against whatever issuer it is pointed at, so
-  // pointing it at the mock identity provider is all it takes.
   Auth0__Domain: AUTH.issuer,
   Auth0__Audience: AUTH.audience,
-  // The mock issuer is plain http on localhost.
   Authentication__Schemes__Bearer__RequireHttpsMetadata: 'false',
 
   Cors__AllowedOrigins__0: URLS.frontend,

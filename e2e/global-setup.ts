@@ -17,16 +17,6 @@ import { pdfDocument, pngImage } from './support/files.ts'
 import { retry } from './support/retry.ts'
 import { createShelterUser } from './support/users.ts'
 
-/**
- * Warms the stack up before the first test runs.
- *
- * A cold dev stack is slow in ways that look like flakiness: Vite compiles
- * each route on first request and may reload the page after discovering new
- * dependencies, the API JIT-compiles every endpoint on first hit and the PDF
- * renderer loads its fonts on the first report. Paying for all of that once,
- * here, with a generous budget, keeps it out of the tests' timings.
- */
-
 const log = (message: string) =>
   process.stdout.write(`[e2e:warmup] ${message}\n`)
 
@@ -39,7 +29,6 @@ async function waitForStack() {
   )
 }
 
-/** Hits every write and report endpoint once, as a throwaway shelter. */
 async function warmBackend() {
   const user = createShelterUser('warmup')
   const api = await ApiClient.forUser(user)
@@ -67,7 +56,6 @@ async function warmBackend() {
   }
 }
 
-/** Opens every route once so Vite has compiled and pre-bundled everything. */
 async function warmFrontend(
   seed: Awaited<ReturnType<typeof warmBackend>>,
   attempt: number,
@@ -109,8 +97,6 @@ export default async function globalSetup() {
   log('warming up the backend')
   const seed = await warmBackend()
 
-  // Vite may reload the page mid-way the first time through; a second pass
-  // then finds everything compiled.
   await retry((attempt) => warmFrontend(seed, attempt), {
     description: 'Warming up the frontend',
     timeoutMs: TIMEOUTS.stackStart,
