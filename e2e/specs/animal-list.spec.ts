@@ -180,6 +180,21 @@ test.describe('Animal register', () => {
     await expect(panel.statusFilter).toHaveText('Wszystkie statusy')
   })
 
+  test('falls back to the last page when the address points past it', async ({
+    api,
+    panel,
+    page,
+  }) => {
+    const animal = await api.createAnimal(buildAnimal())
+
+    await page.goto(`${PanelPage.path}?page=3`)
+
+    await panel.expectPage(1, 1)
+    await panel.expectAnimals([animal.name!])
+    await expect(panel.nextPageButton).toBeDisabled()
+    await expect(panel.lastPageButton).toBeDisabled()
+  })
+
   test('the row action opens the animal card', async ({
     api,
     panel,

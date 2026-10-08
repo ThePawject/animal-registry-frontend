@@ -92,6 +92,14 @@ export const TIMEOUTS = {
   settle: 500,
 } as const
 
+function workersFromEnv(): number | string {
+  const raw = process.env.E2E_WORKERS
+  if (raw === undefined || raw === '') return 3
+  return /^\d+%$/.test(raw) ? raw : numberFromEnv('E2E_WORKERS', 3)
+}
+
+export const WORKERS = workersFromEnv()
+
 export const COMPOSE_PROJECT = stringFromEnv(
   'E2E_COMPOSE_PROJECT',
   'animal-registry-e2e',

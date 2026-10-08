@@ -60,6 +60,14 @@ async function main() {
     await compose(['down', '--volumes', '--remove-orphans'])
   })
 
+  server.on('error', (error) => {
+    process.stderr.write(`infra health server failed: ${error.message}\n`)
+    const cleanup = KEEP_INFRA
+      ? Promise.resolve()
+      : compose(['down', '--volumes', '--remove-orphans'])
+    cleanup.catch(() => undefined).finally(() => process.exit(1))
+  })
+
   server.listen(PORTS.infraHealth, () => {
     log('infra', `ready (health on port ${PORTS.infraHealth})`)
   })

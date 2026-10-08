@@ -1,4 +1,3 @@
-import process from 'node:process'
 import { defineConfig, devices } from '@playwright/test'
 import {
   AUTH,
@@ -10,11 +9,13 @@ import {
   PORTS,
   TIMEOUTS,
   URLS,
+  WORKERS,
 } from './e2e/config/env.ts'
 
 const stackScript = (name: string) => `node --import tsx e2e/stack/${name}.ts`
 
 const vite = 'node node_modules/vite/bin/vite.js'
+const frontendBuild = JSON.stringify(PATHS.frontendBuild)
 
 const gracefulShutdown = { signal: 'SIGTERM', timeout: 60_000 } as const
 
@@ -34,7 +35,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: IS_CI,
   retries: IS_CI ? 2 : 1,
-  workers: process.env.E2E_WORKERS ? Number(process.env.E2E_WORKERS) : 3,
+  workers: WORKERS,
 
   timeout: TIMEOUTS.test,
   expect: { timeout: TIMEOUTS.slow },
@@ -87,7 +88,7 @@ export default defineConfig({
     {
       ...webServerDefaults,
       name: 'frontend',
-      command: `${vite} build --outDir ${PATHS.frontendBuild} --emptyOutDir && ${vite} preview --outDir ${PATHS.frontendBuild} --port ${PORTS.frontend} --strictPort`,
+      command: `${vite} build --outDir ${frontendBuild} --emptyOutDir && ${vite} preview --outDir ${frontendBuild} --port ${PORTS.frontend} --strictPort`,
       url: HEALTH_URLS.frontend,
       reuseExistingServer: false,
       env: {

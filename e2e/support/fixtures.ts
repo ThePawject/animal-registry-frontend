@@ -117,10 +117,14 @@ export const test = base.extend<TestFixtures & Options, WorkerFixtures>({
   blobProxy: [
     async ({ context, blobStorage }, use) => {
       await context.route(BLOB_URL, async (route) => {
-        const response = await blobStorage.get(
-          toLocalBlobUrl(route.request().url()),
-        )
-        await route.fulfill({ response })
+        try {
+          const response = await blobStorage.get(
+            toLocalBlobUrl(route.request().url()),
+          )
+          await route.fulfill({ response })
+        } catch {
+          await route.abort().catch(() => undefined)
+        }
       })
       await context.route(PLACEHOLDER_IMAGE_URL, (route) =>
         route.fulfill({

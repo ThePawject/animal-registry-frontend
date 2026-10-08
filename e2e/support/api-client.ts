@@ -254,11 +254,18 @@ export class ApiClient {
           params,
         })
         if (!response.ok()) {
-          throw new Error(`report ${endpoint} answered ${response.status()}`)
+          throw new ApiError(
+            response.status(),
+            `report ${endpoint} answered ${response.status()}`,
+          )
         }
         return response.body()
       },
-      { description: `Fetching report ${endpoint}` },
+      {
+        description: `Fetching report ${endpoint}`,
+        shouldRetry: (error) =>
+          !(error instanceof ApiError) || error.status >= 500,
+      },
     )
   }
 

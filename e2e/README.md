@@ -131,7 +131,7 @@ a newer backend. The container images are pinned by digest in
 | Variable              | Effect                                           |
 | --------------------- | ------------------------------------------------ |
 | `E2E_BACKEND_DIR`     | location of the backend repository               |
-| `E2E_WORKERS`         | parallel workers (default 3)                     |
+| `E2E_WORKERS`         | parallel workers, a number or `50%` (default 3)  |
 | `E2E_SLOW_TIMEOUT_MS` | patience for a slow stack (default 30000)        |
 | `E2E_KEEP_INFRA=1`    | keep the containers and their data after the run |
 | `E2E_*_PORT`          | move a service to another port                   |
