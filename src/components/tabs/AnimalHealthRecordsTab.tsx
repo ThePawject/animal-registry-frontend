@@ -70,7 +70,6 @@ const sortByDocument: SortingFn<AnimalHealthRecord> = (rowA, rowB) => {
 const defaultEditFormData: Omit<AnimalHealthRecord, 'id'> = {
   occurredOn: new Date().toISOString().split('T')[0],
   description: '',
-  performedBy: '',
 }
 
 export default function AnimalHealthRecordsTab({
@@ -147,9 +146,6 @@ export default function AnimalHealthRecordsTab({
     form.setFieldValue('description', record.description, {
       dontValidate: true,
     })
-    form.setFieldValue('performedBy', record.performedBy || '', {
-      dontValidate: true,
-    })
   }
 
   const handleCancelEdit = () => {
@@ -160,7 +156,6 @@ export default function AnimalHealthRecordsTab({
     setEditError(null)
     form.setFieldValue('occurredOn', defaultEditFormData.occurredOn)
     form.setFieldValue('description', defaultEditFormData.description)
-    form.setFieldValue('performedBy', defaultEditFormData.performedBy)
   }
 
   const handleShowAddForm = () => {
@@ -172,9 +167,6 @@ export default function AnimalHealthRecordsTab({
       dontValidate: true,
     })
     form.setFieldValue('description', defaultEditFormData.description, {
-      dontValidate: true,
-    })
-    form.setFieldValue('performedBy', defaultEditFormData.performedBy, {
       dontValidate: true,
     })
     setShowAddForm(true)
