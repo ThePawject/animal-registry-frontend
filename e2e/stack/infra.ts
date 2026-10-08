@@ -41,10 +41,22 @@ function compose(args: Array<string>) {
   })
 }
 
-async function main() {
-  log('infra', 'starting SQL Server and Azurite containers')
-  await compose(['up', '--detach', '--wait', '--wait-timeout', '300'])
+async function removeContainers() {
+  if (KEEP_INFRA) {
+    log('infra', 'E2E_KEEP_INFRA=1, leaving containers running')
+    return
+  }
+  log('infra', 'removing containers')
+  await compose(['down', '--volumes', '--remove-orphans'])
+}
 
+async function failAndCleanUp(message: string) {
+  process.stderr.write(`${message}\n`)
+  await removeContainers().catch(() => undefined)
+  process.exit(1)
+}
+
+async function main() {
   const server = createServer((_request, response) => {
     response.writeHead(200, { 'Content-Type': 'application/json' })
     response.end(JSON.stringify({ status: 'ready' }))
@@ -52,20 +64,14 @@ async function main() {
 
   onShutdown(async () => {
     server.close()
-    if (KEEP_INFRA) {
-      log('infra', 'E2E_KEEP_INFRA=1, leaving containers running')
-      return
-    }
-    log('infra', 'removing containers')
-    await compose(['down', '--volumes', '--remove-orphans'])
+    await removeContainers()
   })
 
+  log('infra', 'starting SQL Server and Azurite containers')
+  await compose(['up', '--detach', '--wait', '--wait-timeout', '300'])
+
   server.on('error', (error) => {
-    process.stderr.write(`infra health server failed: ${error.message}\n`)
-    const cleanup = KEEP_INFRA
-      ? Promise.resolve()
-      : compose(['down', '--volumes', '--remove-orphans'])
-    cleanup.catch(() => undefined).finally(() => process.exit(1))
+    void failAndCleanUp(`infra health server failed: ${error.message}`)
   })
 
   server.listen(PORTS.infraHealth, () => {
@@ -73,7 +79,6 @@ async function main() {
   })
 }
 
-main().catch((error: unknown) => {
-  process.stderr.write(`${error instanceof Error ? error.message : error}\n`)
-  process.exit(1)
-})
+main().catch((error: unknown) =>
+  failAndCleanUp(error instanceof Error ? error.message : String(error)),
+)

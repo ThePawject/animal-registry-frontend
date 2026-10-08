@@ -92,15 +92,17 @@ async function main() {
     )
     process.exit(1)
   })
+  let stopping = false
   child.on('exit', (code, signal) => {
     log('backend', `dotnet exited (code ${code}, signal ${signal})`)
-    process.exit(code ?? 1)
+    process.exit(stopping ? 0 : (code ?? 1))
   })
 
   onShutdown(
     () =>
       new Promise<void>((resolve) => {
         if (child.exitCode !== null) return resolve()
+        stopping = true
         child.once('exit', () => resolve())
         child.kill('SIGTERM')
       }),

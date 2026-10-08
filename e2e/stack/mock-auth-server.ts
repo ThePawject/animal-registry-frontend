@@ -186,14 +186,17 @@ function assertAppUrl(value: string | null, parameter: string) {
   return value
 }
 
+const inlineJson = (value: unknown) =>
+  JSON.stringify(value).replace(/</g, '\\u003c')
+
 function webMessagePage(targetOrigin: string, payload: Record<string, string>) {
   return `<!doctype html>
 <title>Authorization response</title>
 <script>
   const target = window.opener || window.parent;
   target.postMessage(
-    { type: 'authorization_response', response: ${JSON.stringify(payload)} },
-    ${JSON.stringify(targetOrigin)},
+    { type: 'authorization_response', response: ${inlineJson(payload)} },
+    ${inlineJson(targetOrigin)},
   );
 </script>`
 }
@@ -391,7 +394,7 @@ onShutdown(() => {
   server.close()
 })
 
-server.listen(PORTS.auth, () => {
+server.listen(PORTS.auth, 'localhost', () => {
   log('auth', `mock identity provider ready on ${URLS.auth}`)
 })
 

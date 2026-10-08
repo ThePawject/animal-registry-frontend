@@ -56,7 +56,9 @@ export class AnimalDetailsPage {
       .locator('[data-slot="card"]')
       .filter({ hasText: 'Galeria Zdjęć' })
     this.galleryPreview = this.gallery.getByAltText(/ podgląd$/)
-    this.galleryThumbnails = this.gallery.getByAltText(/ zdjęcie \d+$/)
+    this.galleryThumbnails = this.gallery
+      .getByRole('button')
+      .filter({ has: page.getByAltText(/ zdjęcie \d+$/) })
 
     this.deleteDialog = page
       .getByRole('dialog')

@@ -378,7 +378,7 @@ test.describe('Photo gallery on the animal card', () => {
     )
     await expectImageLoaded(animalDetails.galleryPreview)
     await expect(animalDetails.galleryThumbnails.nth(2)).toHaveAttribute(
-      'aria-current',
+      'aria-pressed',
       'true',
     )
   })
@@ -399,9 +399,9 @@ test.describe('Photo gallery on the animal card', () => {
     await animalDetails.goto(animal.id)
 
     await expect(animalDetails.galleryThumbnails).toHaveCount(6)
-    const alts = await animalDetails.galleryThumbnails.evaluateAll((images) =>
-      images.map((image) => image.getAttribute('alt')),
-    )
+    const alts = await animalDetails.galleryThumbnails
+      .locator('img')
+      .evaluateAll((images) => images.map((image) => image.getAttribute('alt')))
     expect(new Set(alts).size).toBe(6)
 
     await animalDetails.galleryThumbnails.nth(5).click()
@@ -410,7 +410,7 @@ test.describe('Photo gallery on the animal card', () => {
       photos[5].url,
     )
     await expect(animalDetails.galleryThumbnails.nth(5)).toHaveAttribute(
-      'aria-current',
+      'aria-pressed',
       'true',
     )
   })
