@@ -42,7 +42,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Card } from '@/components/ui/card'
-import { PINNED_COLUMN_ID, cn, pinnedCellClass } from '@/lib/utils'
+import {
+  PINNED_COLUMN_ID,
+  cn,
+  isFutureDate,
+  pinnedCellClass,
+  todayIsoDate,
+} from '@/lib/utils'
 import { useHorizontalOverflow } from '@/hooks/useHorizontalOverflow'
 
 interface AnimalEventsTabProps {
@@ -56,7 +62,7 @@ const sortByEventType = sortByMappedText<AnimalEvent>(ANIMAL_EVENT_TYPE_MAP)
 
 const defaultEditFormData: Omit<AnimalEvent, 'id'> = {
   type: 1,
-  occurredOn: new Date().toISOString().split('T')[0],
+  occurredOn: todayIsoDate(),
   description: '',
 }
 
@@ -112,14 +118,14 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
   const handleCancelEdit = () => {
     setEditingEventId(null)
     form.setFieldValue('type', defaultEditFormData.type)
-    form.setFieldValue('occurredOn', defaultEditFormData.occurredOn)
+    form.setFieldValue('occurredOn', todayIsoDate())
     form.setFieldValue('description', defaultEditFormData.description)
   }
 
   const handleShowAddForm = () => {
     setEditingEventId(null)
     form.setFieldValue('type', defaultEditFormData.type, { dontValidate: true })
-    form.setFieldValue('occurredOn', defaultEditFormData.occurredOn, {
+    form.setFieldValue('occurredOn', todayIsoDate(), {
       dontValidate: true,
     })
     form.setFieldValue('description', defaultEditFormData.description, {
@@ -185,9 +191,7 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
             validators={{
               onChange: ({ value }) => {
                 if (!value) return 'Data wydarzenia jest wymagana'
-                const eventDate = new Date(value)
-                const today = new Date()
-                if (eventDate > today)
+                if (isFutureDate(value))
                   return 'Data wydarzenia nie może być z przyszłości'
                 return undefined
               },

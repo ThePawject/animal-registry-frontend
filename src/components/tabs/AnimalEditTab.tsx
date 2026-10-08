@@ -26,7 +26,7 @@ import { useAnimalSignature, useEditAnimal } from '@/api/animals/queries'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { cn, genericErrorMessage, rotateFile } from '@/lib/utils'
+import { cn, genericErrorMessage, isFutureDate, rotateFile } from '@/lib/utils'
 import {
   Select,
   SelectContent,
@@ -599,9 +599,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
               validators={{
                 onChange: ({ value }) => {
                   if (!value) return undefined
-                  const birthDate = new Date(value)
-                  const today = new Date()
-                  if (birthDate > today)
+                  if (isFutureDate(value))
                     return 'Data urodzenia nie może być z przyszłości'
                   return undefined
                 },
@@ -636,6 +634,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                   return (
                     <button
                       key={idx}
+                      aria-pressed={idx === displayedImageId}
                       onClick={() => {
                         setDisplayedImageId(idx)
                         return
@@ -656,6 +655,8 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 24 24"
                           fill="currentColor"
+                          role="img"
+                          aria-label="Zdjęcie główne"
                           className="size-6 text-yellow-400 absolute top-0.5 right-0.5 opacity-80"
                         >
                           <path
@@ -865,7 +866,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
           </Button>
         </div>
         {error && !isSignatureError && (
-          <p className="text-sm text-red-500 font-medium p-4">
+          <p role="alert" className="text-sm text-red-500 font-medium p-4">
             {genericErrorMessage}
           </p>
         )}

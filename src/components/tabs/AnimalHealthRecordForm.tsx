@@ -12,7 +12,12 @@ import { useAddAnimalHealthRecord } from '@/api/animals/queries'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { cn, genericErrorMessage } from '@/lib/utils'
+import {
+  cn,
+  genericErrorMessage,
+  isFutureDate,
+  todayIsoDate,
+} from '@/lib/utils'
 
 interface FormFieldProps {
   icon: React.ElementType
@@ -32,7 +37,11 @@ function FormField({ icon: Icon, label, children, error }: FormFieldProps) {
           {label}
         </Label>
         {children}
-        {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
+        {error && (
+          <p role="alert" className="text-sm text-red-500 font-medium">
+            {error}
+          </p>
+        )}
       </div>
     </div>
   )
@@ -45,7 +54,7 @@ type AnimalHealthRecordFormData = {
 }
 
 const defaultHealthRecordFormData: AnimalHealthRecordFormData = {
-  occurredOn: new Date().toISOString().split('T')[0],
+  occurredOn: todayIsoDate(),
   description: '',
   document: null,
 }
@@ -66,7 +75,10 @@ export default function AnimalHealthRecordForm({
   } = useAddAnimalHealthRecord()
 
   const form = useForm({
-    defaultValues: defaultHealthRecordFormData,
+    defaultValues: {
+      ...defaultHealthRecordFormData,
+      occurredOn: todayIsoDate(),
+    },
     onSubmit: async ({ value }) => {
       const recordData: Omit<AnimalHealthRecord, 'id'> = {
         occurredOn: value.occurredOn,
@@ -110,9 +122,8 @@ export default function AnimalHealthRecordForm({
             validators={{
               onChange: ({ value }) => {
                 if (!value) return 'Data jest wymagana'
-                const recordDate = new Date(value)
-                const today = new Date()
-                if (recordDate > today) return 'Data nie może być z przyszłości'
+                if (isFutureDate(value))
+                  return 'Data nie może być z przyszłości'
                 return undefined
               },
             }}
@@ -259,7 +270,7 @@ export default function AnimalHealthRecordForm({
           </Button>
         </div>
         {error && (
-          <p className="text-sm text-red-500 font-medium p-4">
+          <p role="alert" className="text-sm text-red-500 font-medium p-4">
             {genericErrorMessage}
           </p>
         )}

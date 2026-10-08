@@ -54,7 +54,11 @@ function FormField({ icon: Icon, label, children, error }: FormFieldProps) {
           {label}
         </Label>
         {children}
-        {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
+        {error && (
+          <p role="alert" className="text-sm text-red-500 font-medium">
+            {error}
+          </p>
+        )}
       </div>
     </div>
   )
@@ -336,7 +340,10 @@ export default function DateRangeFilterModal({
                 </Button>
               </div>
               {error && (
-                <p className="text-sm text-red-500 font-medium p-4">
+                <p
+                  role="alert"
+                  className="text-sm text-red-500 font-medium p-4"
+                >
                   {genericErrorMessage}
                 </p>
               )}

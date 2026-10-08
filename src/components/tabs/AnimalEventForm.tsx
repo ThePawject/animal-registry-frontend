@@ -14,11 +14,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { genericErrorMessage } from '@/lib/utils'
+import { genericErrorMessage, isFutureDate, todayIsoDate } from '@/lib/utils'
 
 const defaultEventFormData: Omit<AnimalEvent, 'id'> = {
   type: 0,
-  occurredOn: new Date().toISOString().split('T')[0],
+  occurredOn: todayIsoDate(),
   description: '',
 }
 
@@ -34,7 +34,7 @@ export default function AnimalEventForm({
   const { mutateAsync: addEvent, isPending, error } = useAddAnimalEvent()
 
   const form = useForm({
-    defaultValues: defaultEventFormData,
+    defaultValues: { ...defaultEventFormData, occurredOn: todayIsoDate() },
     onSubmit: async ({ value }) => {
       const eventData: Omit<AnimalEvent, 'id'> = {
         type: value.type,
@@ -117,9 +117,7 @@ export default function AnimalEventForm({
             validators={{
               onChange: ({ value }) => {
                 if (!value) return 'Data wydarzenia jest wymagana'
-                const eventDate = new Date(value)
-                const today = new Date()
-                if (eventDate > today)
+                if (isFutureDate(value))
                   return 'Data wydarzenia nie może być z przyszłości'
                 return undefined
               },
@@ -194,7 +192,7 @@ export default function AnimalEventForm({
           </Button>
         </div>
         {error && (
-          <p className="text-sm text-red-500 font-medium p-4">
+          <p role="alert" className="text-sm text-red-500 font-medium p-4">
             {genericErrorMessage}
           </p>
         )}

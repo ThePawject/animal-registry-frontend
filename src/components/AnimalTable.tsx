@@ -499,7 +499,10 @@ function AnimalTable() {
               })
             }}
           >
-            <SelectTrigger className="w-full md:w-[180px] h-10 bg-white">
+            <SelectTrigger
+              aria-label="Gatunek"
+              className="w-full md:w-[180px] h-10 bg-white"
+            >
               <SelectValue placeholder="Wszystkie gatunki">
                 {search.species !== undefined
                   ? SPECIES_MAP[search.species]
@@ -526,7 +529,10 @@ function AnimalTable() {
               })
             }}
           >
-            <SelectTrigger className="w-full md:w-[200px] h-10 bg-white">
+            <SelectTrigger
+              aria-label="Status"
+              className="w-full md:w-[200px] h-10 bg-white"
+            >
               <SelectValue placeholder="Wszystkie statusy">
                 {search.isInShelter === undefined
                   ? 'Wszystkie statusy'
@@ -546,6 +552,7 @@ function AnimalTable() {
 
       <div
         ref={scrollRef}
+        aria-busy={isPending || isPlaceholderData}
         className={cn(
           'rounded-md border w-full overflow-x-auto transition-opacity',
           isPlaceholderData && 'opacity-60',
@@ -638,7 +645,10 @@ function AnimalTable() {
               window.scrollTo({ top: 0, behavior: 'instant' })
             }}
           >
-            <SelectTrigger className="w-[80px] bg-white">
+            <SelectTrigger
+              aria-label="Wierszy na stronę"
+              className="w-[80px] bg-white"
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -657,6 +667,7 @@ function AnimalTable() {
               variant="outline"
               size="sm"
               disabled={page === 1 || isPending || isPlaceholderData}
+              aria-label="Pierwsza strona"
               onClick={() => setSearch({ page: 1 })}
             >
               <ChevronFirst className="w-4 h-4" />
@@ -664,6 +675,7 @@ function AnimalTable() {
             <Button
               variant="outline"
               size="sm"
+              aria-label="Poprzednia strona"
               onClick={() => setSearch({ page: Math.max(1, page - 1) })}
               disabled={page === 1 || isPending || isPlaceholderData}
             >
@@ -672,6 +684,7 @@ function AnimalTable() {
             <Button
               variant="outline"
               size="sm"
+              aria-label="Następna strona"
               onClick={() => setSearch({ page: page + 1 })}
               disabled={page === totalPages || isPending || isPlaceholderData}
             >
@@ -680,6 +693,7 @@ function AnimalTable() {
             <Button
               variant="outline"
               size="sm"
+              aria-label="Ostatnia strona"
               onClick={() => setSearch({ page: totalPages })}
               disabled={page === totalPages || isPending || isPlaceholderData}
             >

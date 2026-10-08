@@ -154,7 +154,7 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
               />
               <InfoRow
                 label="Data dodania"
-                info={formatDate(animal.modifiedOn)}
+                info={formatDate(animal.createdOn)}
               />
             </div>
           </div>
@@ -197,24 +197,26 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
                         ? 'border-emerald-500 ring-2 ring-emerald-400'
                         : 'border-slate-300',
                     )}
+                    aria-current={selectedIdx === idx}
                     onClick={() => setSelectedIdx(idx)}
                   />
                 ))}
               </div>
             )}
-            {remainingUrls.length > 1 && (
+            {remainingUrls.length > 0 && (
               <div className="flex flex-col gap-4 items-center pr-2">
                 {remainingUrls.map((url, idx) => (
                   <img
                     key={idx}
                     src={url}
-                    alt={animal.name + ' zdjęcie ' + (idx + 1)}
+                    alt={animal.name + ' zdjęcie ' + (idx + 6)}
                     className={cn(
                       'w-20 h-20 object-cover rounded-md border cursor-pointer transition-all',
                       selectedIdx === idx + 5
                         ? 'border-emerald-500 ring-2 ring-emerald-400'
                         : 'border-slate-300',
                     )}
+                    aria-current={selectedIdx === idx + 5}
                     onClick={() => setSelectedIdx(idx + 5)}
                   />
                 ))}

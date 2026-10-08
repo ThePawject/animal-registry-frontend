@@ -46,7 +46,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Card } from '@/components/ui/card'
-import { PINNED_COLUMN_ID, cn, pinnedCellClass } from '@/lib/utils'
+import {
+  PINNED_COLUMN_ID,
+  cn,
+  isFutureDate,
+  pinnedCellClass,
+  todayIsoDate,
+} from '@/lib/utils'
 import { useHorizontalOverflow } from '@/hooks/useHorizontalOverflow'
 
 interface AnimalHealthRecordsTabProps {
@@ -68,7 +74,7 @@ const sortByDocument: SortingFn<AnimalHealthRecord> = (rowA, rowB) => {
 }
 
 const defaultEditFormData: Omit<AnimalHealthRecord, 'id'> = {
-  occurredOn: new Date().toISOString().split('T')[0],
+  occurredOn: todayIsoDate(),
   description: '',
 }
 
@@ -154,7 +160,7 @@ export default function AnimalHealthRecordsTab({
     setEditingFileError(null)
     setRemoveDocument(false)
     setEditError(null)
-    form.setFieldValue('occurredOn', defaultEditFormData.occurredOn)
+    form.setFieldValue('occurredOn', todayIsoDate())
     form.setFieldValue('description', defaultEditFormData.description)
   }
 
@@ -163,7 +169,7 @@ export default function AnimalHealthRecordsTab({
     setEditingFile(null)
     setEditingFileError(null)
     setRemoveDocument(false)
-    form.setFieldValue('occurredOn', defaultEditFormData.occurredOn, {
+    form.setFieldValue('occurredOn', todayIsoDate(), {
       dontValidate: true,
     })
     form.setFieldValue('description', defaultEditFormData.description, {
@@ -223,9 +229,8 @@ export default function AnimalHealthRecordsTab({
             validators={{
               onChange: ({ value }) => {
                 if (!value) return 'Data jest wymagana'
-                const recordDate = new Date(value)
-                const today = new Date()
-                if (recordDate > today) return 'Data nie może być z przyszłości'
+                if (isFutureDate(value))
+                  return 'Data nie może być z przyszłości'
                 return undefined
               },
             }}
@@ -374,7 +379,9 @@ export default function AnimalHealthRecordsTab({
             </label>
           )}
           {editingFileError && (
-            <p className="text-xs text-red-500">{editingFileError}</p>
+            <p role="alert" className="text-xs text-red-500">
+              {editingFileError}
+            </p>
           )}
         </div>
       )
@@ -481,7 +488,9 @@ export default function AnimalHealthRecordsTab({
                   </Button>
                 </div>
                 {editError && (
-                  <p className="text-xs text-red-500">{editError}</p>
+                  <p role="alert" className="text-xs text-red-500">
+                    {editError}
+                  </p>
                 )}
               </div>
             )
