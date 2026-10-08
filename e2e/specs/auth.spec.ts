@@ -10,6 +10,7 @@ import {
 } from '../support/auth-session.ts'
 import { buildAnimal } from '../support/data.ts'
 import { expect, test } from '../support/fixtures.ts'
+import { waitForBackendResponse } from '../support/network.ts'
 import {
   createColleagueOf,
   createShelterUser,
@@ -152,6 +153,7 @@ test.describe('Shelter isolation', () => {
     user,
     panel,
     auth,
+    animalDetails,
     page,
   }) => {
     const ownAnimal = await api.createAnimal(buildAnimal())
@@ -173,8 +175,15 @@ test.describe('Shelter isolation', () => {
     await test.step('its card cannot be opened by guessing the address', async () => {
       expect(await api.getAnimalStatus(foreignAnimal.id)).toBe(404)
 
+      const lookup = waitForBackendResponse(page, {
+        method: 'GET',
+        pathname: `/animals/${foreignAnimal.id}`,
+      })
       await page.goto(AnimalDetailsPage.path(foreignAnimal.id))
+
+      expect((await lookup).status()).toBe(404)
       await expect(page.getByText(foreignAnimal.name!)).toBeHidden()
+      await expect(animalDetails.editLink).toBeHidden()
     })
   })
 

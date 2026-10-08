@@ -1,6 +1,5 @@
-import { URLS } from '../config/env.ts'
 import { EVENT_COLUMN, RECORD_ERRORS } from '../pages/animal-records.page.ts'
-import { chooseOption, listOptions } from '../pages/components.ts'
+import { chooseOption, expectOptions } from '../pages/components.ts'
 import {
   asTableDate,
   buildAnimal,
@@ -15,6 +14,7 @@ import {
   SHELTER_STATUS_LABEL,
 } from '../support/domain.ts'
 import { expect, test } from '../support/fixtures.ts'
+import { failBackendRequests } from '../support/network.ts'
 import { createColleagueOf } from '../support/users.ts'
 import type { SeededAnimal } from '../support/api-client.ts'
 
@@ -78,7 +78,8 @@ test.describe('Animal events', () => {
 
     await expect(events.dateField.input).toHaveValue(daysAgo(0))
     await expect(events.typeField.select).toHaveText(EVENT_TYPE_PLACEHOLDER)
-    expect(await listOptions(events.typeField.select)).toEqual(
+    await expectOptions(
+      events.typeField.select,
       Object.values(EVENT_TYPE_LABEL),
     )
   })
@@ -146,13 +147,10 @@ test.describe('Animal events', () => {
     events,
     page,
   }) => {
-    await page.route(`${URLS.backend}/animals/${animal.id}/events`, (route) =>
-      route.fulfill({
-        status: 500,
-        headers: { 'Access-Control-Allow-Origin': URLS.frontend },
-        body: 'boom',
-      }),
-    )
+    await failBackendRequests(page, {
+      method: 'POST',
+      pathname: `/animals/${animal.id}/events`,
+    })
     await events.goto(animal.id)
     await events.openAddForm()
     await events.fillAddForm({ type: 'walk', description: 'Nie zapisze sie' })
@@ -321,7 +319,7 @@ test.describe('Sorting events', () => {
 
     await test.step('default: newest first', async () => {
       await events.expectSortedBy('Data wydarzenia', 'descending')
-      expect(await events.columnValues(EVENT_COLUMN.description)).toEqual([
+      await events.expectColumn(EVENT_COLUMN.description, [
         'najnowsze',
         'srodkowe',
         'najstarsze',
@@ -330,7 +328,7 @@ test.describe('Sorting events', () => {
 
     await test.step('by date, oldest first', async () => {
       await events.sortBy('Data wydarzenia', 'ascending')
-      expect(await events.columnValues(EVENT_COLUMN.description)).toEqual([
+      await events.expectColumn(EVENT_COLUMN.description, [
         'najstarsze',
         'srodkowe',
         'najnowsze',
@@ -340,14 +338,14 @@ test.describe('Sorting events', () => {
     await test.step('by type, alphabetically', async () => {
       await events.sortBy('Typ wydarzenia', 'ascending')
       await events.expectSortedBy('Data wydarzenia', 'none')
-      expect(await events.columnValues(EVENT_COLUMN.type)).toEqual([
+      await events.expectColumn(EVENT_COLUMN.type, [
         EVENT_TYPE_LABEL.deworming,
         EVENT_TYPE_LABEL.walk,
         EVENT_TYPE_LABEL.weighing,
       ])
 
       await events.sortBy('Typ wydarzenia', 'descending')
-      expect(await events.columnValues(EVENT_COLUMN.type)).toEqual([
+      await events.expectColumn(EVENT_COLUMN.type, [
         EVENT_TYPE_LABEL.weighing,
         EVENT_TYPE_LABEL.walk,
         EVENT_TYPE_LABEL.deworming,
@@ -387,13 +385,13 @@ test.describe('Events of a shared shelter', () => {
     ).toHaveText(last.user.email)
 
     await events.sortBy('Wykonane przez', 'ascending')
-    expect(await events.columnValues(EVENT_COLUMN.performedBy)).toEqual([
+    await events.expectColumn(EVENT_COLUMN.performedBy, [
       first.user.email,
       last.user.email,
     ])
 
     await events.sortBy('Wykonane przez', 'descending')
-    expect(await events.columnValues(EVENT_COLUMN.performedBy)).toEqual([
+    await events.expectColumn(EVENT_COLUMN.performedBy, [
       last.user.email,
       first.user.email,
     ])

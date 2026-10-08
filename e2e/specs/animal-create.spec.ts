@@ -1,4 +1,3 @@
-import { URLS } from '../config/env.ts'
 import {
   ANIMAL_FORM_ERRORS,
   AnimalFormPage,
@@ -22,6 +21,12 @@ import {
   SPECIES_LABEL,
 } from '../support/domain.ts'
 import { expect, test } from '../support/fixtures.ts'
+import {
+  failBackendRequests,
+  forbidBackendRequests,
+} from '../support/network.ts'
+
+const CREATE_ANIMAL = { method: 'POST', pathname: '/animals' } as const
 
 test.describe('Adding an animal', () => {
   test.beforeEach(async ({ animalForm }) => {
@@ -239,6 +244,8 @@ test.describe('Animal form validation', () => {
   })
 
   test('species and signature are required', async ({ animalForm, page }) => {
+    const backend = await forbidBackendRequests(page, CREATE_ANIMAL)
+
     await animalForm.submitCreate()
 
     await expect(animalForm.speciesField.error).toHaveText(
@@ -248,6 +255,7 @@ test.describe('Animal form validation', () => {
       ANIMAL_FORM_ERRORS.signatureRequired,
     )
     await expect(page).toHaveURL(new RegExp(`${AnimalFormPage.createPath}/?$`))
+    await backend.expectNoneSent()
 
     await test.step('errors clear once the fields are filled', async () => {
       await animalForm.selectSpecies('dog')
@@ -293,13 +301,13 @@ test.describe('Animal form validation', () => {
     await expect(animalForm.marksField.error).toBeHidden()
   })
 
-  test('birth date cannot be in the future', async ({
-    animalForm,
-    api,
-    page,
-  }) => {
-    const name = unique('Przyszlosc')
-    await animalForm.fill({ name, species: 'dog', birthDate: tomorrow() })
+  test('birth date cannot be in the future', async ({ animalForm, page }) => {
+    const backend = await forbidBackendRequests(page, CREATE_ANIMAL)
+    await animalForm.fill({
+      name: unique('Przyszlosc'),
+      species: 'dog',
+      birthDate: tomorrow(),
+    })
     await animalForm.generateSignature()
 
     await expect(animalForm.birthDateField.error).toHaveText(
@@ -311,7 +319,7 @@ test.describe('Animal form validation', () => {
       await expect(page).toHaveURL(
         new RegExp(`${AnimalFormPage.createPath}/?$`),
       )
-      expect((await api.listAnimals(name)).totalCount).toBe(0)
+      await backend.expectNoneSent()
     })
 
     await test.step('today is accepted', async () => {
@@ -358,15 +366,7 @@ test.describe('Animal form validation', () => {
     page,
   }) => {
     const name = unique('Awaria')
-    await page.route(`${URLS.backend}/animals`, (route) =>
-      route.request().method() === 'POST'
-        ? route.fulfill({
-            status: 500,
-            headers: { 'Access-Control-Allow-Origin': URLS.frontend },
-            body: 'boom',
-          })
-        : route.fallback(),
-    )
+    await failBackendRequests(page, CREATE_ANIMAL)
 
     await animalForm.fill({ name, species: 'dog' })
     await animalForm.generateSignature()

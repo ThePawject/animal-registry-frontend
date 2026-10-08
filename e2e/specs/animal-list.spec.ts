@@ -1,6 +1,8 @@
 import { URLS } from '../config/env.ts'
 import { AnimalFormPage } from '../pages/animal-form.page.ts'
+import { expectImageLoaded } from '../pages/components.ts'
 import { ANIMAL_TABLE_COLUMNS, PanelPage } from '../pages/panel.page.ts'
+import { mainPhotoOf } from '../support/api-client.ts'
 import { SEARCH_INFO_DISMISSED_KEY } from '../support/auth-session.ts'
 import {
   asRegisterDate,
@@ -68,7 +70,7 @@ test.describe('Animal register', () => {
       '',
       ...ANIMAL_TABLE_COLUMNS,
     ])
-    expect(await panel.columnValues('Oznaczenie')).toEqual([
+    await panel.expectColumn('Oznaczenie', [
       minimal.signature,
       complete.signature,
     ])
@@ -87,11 +89,7 @@ test.describe('Animal register', () => {
         SHELTER_STATUS_LABEL.inShelter,
       )
       await expect(row.photo).toHaveAttribute('alt', complete.name!)
-      await expect
-        .poll(() =>
-          row.photo.evaluate((image: HTMLImageElement) => image.naturalWidth),
-        )
-        .toBeGreaterThan(0)
+      await expectImageLoaded(row.photo)
     })
 
     await test.step('an animal with only the required data', async () => {
@@ -581,16 +579,14 @@ test.describe('Register photos', () => {
       }),
     )
     const stored = await api.getAnimal(animal.id)
-    const mainPhoto = stored.photos.find(
-      (photo) => photo.id === stored.mainPhotoId,
-    )
+    const mainPhoto = mainPhotoOf(stored)
 
     await panel.goto()
 
-    expect(mainPhoto?.fileName).toContain('main')
+    expect(mainPhoto.fileName).toContain('main')
     await expect(panel.row(animal.name!).photo).toHaveAttribute(
       'src',
-      mainPhoto!.url,
+      mainPhoto.url,
     )
     await expect(page.locator('table img')).toHaveCount(1)
   })

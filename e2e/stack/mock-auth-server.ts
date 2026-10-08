@@ -226,6 +226,8 @@ function loginPage(query: URLSearchParams) {
       ${hidden}
       <label for="email">Email</label>
       <input id="email" name="e2e_email" type="email" required autofocus>
+      <label for="user-id">User id (optional)</label>
+      <input id="user-id" name="e2e_id" type="text">
       <label for="roles">Roles (comma separated)</label>
       <input id="roles" name="e2e_roles" type="text" placeholder="${AUTH.shelterRolePrefix}My_Shelter">
       <button type="submit">Sign in</button>
@@ -261,6 +263,7 @@ function handleAuthorizeComplete(url: URL, response: ServerResponse) {
     identity: parseIdentity(
       query.get('e2e_email') ?? '',
       query.get('e2e_roles') ?? '',
+      query.get('e2e_id') ?? undefined,
     ),
     audience: query.get('audience') ?? AUTH.audience,
     scope: query.get('scope') ?? 'openid',

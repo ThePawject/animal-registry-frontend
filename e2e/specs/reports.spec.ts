@@ -1,51 +1,53 @@
-import { URLS } from '../config/env.ts'
 import { captureDownload, expectPdfDownload } from '../pages/components.ts'
 import {
   DATE_RANGE_REPORT_ERRORS,
   EVENT_REPORT_ERRORS,
 } from '../pages/report-dialogs.ts'
-import { buildAnimal, buildAnimals, daysAgo } from '../support/data.ts'
+import { buildAnimal, buildAnimals, daysAgo, unique } from '../support/data.ts'
 import {
   EVENT_TYPE,
+  EVENT_TYPE_LABEL,
   GENERIC_ERROR_MESSAGE,
   SPECIES,
 } from '../support/domain.ts'
 import { expect, test } from '../support/fixtures.ts'
-import type { Page, Request } from '@playwright/test'
+import {
+  failBackendRequests,
+  forbidBackendRequests,
+  queryValues,
+  waitForBackendRequest,
+} from '../support/network.ts'
 
 test.use({ shelter: 'isolated' })
 
-function waitForReportRequest(page: Page, endpoint: string) {
-  return page.waitForRequest(
-    (request) => new URL(request.url()).pathname === `/reports/${endpoint}`,
-  )
-}
-
-function queryValues(request: Request, key: string) {
-  const params = new URL(request.url()).searchParams
-  return [...params.getAll(key), ...params.getAll(`${key}[]`)]
-}
-
-async function failReport(page: Page, endpoint: string) {
-  await page.route(`${URLS.backend}/reports/${endpoint}*`, (route) =>
-    route.fulfill({
-      status: 500,
-      headers: { 'Access-Control-Allow-Origin': URLS.frontend },
-      body: 'boom',
-    }),
-  )
-}
+const REPORT = {
+  selected: { method: 'GET', pathname: '/reports/animals/selected' },
+  events: { method: 'GET', pathname: '/reports/events' },
+  dateRange: { method: 'GET', pathname: '/reports/animals/date-range' },
+} as const
 
 test.describe('Report of all animals', () => {
-  test('downloads the full register as a PDF', async ({ api, panel, page }) => {
-    await api.createAnimals([buildAnimal(), buildAnimal({ species: 'cat' })])
+  test('downloads the full register as a PDF', async ({
+    api,
+    panel,
+    page,
+    user,
+  }) => {
+    const [dog, cat] = await api.createAnimals([
+      buildAnimal(),
+      buildAnimal({ species: 'cat' }),
+    ])
     await panel.goto()
 
     const download = await captureDownload(page, () =>
       panel.allAnimalsReportButton.click(),
     )
 
-    await expectPdfDownload(download)
+    const text = await expectPdfDownload(download)
+    expect(text).toContain(user.shelterId)
+    expect(text).toContain(dog.name)
+    expect(text).toContain(cat.name)
+    expect(text).toContain(dog.signature)
     await expect(panel.allAnimalsReportButton).toBeEnabled()
     await expect(panel.allAnimalsReportButton).toHaveText(
       'Raport wszystkie zwierzeta',
@@ -96,7 +98,7 @@ test.describe('Report of selected animals', () => {
   })
 
   test('covers exactly the selected animals', async ({ api, panel, page }) => {
-    const [first, , third] = await api.createAnimals([
+    const [first, skipped, third] = await api.createAnimals([
       buildAnimal(),
       buildAnimal(),
       buildAnimal(),
@@ -105,12 +107,15 @@ test.describe('Report of selected animals', () => {
     await panel.row(first.name!).checkbox.check()
     await panel.row(third.name!).checkbox.check()
 
-    const reportRequest = waitForReportRequest(page, 'animals/selected')
+    const reportRequest = waitForBackendRequest(page, REPORT.selected)
     const download = await captureDownload(page, () =>
       panel.selectedAnimalsReportButton.click(),
     )
 
-    await expectPdfDownload(download)
+    const text = await expectPdfDownload(download)
+    expect(text).toContain(first.name)
+    expect(text).toContain(third.name)
+    expect(text).not.toContain(skipped.name)
     expect(queryValues(await reportRequest, 'ids').sort()).toEqual(
       [first.id, third.id].sort(),
     )
@@ -121,7 +126,7 @@ test.describe('Report of selected animals', () => {
     panel,
     page,
   }) => {
-    const animals = await api.createAnimals(buildAnimals(12, 'Wybor'))
+    const animals = await api.createAnimals(buildAnimals(12, unique('Wybor')))
     const onFirstPage = animals.at(-1)!
     const onSecondPage = animals[0]
 
@@ -135,24 +140,31 @@ test.describe('Report of selected animals', () => {
       'Raport z wybranych zwierzat (2)',
     )
 
-    const reportRequest = waitForReportRequest(page, 'animals/selected')
     const download = await captureDownload(page, () =>
       panel.selectedAnimalsReportButton.click(),
     )
-    await expectPdfDownload(download)
-    expect(queryValues(await reportRequest, 'ids').sort()).toEqual(
-      [onFirstPage.id, onSecondPage.id].sort(),
-    )
+    const text = await expectPdfDownload(download)
+    expect(text).toContain(onFirstPage.name)
+    expect(text).toContain(onSecondPage.name)
+    expect(text).not.toContain(animals[5].name)
   })
 })
 
 test.describe('Event report', () => {
   test.beforeEach(async ({ api, panel }) => {
-    const animal = await api.createAnimal(buildAnimal())
-    await api.addEvent(animal.id, {
+    const [dog, cat] = await api.createAnimals([
+      buildAnimal(),
+      buildAnimal({ species: 'cat' }),
+    ])
+    await api.addEvent(dog.id, {
       type: 'walk',
       occurredOn: daysAgo(2),
       description: 'Spacer do raportu',
+    })
+    await api.addEvent(cat.id, {
+      type: 'weighing',
+      occurredOn: daysAgo(20),
+      description: 'Wazenie do raportu',
     })
     await panel.goto()
     await panel.eventReportButton.click()
@@ -169,12 +181,14 @@ test.describe('Event report', () => {
     await expect(eventReport.period('Własny zakres dat')).not.toBeChecked()
     await expect(eventReport.customStartDate).toBeHidden()
 
-    const reportRequest = waitForReportRequest(page, 'events')
+    const reportRequest = waitForBackendRequest(page, REPORT.events)
     const download = await captureDownload(page, () =>
       eventReport.generateButton.click(),
     )
 
-    await expectPdfDownload(download)
+    const text = await expectPdfDownload(download)
+    expect(text).toContain(`${EVENT_TYPE_LABEL.walk} 1`)
+    expect(text).toContain(`${EVENT_TYPE_LABEL.weighing} 1`)
     expect(queryValues(await reportRequest, 'periods')).toEqual([
       'Week',
       'Month',
@@ -184,43 +198,44 @@ test.describe('Event report', () => {
   })
 
   test('can be limited to a single period', async ({ eventReport, page }) => {
-    await eventReport.setPeriods(['Ostatni miesiąc'])
+    await eventReport.setPeriods(['Ostatni tydzień'])
 
-    const reportRequest = waitForReportRequest(page, 'events')
+    const reportRequest = waitForBackendRequest(page, REPORT.events)
     const download = await captureDownload(page, () =>
       eventReport.generateButton.click(),
     )
 
-    await expectPdfDownload(download)
-    expect(queryValues(await reportRequest, 'periods')).toEqual(['Month'])
+    const text = await expectPdfDownload(download)
+    expect(text).toContain(`${EVENT_TYPE_LABEL.walk} 1`)
+    expect(text).not.toContain(EVENT_TYPE_LABEL.weighing)
+    expect(queryValues(await reportRequest, 'periods')).toEqual(['Week'])
   })
 
   test('supports a custom date range', async ({ eventReport, page }) => {
     await eventReport.setPeriods(['Własny zakres dat'])
     await expect(eventReport.customStartDate).toBeVisible()
-    await eventReport.customStartDate.fill(daysAgo(10))
-    await eventReport.customEndDate.fill(daysAgo(1))
+    await eventReport.customStartDate.fill(daysAgo(25))
+    await eventReport.customEndDate.fill(daysAgo(10))
 
-    const reportRequest = waitForReportRequest(page, 'events')
+    const reportRequest = waitForBackendRequest(page, REPORT.events)
     const download = await captureDownload(page, () =>
       eventReport.generateButton.click(),
     )
 
-    await expectPdfDownload(download)
+    const text = await expectPdfDownload(download)
+    expect(text).toContain(`${EVENT_TYPE_LABEL.weighing} 1`)
+    expect(text).not.toContain(EVENT_TYPE_LABEL.walk)
     const request = await reportRequest
     expect(queryValues(request, 'periods')).toEqual(['Custom'])
-    expect(queryValues(request, 'customStartDate')).toEqual([daysAgo(10)])
-    expect(queryValues(request, 'customEndDate')).toEqual([daysAgo(1)])
+    expect(queryValues(request, 'customStartDate')).toEqual([daysAgo(25)])
+    expect(queryValues(request, 'customEndDate')).toEqual([daysAgo(10)])
   })
 
   test('validates the chosen periods before asking the server', async ({
     eventReport,
     page,
   }) => {
-    let requests = 0
-    page.on('request', (request) => {
-      if (request.url().includes('/reports/events')) requests++
-    })
+    const backend = await forbidBackendRequests(page, REPORT.events)
 
     await test.step('at least one period is required', async () => {
       await eventReport.setPeriods([])
@@ -239,6 +254,7 @@ test.describe('Event report', () => {
         EVENT_REPORT_ERRORS.customRangeIncomplete,
       )
       await eventReport.customStartDate.fill(daysAgo(1))
+      await expect(eventReport.error).toBeHidden()
       await eventReport.generateButton.click()
       await expect(eventReport.error).toHaveText(
         EVENT_REPORT_ERRORS.customRangeIncomplete,
@@ -253,7 +269,7 @@ test.describe('Event report', () => {
       )
     })
 
-    expect(requests).toBe(0)
+    await backend.expectNoneSent()
     await expect(eventReport.root).toBeVisible()
   })
 
@@ -290,7 +306,7 @@ test.describe('Event report', () => {
     eventReport,
     page,
   }) => {
-    await failReport(page, 'events')
+    await failBackendRequests(page, REPORT.events)
 
     await eventReport.generateButton.click()
 
@@ -301,12 +317,30 @@ test.describe('Event report', () => {
 })
 
 test.describe('Date range report', () => {
+  const walkedDog = buildAnimal({ species: 'dog' })
+  const adoptedCat = buildAnimal({ species: 'cat' })
+  const weighedCat = buildAnimal({ species: 'cat' })
+
   test.beforeEach(async ({ api, panel }) => {
-    const animal = await api.createAnimal(buildAnimal({ species: 'cat' }))
-    await api.addEvent(animal.id, {
+    const [dog, adopted, weighed] = await api.createAnimals([
+      walkedDog,
+      adoptedCat,
+      weighedCat,
+    ])
+    await api.addEvent(dog.id, {
+      type: 'walk',
+      occurredOn: daysAgo(4),
+      description: 'Spacer w zakresie',
+    })
+    await api.addEvent(adopted.id, {
       type: 'adoption',
       occurredOn: daysAgo(3),
-      description: 'Adopcja do raportu',
+      description: 'Adopcja w zakresie',
+    })
+    await api.addEvent(weighed.id, {
+      type: 'weighing',
+      occurredOn: daysAgo(2),
+      description: 'Wazenie w zakresie',
     })
     await panel.goto()
     await panel.dateRangeReportButton.click()
@@ -316,10 +350,7 @@ test.describe('Date range report', () => {
     dateRangeReport,
     page,
   }) => {
-    let requests = 0
-    page.on('request', (request) => {
-      if (request.url().includes('/reports/animals/date-range')) requests++
-    })
+    const backend = await forbidBackendRequests(page, REPORT.dateRange)
     await expect(dateRangeReport.root).toBeVisible()
 
     await dateRangeReport.generateButton.click()
@@ -342,7 +373,7 @@ test.describe('Date range report', () => {
       await dateRangeReport.generateButton.click()
     })
 
-    expect(requests).toBe(0)
+    await backend.expectNoneSent()
     await expect(dateRangeReport.root).toBeVisible()
   })
 
@@ -352,12 +383,16 @@ test.describe('Date range report', () => {
   }) => {
     await dateRangeReport.setRange(daysAgo(30), daysAgo(0))
 
-    const reportRequest = waitForReportRequest(page, 'animals/date-range')
+    const reportRequest = waitForBackendRequest(page, REPORT.dateRange)
     const download = await captureDownload(page, () =>
       dateRangeReport.generateButton.click(),
     )
 
-    await expectPdfDownload(download)
+    const text = await expectPdfDownload(download)
+    for (const animal of [walkedDog, adoptedCat, weighedCat]) {
+      expect(text).toContain(animal.name)
+    }
+    expect(text).toContain('Spacer w zakresie')
     const request = await reportRequest
     expect(queryValues(request, 'startDate')).toEqual([daysAgo(30)])
     expect(queryValues(request, 'endDate')).toEqual([daysAgo(0)])
@@ -369,7 +404,43 @@ test.describe('Date range report', () => {
     await dateRangeReport.expectClosed()
   })
 
-  test('can be narrowed to chosen species and event types', async ({
+  test('leaves out events outside the chosen dates', async ({
+    dateRangeReport,
+    page,
+  }) => {
+    await dateRangeReport.setRange(daysAgo(30), daysAgo(10))
+
+    const download = await captureDownload(page, () =>
+      dateRangeReport.generateButton.click(),
+    )
+
+    const text = await expectPdfDownload(download)
+    expect(text).not.toContain('Spacer w zakresie')
+    expect(text).not.toContain('Adopcja w zakresie')
+  })
+
+  test('can be narrowed to a species', async ({ dateRangeReport, page }) => {
+    await dateRangeReport.setRange(daysAgo(30), daysAgo(0))
+    await dateRangeReport.pick(dateRangeReport.speciesField, ['Koty'])
+    await expect(
+      dateRangeReport.chips(dateRangeReport.speciesField),
+    ).toHaveText(['Koty'])
+
+    const reportRequest = waitForBackendRequest(page, REPORT.dateRange)
+    const download = await captureDownload(page, () =>
+      dateRangeReport.generateButton.click(),
+    )
+
+    const text = await expectPdfDownload(download)
+    expect(text).toContain(adoptedCat.name)
+    expect(text).toContain(weighedCat.name)
+    expect(text).not.toContain(walkedDog.name)
+    expect(queryValues(await reportRequest, 'species')).toEqual([
+      String(SPECIES.cat),
+    ])
+  })
+
+  test('can be narrowed to chosen event types', async ({
     dateRangeReport,
     page,
   }) => {
@@ -378,24 +449,20 @@ test.describe('Date range report', () => {
       'Adopcja',
       'Spacer',
     ])
-    await dateRangeReport.pick(dateRangeReport.speciesField, ['Koty'])
-
     await expect(
       dateRangeReport.chips(dateRangeReport.eventTypeField),
     ).toHaveText(['Adopcja', 'Spacer'])
-    await expect(
-      dateRangeReport.chips(dateRangeReport.speciesField),
-    ).toHaveText(['Koty'])
 
-    const reportRequest = waitForReportRequest(page, 'animals/date-range')
+    const reportRequest = waitForBackendRequest(page, REPORT.dateRange)
     const download = await captureDownload(page, () =>
       dateRangeReport.generateButton.click(),
     )
 
-    await expectPdfDownload(download)
-    const request = await reportRequest
-    expect(queryValues(request, 'species')).toEqual([String(SPECIES.cat)])
-    expect(queryValues(request, 'eventTypes')).toEqual([
+    const text = await expectPdfDownload(download)
+    expect(text).toContain('Spacer w zakresie')
+    expect(text).toContain('Adopcja w zakresie')
+    expect(text).not.toContain('Wazenie w zakresie')
+    expect(queryValues(await reportRequest, 'eventTypes')).toEqual([
       String(EVENT_TYPE.adoption),
       String(EVENT_TYPE.walk),
     ])
@@ -423,7 +490,7 @@ test.describe('Date range report', () => {
     dateRangeReport,
     page,
   }) => {
-    await failReport(page, 'animals/date-range')
+    await failBackendRequests(page, REPORT.dateRange)
     await dateRangeReport.setRange(daysAgo(30), daysAgo(0))
 
     await dateRangeReport.generateButton.click()

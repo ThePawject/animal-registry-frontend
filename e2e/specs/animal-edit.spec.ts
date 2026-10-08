@@ -1,4 +1,3 @@
-import { URLS } from '../config/env.ts'
 import {
   ANIMAL_FORM_ERRORS,
   AnimalFormPage,
@@ -19,6 +18,15 @@ import {
   SPECIES_LABEL,
 } from '../support/domain.ts'
 import { expect, test } from '../support/fixtures.ts'
+import {
+  failBackendRequests,
+  forbidBackendRequests,
+} from '../support/network.ts'
+
+test.use({ shelter: 'isolated' })
+
+const updateOf = (animalId: string) =>
+  ({ method: 'PUT', pathname: `/animals/${animalId}` }) as const
 
 const ORIGINAL = {
   species: 'dog',
@@ -110,6 +118,7 @@ test.describe('Editing an animal', () => {
         breed: changes.breed,
         color: changes.color,
         distinguishingMarks: changes.distinguishingMarks,
+        birthDate: expect.stringContaining(changes.birthDate),
         signature: animal.signature,
       })
     })
@@ -268,6 +277,7 @@ test.describe('Edit form validation', () => {
     page,
   }) => {
     const animal = await api.createAnimal(buildAnimal(ORIGINAL))
+    const backend = await forbidBackendRequests(page, updateOf(animal.id))
     await animalForm.gotoEdit(animal.id)
 
     await animalForm.breed.fill('x'.repeat(101))
@@ -289,6 +299,7 @@ test.describe('Edit form validation', () => {
     await expect(page).toHaveURL(
       new RegExp(`${AnimalFormPage.editPath(animal.id)}/?$`),
     )
+    await backend.expectNoneSent()
     expect(await api.getAnimal(animal.id)).toMatchObject({
       breed: ORIGINAL.breed,
       distinguishingMarks: ORIGINAL.distinguishingMarks,
@@ -301,15 +312,7 @@ test.describe('Edit form validation', () => {
     page,
   }) => {
     const animal = await api.createAnimal(buildAnimal(ORIGINAL))
-    await page.route(`${URLS.backend}/animals/${animal.id}`, (route) =>
-      route.request().method() === 'PUT'
-        ? route.fulfill({
-            status: 500,
-            headers: { 'Access-Control-Allow-Origin': URLS.frontend },
-            body: 'boom',
-          })
-        : route.fallback(),
-    )
+    await failBackendRequests(page, updateOf(animal.id))
 
     await animalForm.gotoEdit(animal.id)
     await animalForm.color.fill('Fioletowy')

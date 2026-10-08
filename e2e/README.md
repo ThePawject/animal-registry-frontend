@@ -30,7 +30,7 @@ pnpm e2e -g "can be rotated"    # tests matching a title
 | infra    | 4110 | `stack/infra.ts`: SQL Server (14330) + Azurite (10100) via Compose |
 | auth     | 4100 | `stack/mock-auth-server.ts`: a tiny OIDC provider replacing Auth0  |
 | backend  | 5100 | `stack/backend.ts`: `dotnet run` of the backend repository         |
-| frontend | 3100 | the Vite dev server                                                |
+| frontend | 3100 | a production build of the app, served by `vite preview`            |
 
 The ports differ from the usual dev ports, so the suite runs next to your
 normal `pnpm dev`. Every port, path and timeout lives in `config/env.ts`
@@ -42,9 +42,10 @@ mock identity provider and the containers purely through configuration
 variables.
 
 The database and the blob store keep their data in memory, so every run
-starts empty. Locally an already running stack is reused, which makes
-re-runs start in seconds: start it once in separate terminals, or run
-with `E2E_KEEP_INFRA=1` to leave the containers up.
+starts empty. Locally an already running backend stack is reused, which
+makes re-runs start in seconds: start it once in separate terminals, or
+run with `E2E_KEEP_INFRA=1` to leave the containers up. The frontend is
+always rebuilt, so tests never run against a stale build.
 
 ### Signing in
 
@@ -101,28 +102,29 @@ test('the card shows the breed', async ({ api, animalDetails }) => {
 
 ## Stability
 
-The dev stack can freeze for a minute or two (Vite re-optimising
-dependencies, a cold .NET endpoint). The suite is built to wait that out
-rather than fail:
-
-- every wait that depends on the stack uses `TIMEOUTS.slow` (150 s by
-  default, `E2E_SLOW_TIMEOUT_MS`); passing assertions still return at once
-- `global-setup.ts` opens every route and calls every endpoint once, so
-  first-compile costs are paid before the tests start
-- tests never sleep to wait for the stack; they wait for what they need
-  (settled table, URL change, download)
-- data is isolated per shelter, so a retried test starts clean
-
-While developing, shorten the feedback loop for failing assertions with
-`E2E_SLOW_TIMEOUT_MS=20000 pnpm e2e ...`.
+- The frontend under test is a production build (`vite build` +
+  `vite preview`), so there is no on-demand compilation to wait for.
+- `global-setup.ts` calls every backend endpoint once, so cold-start costs
+  (JIT, PDF fonts) are paid before the tests start.
+- Waits that depend on the stack use `TIMEOUTS.slow` (30 s by default,
+  `E2E_SLOW_TIMEOUT_MS`). Raise it on a slow machine.
+- Assertions retry until they hold; helpers never read the page once and
+  compare.
+- "Nothing was sent" is proven by intercepting the request
+  (`forbidBackendRequests`), not by looking at the URL.
+- Reports are checked by reading the text of the downloaded PDF.
+- Data is isolated per shelter, so a retried test starts clean.
 
 ## CI
 
 `.github/workflows/e2e.yml` runs the same `pnpm e2e` on a GitHub-hosted
 runner for every pull request and every push to `main`. It checks the
-backend repository out next to this one (its `main` branch; another ref can
-be chosen when starting the workflow by hand) and uploads the HTML report,
-plus traces of failed tests, as artifacts.
+backend repository out next to this one at the commit pinned in
+`BACKEND_REF` (another ref can be chosen when starting the workflow by
+hand) and uploads the HTML report, plus traces of failed tests, as
+artifacts. Bump `BACKEND_REF` when the frontend should be tested against
+a newer backend. The container images are pinned by digest in
+`docker-compose.yml`.
 
 ## Useful switches
 
@@ -130,7 +132,7 @@ plus traces of failed tests, as artifacts.
 | --------------------- | ------------------------------------------------ |
 | `E2E_BACKEND_DIR`     | location of the backend repository               |
 | `E2E_WORKERS`         | parallel workers (default 3)                     |
-| `E2E_SLOW_TIMEOUT_MS` | patience for a slow stack (default 150000)       |
+| `E2E_SLOW_TIMEOUT_MS` | patience for a slow stack (default 30000)        |
 | `E2E_KEEP_INFRA=1`    | keep the containers and their data after the run |
 | `E2E_*_PORT`          | move a service to another port                   |
 

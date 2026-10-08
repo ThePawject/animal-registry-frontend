@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test'
-import { AUTH, URLS } from '../config/env.ts'
+import { AUTH, BROWSER_LOCALE, BROWSER_TIMEZONE, URLS } from '../config/env.ts'
 import { AuthScreens, MockLoginPage } from '../pages/auth.page.ts'
 import { PanelPage } from '../pages/panel.page.ts'
 import { retry } from './retry.ts'
@@ -13,6 +13,8 @@ export const SEARCH_INFO_DISMISSED_KEY = 'animal-search-info-dismissed'
 export function newAnonymousContext(browser: Browser) {
   return browser.newContext({
     baseURL: URLS.frontend,
+    locale: BROWSER_LOCALE,
+    timezoneId: BROWSER_TIMEZONE,
     storageState: { cookies: [], origins: [] },
   })
 }
@@ -76,6 +78,7 @@ export class AuthStateCache {
     if (!state) {
       state = createSignedInState(this.browser, user)
       this.states.set(user.id, state)
+      state.catch(() => this.states.delete(user.id))
     }
     return state
   }

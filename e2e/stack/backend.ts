@@ -8,6 +8,7 @@ import {
   BLOB,
   DATABASE,
   HEALTH_URLS,
+  IS_CI,
   PORTS,
   TIMEOUTS,
   URLS,
@@ -75,7 +76,13 @@ async function main() {
   log('backend', `starting ${projectDir} on ${URLS.backend}`)
   const child = spawn(
     'dotnet',
-    ['run', '--project', projectDir, '--no-launch-profile'],
+    [
+      'run',
+      '--project',
+      projectDir,
+      '--no-launch-profile',
+      ...(IS_CI ? ['--no-build'] : []),
+    ],
     { env: backendEnv, stdio: 'inherit' },
   )
 

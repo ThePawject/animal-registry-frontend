@@ -26,11 +26,21 @@ export function buildAnimals(
   }))
 }
 
-export function daysAgo(days: number) {
-  const date = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
-  return new Intl.DateTimeFormat('sv-SE', {
+function todayInBrowserTimezone() {
+  const [year, month, day] = new Intl.DateTimeFormat('sv-SE', {
     timeZone: BROWSER_TIMEZONE,
-  }).format(date)
+  })
+    .format(new Date())
+    .split('-')
+    .map(Number)
+  return { year, month, day }
+}
+
+export function daysAgo(days: number) {
+  const { year, month, day } = todayInBrowserTimezone()
+  return new Date(Date.UTC(year, month - 1, day - days))
+    .toISOString()
+    .slice(0, 10)
 }
 
 export const tomorrow = () => daysAgo(-1)

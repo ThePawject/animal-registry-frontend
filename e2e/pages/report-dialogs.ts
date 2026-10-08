@@ -32,7 +32,7 @@ export class EventReportDialog {
       name: 'Generuj raport',
     })
     this.cancelButton = this.root.getByRole('button', { name: 'Anuluj' })
-    this.error = this.root.locator('form > p.text-red-500')
+    this.error = this.root.getByRole('alert')
   }
 
   period(label: EventReportPeriod) {

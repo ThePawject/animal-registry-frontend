@@ -7,12 +7,14 @@ export class MockLoginPage {
   readonly heading: Locator
   private readonly email: Locator
   private readonly roles: Locator
+  private readonly userId: Locator
   private readonly submit: Locator
 
   constructor(readonly page: Page) {
     this.heading = page.getByRole('heading', { name: 'E2E mock login' })
     this.email = page.getByLabel('Email')
     this.roles = page.getByLabel('Roles (comma separated)')
+    this.userId = page.getByLabel('User id (optional)')
     this.submit = page.getByRole('button', { name: 'Sign in' })
   }
 
@@ -25,6 +27,7 @@ export class MockLoginPage {
     await this.expectOpen()
     await this.email.fill(user.email)
     await this.roles.fill(user.roles.join(','))
+    await this.userId.fill(user.id)
     await this.submit.click()
   }
 }

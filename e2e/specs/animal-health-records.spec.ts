@@ -15,6 +15,7 @@ import {
   withSize,
 } from '../support/files.ts'
 import { expect, test, toLocalBlobUrl } from '../support/fixtures.ts'
+import { forbidBackendRequests } from '../support/network.ts'
 import type { ApiClient, SeededAnimal } from '../support/api-client.ts'
 
 test.describe('Health records', () => {
@@ -380,7 +381,13 @@ test.describe('Editing and deleting health records', () => {
 
   test('an edit cannot move the record into the future', async ({
     healthRecords,
+    api,
+    page,
   }) => {
+    const backend = await forbidBackendRequests(page, {
+      method: 'PUT',
+      pathname: /^\/animals\/[^/]+\/health\/[^/]+$/,
+    })
     const editor = await healthRecords.edit(plain.description)
 
     await editor.dateInput.fill(tomorrow())
@@ -390,6 +397,10 @@ test.describe('Editing and deleting health records', () => {
     ).toBeVisible()
     await editor.saveButton.click()
     await expect(editor.saveButton).toBeVisible()
+    await backend.expectNoneSent()
+    expect((await storedRecord(api, plain.description)).occurredOn).toContain(
+      plain.occurredOn,
+    )
   })
 
   test('deleting asks for confirmation and can be cancelled', async ({
@@ -427,26 +438,28 @@ test.describe('Editing and deleting health records', () => {
   test('records sort by date and by document', async ({ healthRecords }) => {
     await test.step('default: newest first', async () => {
       await healthRecords.expectSortedBy('Data', 'descending')
-      expect(
-        await healthRecords.columnValues(HEALTH_COLUMN.description),
-      ).toEqual([withDocument.description, plain.description])
+      await healthRecords.expectColumn(HEALTH_COLUMN.description, [
+        withDocument.description,
+        plain.description,
+      ])
     })
 
     await test.step('by date, oldest first', async () => {
       await healthRecords.sortBy('Data', 'ascending')
-      expect(
-        await healthRecords.columnValues(HEALTH_COLUMN.description),
-      ).toEqual([plain.description, withDocument.description])
+      await healthRecords.expectColumn(HEALTH_COLUMN.description, [
+        plain.description,
+        withDocument.description,
+      ])
     })
 
     await test.step('by document: records without one come first', async () => {
       await healthRecords.sortBy('Dokument', 'ascending')
-      expect(await healthRecords.columnValues(HEALTH_COLUMN.document)).toEqual([
+      await healthRecords.expectColumn(HEALTH_COLUMN.document, [
         'Brak',
         'wypis.pdf',
       ])
       await healthRecords.sortBy('Dokument', 'descending')
-      expect(await healthRecords.columnValues(HEALTH_COLUMN.document)).toEqual([
+      await healthRecords.expectColumn(HEALTH_COLUMN.document, [
         'wypis.pdf',
         'Brak',
       ])

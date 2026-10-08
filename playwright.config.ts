@@ -14,6 +14,8 @@ import {
 
 const stackScript = (name: string) => `node --import tsx e2e/stack/${name}.ts`
 
+const vite = 'node node_modules/vite/bin/vite.js'
+
 const gracefulShutdown = { signal: 'SIGTERM', timeout: 60_000 } as const
 
 const webServerDefaults = {
@@ -85,8 +87,9 @@ export default defineConfig({
     {
       ...webServerDefaults,
       name: 'frontend',
-      command: `node node_modules/vite/bin/vite.js dev --port ${PORTS.frontend} --strictPort`,
+      command: `${vite} build --outDir ${PATHS.frontendBuild} --emptyOutDir && ${vite} preview --outDir ${PATHS.frontendBuild} --port ${PORTS.frontend} --strictPort`,
       url: HEALTH_URLS.frontend,
+      reuseExistingServer: false,
       env: {
         VITE_AUTH0_DOMAIN: URLS.auth,
         VITE_AUTH0_CLIENT_ID: AUTH.clientId,

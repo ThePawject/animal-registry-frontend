@@ -79,15 +79,17 @@ export const PATHS = {
   composeFile: path.join(E2E_ROOT, 'docker-compose.yml'),
   signingKey: path.join(E2E_ROOT, '.cache', 'mock-auth-signing-key.pem'),
   artifactsDir: path.join(E2E_ROOT, '.artifacts'),
+  frontendBuild: path.join(E2E_ROOT, '.artifacts', 'frontend'),
 } as const
 
-const slow = numberFromEnv('E2E_SLOW_TIMEOUT_MS', 150_000)
+const slow = numberFromEnv('E2E_SLOW_TIMEOUT_MS', 30_000)
 
 export const TIMEOUTS = {
   slow,
-  test: numberFromEnv('E2E_TEST_TIMEOUT_MS', slow * 3),
+  test: numberFromEnv('E2E_TEST_TIMEOUT_MS', slow * 4),
   stackStart: numberFromEnv('E2E_STACK_START_TIMEOUT_MS', 10 * 60_000),
   ui: 15_000,
+  settle: 500,
 } as const
 
 export const COMPOSE_PROJECT = stringFromEnv(

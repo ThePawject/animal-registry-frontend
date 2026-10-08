@@ -18,6 +18,7 @@ export class LandingCarousel {
   readonly previousButton: Locator
   readonly nextButton: Locator
   readonly dots: Locator
+  readonly slides: Locator
 
   constructor(readonly root: Locator) {
     this.title = root.getByRole('heading', { level: 3 })
@@ -25,6 +26,7 @@ export class LandingCarousel {
     this.previousButton = root.getByRole('button', { name: 'Previous slide' })
     this.nextButton = root.getByRole('button', { name: 'Next slide' })
     this.dots = root.getByRole('button', { name: /^Przejdź do: / })
+    this.slides = root.locator('[data-slot="carousel-content"]')
   }
 
   dot(slideTitle: string) {
@@ -36,11 +38,6 @@ export class LandingCarousel {
 
   async expectSlide(position: number, total: number) {
     await expect(this.counter).toHaveText(`Slajd ${position} z ${total}`)
-  }
-
-  async pauseAutoplay() {
-    await this.root.scrollIntoViewIfNeeded()
-    await this.root.hover()
   }
 }
 

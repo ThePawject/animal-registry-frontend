@@ -1,21 +1,11 @@
 import { PHOTO_ALERTS } from '../pages/animal-form.page.ts'
 import { PHOTO_PLACEHOLDER_URL } from '../pages/animal-details.page.ts'
+import { expectImageLoaded } from '../pages/components.ts'
 import { PanelPage } from '../pages/panel.page.ts'
+import { mainPhotoOf } from '../support/api-client.ts'
 import { buildAnimal, unique } from '../support/data.ts'
 import { COLORS, MEGABYTE, pngImage, withSize } from '../support/files.ts'
 import { expect, test } from '../support/fixtures.ts'
-import type { Locator } from '@playwright/test'
-
-async function expectImageLoaded(image: Locator) {
-  await expect
-    .poll(() =>
-      image.evaluate(
-        (element: HTMLImageElement) =>
-          element.complete && element.naturalWidth > 0,
-      ),
-    )
-    .toBe(true)
-}
 
 test.describe('Photos while adding an animal', () => {
   test.beforeEach(async ({ animalForm }) => {
@@ -38,13 +28,13 @@ test.describe('Photos while adding an animal', () => {
     await expect(photos.thumbnails).toHaveCount(2)
     await expect(photos.counter).toHaveText('1 / 2')
     await expectImageLoaded(photos.preview)
-    expect(await photos.mainPosition()).toBe(1)
+    await photos.expectMainPosition(1)
 
     await test.step('more photos can be added later', async () => {
       await photos.upload([pngImage('three.png', { color: COLORS.yellow })])
       await expect(photos.thumbnails).toHaveCount(3)
       await expect(photos.counter).toHaveText('1 / 3')
-      expect(await photos.mainPosition()).toBe(1)
+      await photos.expectMainPosition(1)
     })
   })
 
@@ -59,11 +49,11 @@ test.describe('Photos while adding an animal', () => {
 
     await photos.select(2)
     await expect(photos.counter).toHaveText('2 / 2')
-    expect(await photos.mainPosition()).toBe(1)
+    await photos.expectMainPosition(1)
 
     await photos.setAsMainButton.click()
 
-    expect(await photos.mainPosition()).toBe(2)
+    await photos.expectMainPosition(2)
   })
 
   test('a photo can be rotated before saving', async ({ animalForm }) => {
@@ -77,7 +67,7 @@ test.describe('Photos while adding an animal', () => {
       .poll(() => photos.previewSize())
       .toEqual({ width: 20, height: 60 })
     await expect(photos.thumbnails).toHaveCount(1)
-    expect(await photos.mainPosition()).toBe(1)
+    await photos.expectMainPosition(1)
   })
 
   test('removing photos keeps a main photo until none are left', async ({
@@ -95,14 +85,14 @@ test.describe('Photos while adding an animal', () => {
       await photos.removeButton.click()
       await expect(photos.thumbnails).toHaveCount(2)
       await expect(photos.counter).toHaveText('2 / 2')
-      expect(await photos.mainPosition()).toBe(1)
+      await photos.expectMainPosition(1)
     })
 
     await test.step('removing the main photo promotes the next one', async () => {
       await photos.select(1)
       await photos.removeButton.click()
       await expect(photos.thumbnails).toHaveCount(1)
-      expect(await photos.mainPosition()).toBe(1)
+      await photos.expectMainPosition(1)
     })
 
     await test.step('removing the last photo empties the gallery', async () => {
@@ -167,15 +157,13 @@ test.describe('Photos while adding an animal', () => {
     await expect(page).toHaveURL(new RegExp(`${PanelPage.path}`))
     const { items } = await api.listAnimals(name)
     const stored = await api.getAnimal(items[0].id)
-    const mainPhoto = stored.photos.find(
-      (photo) => photo.id === stored.mainPhotoId,
-    )
+    const mainPhoto = mainPhotoOf(stored)
     expect(stored.photos).toHaveLength(2)
-    expect(mainPhoto?.fileName).toContain('chosen')
+    expect(mainPhoto.fileName).toContain('chosen')
 
     await test.step('the register shows the main photo', async () => {
       await panel.search(name)
-      await expect(panel.row(name).photo).toHaveAttribute('src', mainPhoto!.url)
+      await expect(panel.row(name).photo).toHaveAttribute('src', mainPhoto.url)
       await expectImageLoaded(panel.row(name).photo)
     })
 
@@ -183,7 +171,7 @@ test.describe('Photos while adding an animal', () => {
       await panel.openDetails(name)
       await expect(animalDetails.mainPhoto).toHaveAttribute(
         'src',
-        mainPhoto!.url,
+        mainPhoto.url,
       )
       await expect(animalDetails.galleryThumbnails).toHaveCount(2)
     })
@@ -206,18 +194,14 @@ test.describe('Photos while editing an animal', () => {
     )
 
     const stored = await api.getAnimal(animal.id)
-    const mainPhoto = stored.photos.find(
-      (photo) => photo.id === stored.mainPhotoId,
-    )
+    const mainPhoto = mainPhotoOf(stored)
 
     await animalForm.gotoEdit(animal.id)
 
     const { photos } = animalForm
     await expect(photos.thumbnails).toHaveCount(2)
-    expect(mainPhoto?.fileName).toContain('two')
-    expect(await photos.mainPosition()).toBe(
-      await photos.positionOf(mainPhoto!.url),
-    )
+    expect(mainPhoto.fileName).toContain('two')
+    await photos.expectMainPhoto(mainPhoto.url)
     await expectImageLoaded(photos.preview)
 
     await test.step('stored photos cannot be rotated, only new uploads', async () => {
@@ -244,17 +228,15 @@ test.describe('Photos while editing an animal', () => {
     await photos.upload([pngImage('fresh.png', { color: COLORS.blue })])
     await photos.select(2)
     await photos.setAsMainButton.click()
-    expect(await photos.mainPosition()).toBe(2)
+    await photos.expectMainPosition(2)
     await animalForm.submitSave()
 
     await animalDetails.expectOpen(animal.id)
     const stored = await api.getAnimal(animal.id)
-    const mainPhoto = stored.photos.find(
-      (photo) => photo.id === stored.mainPhotoId,
-    )
+    const mainPhoto = mainPhotoOf(stored)
     expect(stored.photos).toHaveLength(2)
-    expect(mainPhoto?.fileName).toContain('fresh')
-    await expect(animalDetails.mainPhoto).toHaveAttribute('src', mainPhoto!.url)
+    expect(mainPhoto.fileName).toContain('fresh')
+    await expect(animalDetails.mainPhoto).toHaveAttribute('src', mainPhoto.url)
     await expect(animalDetails.galleryThumbnails).toHaveCount(2)
   })
 
@@ -284,9 +266,7 @@ test.describe('Photos while editing an animal', () => {
 
     await animalDetails.expectOpen(animal.id)
     const stored = await api.getAnimal(animal.id)
-    expect(
-      stored.photos.find((photo) => photo.id === stored.mainPhotoId)?.fileName,
-    ).toContain('two')
+    expect(mainPhotoOf(stored).fileName).toContain('two')
   })
 
   test('a stored photo can be removed', async ({
@@ -397,8 +377,41 @@ test.describe('Photo gallery on the animal card', () => {
       photos[2].url,
     )
     await expectImageLoaded(animalDetails.galleryPreview)
-    await expect(animalDetails.galleryThumbnails.nth(2)).toHaveClass(
-      /border-emerald-500/,
+    await expect(animalDetails.galleryThumbnails.nth(2)).toHaveAttribute(
+      'aria-current',
+      'true',
+    )
+  })
+
+  test('shows every photo when there are more than five', async ({
+    api,
+    animalDetails,
+  }) => {
+    const animal = await api.createAnimal(
+      buildAnimal({
+        photos: Array.from({ length: 6 }, (_, index) =>
+          pngImage(`photo-${index + 1}.png`),
+        ),
+      }),
+    )
+    const { photos } = await api.getAnimal(animal.id)
+
+    await animalDetails.goto(animal.id)
+
+    await expect(animalDetails.galleryThumbnails).toHaveCount(6)
+    const alts = await animalDetails.galleryThumbnails.evaluateAll((images) =>
+      images.map((image) => image.getAttribute('alt')),
+    )
+    expect(new Set(alts).size).toBe(6)
+
+    await animalDetails.galleryThumbnails.nth(5).click()
+    await expect(animalDetails.galleryPreview).toHaveAttribute(
+      'src',
+      photos[5].url,
+    )
+    await expect(animalDetails.galleryThumbnails.nth(5)).toHaveAttribute(
+      'aria-current',
+      'true',
     )
   })
 

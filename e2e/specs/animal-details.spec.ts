@@ -13,6 +13,7 @@ import {
   SPECIES_LABEL,
 } from '../support/domain.ts'
 import { expect, test } from '../support/fixtures.ts'
+import { queryValues, waitForBackendRequest } from '../support/network.ts'
 
 test.describe('Animal card', () => {
   test('shows everything known about the animal', async ({
@@ -174,17 +175,16 @@ test.describe('Animal card', () => {
     const animal = await api.createAnimal(buildAnimal())
     await animalDetails.goto(animal.id)
 
-    const reportRequest = page.waitForRequest((request) =>
-      request.url().includes('/reports/animals/selected'),
-    )
+    const reportRequest = waitForBackendRequest(page, {
+      method: 'GET',
+      pathname: '/reports/animals/selected',
+    })
     const download = await captureDownload(page, () =>
       animalDetails.downloadReportButton.click(),
     )
 
-    await expectPdfDownload(download)
-    expect(
-      new URL((await reportRequest).url()).searchParams.getAll('ids'),
-    ).toEqual([animal.id])
+    expect(await expectPdfDownload(download)).toContain(animal.name)
+    expect(queryValues(await reportRequest, 'ids')).toEqual([animal.id])
     await expect(animalDetails.downloadReportButton).toBeEnabled()
   })
 })

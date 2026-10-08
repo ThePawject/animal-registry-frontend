@@ -9,8 +9,13 @@ export type TestUser = {
   shelterName: string | null
 }
 
+const LIGATURE_FREE_ALPHABET = 'abcdeghkmnopqrsuvwxyz0123456789'
+
 export function uniqueToken(length = 8) {
-  return randomBytes(length).toString('hex').slice(0, length)
+  return Array.from(
+    randomBytes(length),
+    (byte) => LIGATURE_FREE_ALPHABET[byte % LIGATURE_FREE_ALPHABET.length],
+  ).join('')
 }
 
 function buildUser(

@@ -10,9 +10,9 @@ on:
   workflow_dispatch:
     inputs:
       backend_ref:
-        description: 'Branch, tag or commit of animal-registry-backend to test against'
+        description: 'Branch, tag or commit of animal-registry-backend (defaults to the pinned commit)'
         required: false
-        default: 'main'
+        default: ''
 
 permissions:
   contents: read
@@ -25,6 +25,7 @@ env:
   NODE_VERSION: '22'
   DOTNET_VERSION: '9.0.x'
   BACKEND_REPOSITORY: ThePawject/animal-registry-backend
+  BACKEND_REF: 18b05bd3d63a13b8c411f69b7628ba4fc613c1f2
 
 jobs:
   e2e:
@@ -46,7 +47,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ env.BACKEND_REPOSITORY }}
-          ref: ${{ inputs.backend_ref || 'main' }}
+          ref: ${{ inputs.backend_ref || env.BACKEND_REF }}
           path: animal-registry-backend
 
       - name: Setup pnpm

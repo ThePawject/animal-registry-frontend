@@ -1,7 +1,12 @@
 import { expect } from '@playwright/test'
 import { TIMEOUTS } from '../config/env.ts'
 import { SEX_LABEL, SPECIES_LABEL } from '../support/domain.ts'
-import { FormFieldLocator, chooseOption } from './components.ts'
+import { waitForBackendResponse } from '../support/network.ts'
+import {
+  FormFieldLocator,
+  chooseOption,
+  expectImageLoaded,
+} from './components.ts'
 import type { Locator, Page } from '@playwright/test'
 import type { SexKey, SpeciesKey } from '../support/domain.ts'
 import type { UploadFile } from '../support/files.ts'
@@ -77,7 +82,6 @@ export class AnimalFormPage {
     this.distinguishingMarks = form.getByPlaceholder(
       /^Wpisz znaki szczególne zwierzaka/,
     )
-    this.signature = form.getByPlaceholder('2026/0001')
     this.color = form.getByPlaceholder('Wpisz umaszczenie')
 
     this.speciesField = new FormFieldLocator(form, 'Gatunek')
@@ -87,6 +91,7 @@ export class AnimalFormPage {
     this.birthDateField = new FormFieldLocator(form, 'Data urodzenia')
 
     this.birthDate = this.birthDateField.input
+    this.signature = this.signatureField.input
     this.speciesSelect = this.speciesField.select
     this.sexSelect = new FormFieldLocator(form, 'Płeć').select
 
@@ -113,11 +118,13 @@ export class AnimalFormPage {
   async gotoCreate() {
     await this.page.goto(AnimalFormPage.createPath)
     await expect(this.createButton).toBeVisible()
+    await this.page.waitForLoadState('networkidle')
   }
 
   async gotoEdit(animalId: string) {
     await this.page.goto(AnimalFormPage.editPath(animalId))
     await expect(this.saveButton).toBeVisible()
+    await this.page.waitForLoadState('networkidle')
   }
 
   async fill(values: AnimalFormValues) {
@@ -150,10 +157,17 @@ export class AnimalFormPage {
 
   async generateSignature() {
     const previous = await this.signature.inputValue()
-    await this.generateSignatureButton.click()
-    await expect(this.signature).toHaveValue(SIGNATURE_PATTERN)
-    await expect(this.generateSignatureButton).toBeEnabled()
-    const generated = await this.signature.inputValue()
+    const [response] = await Promise.all([
+      waitForBackendResponse(this.page, {
+        method: 'GET',
+        pathname: '/animals/signature',
+      }),
+      this.generateSignatureButton.click(),
+    ])
+    const { signature: generated } = (await response.json()) as {
+      signature: string
+    }
+    await expect(this.signature).toHaveValue(generated)
     return { previous, generated }
   }
 
@@ -205,7 +219,6 @@ export class PhotoManager {
   readonly emptyState: Locator
   readonly counter: Locator
 
-  readonly addButton: Locator
   readonly setAsMainButton: Locator
   readonly rotateButton: Locator
   readonly removeButton: Locator
@@ -220,13 +233,12 @@ export class PhotoManager {
       .getByRole('button')
       .filter({ has: page.getByAltText(/^Miniatura \d+$/) })
     this.mainThumbnail = this.thumbnails.filter({
-      has: page.locator('svg.text-yellow-400'),
+      has: page.getByRole('img', { name: 'Zdjęcie główne' }),
     })
     this.preview = form.getByAltText('Główne zdjęcie')
     this.emptyState = form.getByText('Brak zdjęcia', { exact: true })
     this.counter = form.getByText(/^\d+ \/ \d+$/)
 
-    this.addButton = form.getByRole('button', { name: 'Dodaj zdjęcia' })
     this.setAsMainButton = form.getByRole('button', {
       name: 'Ustaw jako główne',
     })
@@ -262,32 +274,33 @@ export class PhotoManager {
 
   async select(position: number) {
     await this.thumbnail(position).click()
-    await expect(this.thumbnail(position)).toHaveClass(/outline-emerald-600/)
+    await expect(this.thumbnail(position)).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
   }
 
   async positionOf(url: string) {
+    await expect(this.thumbnails.locator(`img[src="${url}"]`)).toHaveCount(1)
     const sources = await this.thumbnails
       .locator('img')
       .evaluateAll((images) => images.map((image) => image.getAttribute('src')))
-    const index = sources.indexOf(url)
-    expect(index, `a thumbnail for ${url}`).toBeGreaterThanOrEqual(0)
-    return index + 1
+    return sources.indexOf(url) + 1
   }
 
-  async mainPosition() {
-    await expect(this.mainThumbnail).toHaveCount(1)
-    const alt = await this.mainThumbnail.locator('img').getAttribute('alt')
-    return Number(alt?.replace('Miniatura ', ''))
+  async expectMainPosition(position: number) {
+    await expect(this.mainThumbnail.locator('img')).toHaveAttribute(
+      'alt',
+      `Miniatura ${position}`,
+    )
+  }
+
+  async expectMainPhoto(url: string) {
+    await expect(this.mainThumbnail.locator('img')).toHaveAttribute('src', url)
   }
 
   async previewSize() {
-    await expect
-      .poll(() =>
-        this.preview.evaluate(
-          (image: HTMLImageElement) => image.complete && image.naturalWidth > 0,
-        ),
-      )
-      .toBe(true)
+    await expectImageLoaded(this.preview)
     return this.preview.evaluate((image: HTMLImageElement) => ({
       width: image.naturalWidth,
       height: image.naturalHeight,

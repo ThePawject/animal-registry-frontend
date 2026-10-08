@@ -108,13 +108,10 @@ abstract class RecordsTab {
     await expect(this.rows).toHaveCount(0)
   }
 
-  async columnValues(columnIndex: number) {
-    const cells = await this.rows
-      .locator(`td:nth-child(${columnIndex + 1})`)
-      .all()
-    return Promise.all(
-      cells.map(async (cell) => (await cell.innerText()).trim()),
-    )
+  async expectColumn(columnIndex: number, values: Array<string>) {
+    await expect(
+      this.rows.locator(`td:nth-child(${columnIndex + 1})`),
+    ).toHaveText(values)
   }
 
   private sortHeader(column: string) {
@@ -127,9 +124,14 @@ abstract class RecordsTab {
 
   async sortBy(column: string, direction: Exclude<SortDirection, 'none'>) {
     const header = this.sortHeader(column)
-    for (let click = 0; click < 2; click++) {
-      if ((await header.getAttribute('aria-sort')) === direction) break
-      await header.getByRole('button').click()
+    const toggle = header.getByRole('button')
+
+    if ((await header.getAttribute('aria-sort')) === 'none') {
+      await toggle.click()
+      await expect(header).not.toHaveAttribute('aria-sort', 'none')
+    }
+    if ((await header.getAttribute('aria-sort')) !== direction) {
+      await toggle.click()
     }
     await expect(header).toHaveAttribute('aria-sort', direction)
   }
@@ -259,7 +261,7 @@ export class DocumentCell {
     this.replaceButton = root.getByRole('button', { name: 'Zmień plik' })
     this.removeButton = root.getByRole('button', { name: 'Usuń' })
     this.choosePrompt = root.getByText('Wybierz plik')
-    this.error = root.locator('p.text-red-500')
+    this.error = root.getByRole('alert')
     this.fileInput = root.locator('input[type="file"]')
   }
 

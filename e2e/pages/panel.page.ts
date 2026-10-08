@@ -63,6 +63,10 @@ export class PanelPage {
   readonly rows: Locator
   readonly emptyState: Locator
   readonly pageIndicator: Locator
+  readonly firstPageButton: Locator
+  readonly previousPageButton: Locator
+  readonly nextPageButton: Locator
+  readonly lastPageButton: Locator
   readonly selectAllCheckbox: Locator
 
   readonly eventReportButton: Locator
@@ -72,7 +76,6 @@ export class PanelPage {
 
   private readonly skeletons: Locator
   private readonly tableWrapper: Locator
-  private readonly pagerButtons: Locator
 
   constructor(readonly page: Page) {
     this.addAnimalLink = page.getByRole('link', { name: 'Dodaj zwierzę' })
@@ -87,13 +90,14 @@ export class PanelPage {
       name: 'Nie pokazuj ponownie',
     })
 
-    const selects = page.getByRole('combobox')
-    this.speciesFilter = selects.nth(0)
-    this.statusFilter = selects.nth(1)
-    this.pageSizeSelect = selects.nth(2)
+    this.speciesFilter = page.getByRole('combobox', { name: 'Gatunek' })
+    this.statusFilter = page.getByRole('combobox', { name: 'Status' })
+    this.pageSizeSelect = page.getByRole('combobox', {
+      name: 'Wierszy na stronę',
+    })
 
     this.table = page.locator('table')
-    this.tableWrapper = this.table.locator('xpath=..')
+    this.tableWrapper = page.locator('[aria-busy]').filter({ has: this.table })
     this.skeletons = this.table.locator('[data-slot="skeleton"]')
     this.rows = this.table.locator('tbody tr').filter({
       has: page.getByRole('link', { name: 'Szczegóły' }),
@@ -104,9 +108,12 @@ export class PanelPage {
     })
 
     this.pageIndicator = page.getByText(/^Strona \d+ z \d+$/)
-    this.pagerButtons = this.pageIndicator
-      .locator('xpath=following-sibling::div')
-      .getByRole('button')
+    this.firstPageButton = page.getByRole('button', { name: 'Pierwsza strona' })
+    this.previousPageButton = page.getByRole('button', {
+      name: 'Poprzednia strona',
+    })
+    this.nextPageButton = page.getByRole('button', { name: 'Następna strona' })
+    this.lastPageButton = page.getByRole('button', { name: 'Ostatnia strona' })
 
     this.eventReportButton = page.getByRole('button', {
       name: 'Raport zdarzeń',
@@ -123,19 +130,6 @@ export class PanelPage {
     })
   }
 
-  get firstPageButton() {
-    return this.pagerButtons.nth(0)
-  }
-  get previousPageButton() {
-    return this.pagerButtons.nth(1)
-  }
-  get nextPageButton() {
-    return this.pagerButtons.nth(2)
-  }
-  get lastPageButton() {
-    return this.pagerButtons.nth(3)
-  }
-
   async goto(search: Record<string, string | number | boolean> = {}) {
     const params = new URLSearchParams(
       Object.entries(search).map(([key, value]) => [key, String(value)]),
@@ -148,11 +142,16 @@ export class PanelPage {
   async expectLoaded() {
     await expect(this.table).toBeVisible()
     await expect(this.skeletons).toHaveCount(0)
-    await expect(this.tableWrapper).not.toHaveClass(/opacity-60/)
+    await expect(this.tableWrapper).toHaveAttribute('aria-busy', 'false')
   }
 
   row(text: string) {
     return new AnimalRow(this.rows.filter({ hasText: text }))
+  }
+
+  async expectColumn(column: AnimalColumn, values: Array<string>) {
+    const index = ANIMAL_TABLE_COLUMNS.indexOf(column) + 2
+    await expect(this.rows.locator(`td:nth-child(${index})`)).toHaveText(values)
   }
 
   async columnValues(column: AnimalColumn) {

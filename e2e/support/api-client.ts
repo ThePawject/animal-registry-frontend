@@ -82,6 +82,13 @@ class ApiError extends Error {
 }
 
 const SIGNATURE_TAKEN = /already in use/i
+const CONNECTION_REFUSED = /ECONNREFUSED/
+
+export function mainPhotoOf(animal: ApiAnimal) {
+  const photo = animal.photos.find(({ id }) => id === animal.mainPhotoId)
+  if (!photo) throw new Error(`Animal ${animal.id} has no main photo`)
+  return photo
+}
 
 export class ApiClient {
   private constructor(
@@ -121,7 +128,7 @@ export class ApiClient {
   }
 
   async nextSignature(species: SpeciesKey) {
-    const body = await this.send<{ signature: string }>(
+    const body = await this.read<{ signature: string }>(
       'Fetching the next free signature',
       () =>
         this.context.get('/animals/signature', {
@@ -182,7 +189,7 @@ export class ApiClient {
   }
 
   getAnimal(id: string) {
-    return this.send<ApiAnimal>(`Fetching animal ${id}`, () =>
+    return this.read<ApiAnimal>(`Fetching animal ${id}`, () =>
       this.context.get(`/animals/${id}`),
     )
   }
@@ -193,7 +200,7 @@ export class ApiClient {
   }
 
   async listAnimals(keyWordSearch?: string) {
-    const body = await this.send<{
+    const body = await this.read<{
       items: Array<Omit<ApiAnimal, 'photos' | 'events' | 'healthRecords'>>
       totalCount: number
     }>('Listing animals', () =>
@@ -237,9 +244,32 @@ export class ApiClient {
     )
   }
 
+  async fetchReport(
+    endpoint: string,
+    params: Record<string, string | number> = {},
+  ) {
+    return retry(
+      async () => {
+        const response = await this.context.get(`/reports/${endpoint}`, {
+          params,
+        })
+        if (!response.ok()) {
+          throw new Error(`report ${endpoint} answered ${response.status()}`)
+        }
+        return response.body()
+      },
+      { description: `Fetching report ${endpoint}` },
+    )
+  }
+
+  private read<T>(description: string, perform: () => Promise<APIResponse>) {
+    return this.send<T>(description, perform, { repeatable: true })
+  }
+
   private send<T = unknown>(
     description: string,
     perform: () => Promise<APIResponse>,
+    { repeatable = false } = {},
   ): Promise<T> {
     return retry(
       async () => {
@@ -255,8 +285,11 @@ export class ApiClient {
       },
       {
         description,
-        shouldRetry: (error) =>
-          !(error instanceof ApiError) || error.status >= 500,
+        shouldRetry: (error) => {
+          if (error instanceof ApiError)
+            return repeatable && error.status >= 500
+          return repeatable || CONNECTION_REFUSED.test(String(error))
+        },
       },
     )
   }

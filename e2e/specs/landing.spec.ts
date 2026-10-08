@@ -1,10 +1,11 @@
 import { URLS } from '../config/env.ts'
+import { expectImageLoaded } from '../pages/components.ts'
 import { CONTACT_EMAIL } from '../pages/landing.page.ts'
 import { PanelPage } from '../pages/panel.page.ts'
 import { PDF_MAGIC } from '../support/files.ts'
 import { expect, test } from '../support/fixtures.ts'
 
-test.use({ signedIn: false })
+test.use({ signedIn: false, contextOptions: { reducedMotion: 'reduce' } })
 
 const FEATURE_SLIDES = [
   'Rejestr zwierząt',
@@ -158,7 +159,6 @@ test.describe('Landing page', () => {
   }) => {
     const carousel = landing.featureCarousel
     const total = FEATURE_SLIDES.length
-    await carousel.pauseAutoplay()
 
     await expect(carousel.dots).toHaveCount(total)
     await carousel.expectSlide(1, total)
@@ -194,42 +194,19 @@ test.describe('Landing page', () => {
     })
   })
 
-  test('feature carousel advances on its own and pauses under the pointer', async ({
-    landing,
-    page,
-  }) => {
-    const carousel = landing.featureCarousel
-    const total = FEATURE_SLIDES.length
-    await carousel.root.scrollIntoViewIfNeeded()
-    await page.mouse.move(0, 0)
-
-    await test.step('it moves to the next slide by itself', async () => {
-      await carousel.expectSlide(1, total)
-      await carousel.expectSlide(2, total)
-    })
-
-    await test.step('hovering it keeps the current slide in place', async () => {
-      await carousel.pauseAutoplay()
-      const shown = await carousel.counter.innerText()
-      await page.waitForTimeout(AUTOPLAY_INTERVAL_MS * 1.5)
-      await expect(carousel.counter).toHaveText(shown)
-    })
-  })
-
   test('a feature screenshot opens enlarged in a dialog', async ({
     landing,
     page,
   }) => {
     const alt =
       'Lista zwierząt w panelu schroniska z wyszukiwaniem, filtrami i statusami'
-    await landing.featureCarousel.pauseAutoplay()
 
     await page.getByRole('button', { name: `Powiększ zrzut: ${alt}` }).click()
 
     await expect(landing.screenshotDialog).toBeVisible()
     const enlarged = landing.screenshotDialog.getByAltText(alt)
     await expect(enlarged).toBeVisible()
-    await expect(enlarged).toHaveJSProperty('complete', true)
+    await expectImageLoaded(enlarged)
 
     await landing.screenshotDialog
       .getByRole('button', { name: 'Close' })
@@ -250,7 +227,6 @@ test.describe('Landing page', () => {
       name: 'Otwórz w nowej karcie',
       exact: true,
     })
-    await carousel.pauseAutoplay()
 
     for (const [index, report] of REPORT_SLIDES.entries()) {
       await test.step(`report "${report.title}"`, async () => {
@@ -358,6 +334,40 @@ test.describe('Landing page', () => {
         await expect(landing.mobileMenu).toBeHidden()
         await landing.expectScrolledTo('compliance')
       })
+    })
+  })
+})
+
+test.describe('Landing page carousel autoplay', () => {
+  test.use({ contextOptions: { reducedMotion: 'no-preference' } })
+
+  test('advances on its own and pauses under the pointer', async ({
+    landing,
+    page,
+  }) => {
+    const carousel = landing.featureCarousel
+    const total = FEATURE_SLIDES.length
+    await page.clock.install()
+    await landing.goto()
+    await carousel.root.scrollIntoViewIfNeeded()
+    await page.mouse.move(0, 0)
+    await carousel.expectSlide(1, total)
+
+    await test.step('it moves to the next slide by itself', async () => {
+      await page.clock.runFor(AUTOPLAY_INTERVAL_MS + 500)
+      await carousel.expectSlide(2, total)
+    })
+
+    await test.step('hovering it keeps the current slide in place', async () => {
+      await carousel.slides.hover()
+      await page.clock.runFor(AUTOPLAY_INTERVAL_MS * 3)
+      await carousel.expectSlide(2, total)
+    })
+
+    await test.step('and it resumes once the pointer leaves', async () => {
+      await page.mouse.move(0, 0)
+      await page.clock.runFor(AUTOPLAY_INTERVAL_MS + 500)
+      await carousel.expectSlide(3, total)
     })
   })
 })
