@@ -9,23 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppPanelRouteImport } from './routes/_app/panel'
-import { Route as AppCreateIndexRouteImport } from './routes/_app/create/index'
 import { Route as AppAnimalAnimalIdRouteRouteImport } from './routes/_app/animal.$animalId/route'
+import { Route as AppCreateIndexRouteImport } from './routes/_app/create/index'
 import { Route as AppAnimalAnimalIdIndexRouteImport } from './routes/_app/animal.$animalId/index'
 import { Route as AppAnimalAnimalIdEditRouteImport } from './routes/_app/animal.$animalId/edit'
-import { Route as AppAnimalAnimalIdMedicalRecordsIndexRouteImport } from './routes/_app/animal.$animalId/medical-records/index'
 import { Route as AppAnimalAnimalIdEventsIndexRouteImport } from './routes/_app/animal.$animalId/events/index'
+import { Route as AppAnimalAnimalIdMedicalRecordsIndexRouteImport } from './routes/_app/animal.$animalId/medical-records/index'
 
-const AppRoute = AppRouteImport.update({
-  id: '/_app',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppPanelRoute = AppPanelRouteImport.update({
@@ -33,14 +33,14 @@ const AppPanelRoute = AppPanelRouteImport.update({
   path: '/panel',
   getParentRoute: () => AppRoute,
 } as any)
-const AppCreateIndexRoute = AppCreateIndexRouteImport.update({
-  id: '/create/',
-  path: '/create/',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppAnimalAnimalIdRouteRoute = AppAnimalAnimalIdRouteRouteImport.update({
   id: '/animal/$animalId',
   path: '/animal/$animalId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCreateIndexRoute = AppCreateIndexRouteImport.update({
+  id: '/create/',
+  path: '/create/',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAnimalAnimalIdIndexRoute = AppAnimalAnimalIdIndexRouteImport.update({
@@ -53,16 +53,16 @@ const AppAnimalAnimalIdEditRoute = AppAnimalAnimalIdEditRouteImport.update({
   path: '/edit',
   getParentRoute: () => AppAnimalAnimalIdRouteRoute,
 } as any)
-const AppAnimalAnimalIdMedicalRecordsIndexRoute =
-  AppAnimalAnimalIdMedicalRecordsIndexRouteImport.update({
-    id: '/medical-records/',
-    path: '/medical-records/',
-    getParentRoute: () => AppAnimalAnimalIdRouteRoute,
-  } as any)
 const AppAnimalAnimalIdEventsIndexRoute =
   AppAnimalAnimalIdEventsIndexRouteImport.update({
     id: '/events/',
     path: '/events/',
+    getParentRoute: () => AppAnimalAnimalIdRouteRoute,
+  } as any)
+const AppAnimalAnimalIdMedicalRecordsIndexRoute =
+  AppAnimalAnimalIdMedicalRecordsIndexRouteImport.update({
+    id: '/medical-records/',
+    path: '/medical-records/',
     getParentRoute: () => AppAnimalAnimalIdRouteRoute,
   } as any)
 
@@ -137,18 +137,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_app': {
-      id: '/_app'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AppRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/panel': {
@@ -158,18 +158,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPanelRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/create/': {
-      id: '/_app/create/'
-      path: '/create'
-      fullPath: '/create/'
-      preLoaderRoute: typeof AppCreateIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/animal/$animalId': {
       id: '/_app/animal/$animalId'
       path: '/animal/$animalId'
       fullPath: '/animal/$animalId'
       preLoaderRoute: typeof AppAnimalAnimalIdRouteRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/create/': {
+      id: '/_app/create/'
+      path: '/create'
+      fullPath: '/create/'
+      preLoaderRoute: typeof AppCreateIndexRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/animal/$animalId/': {
@@ -186,18 +186,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAnimalAnimalIdEditRouteImport
       parentRoute: typeof AppAnimalAnimalIdRouteRoute
     }
-    '/_app/animal/$animalId/medical-records/': {
-      id: '/_app/animal/$animalId/medical-records/'
-      path: '/medical-records'
-      fullPath: '/animal/$animalId/medical-records/'
-      preLoaderRoute: typeof AppAnimalAnimalIdMedicalRecordsIndexRouteImport
-      parentRoute: typeof AppAnimalAnimalIdRouteRoute
-    }
     '/_app/animal/$animalId/events/': {
       id: '/_app/animal/$animalId/events/'
       path: '/events'
       fullPath: '/animal/$animalId/events/'
       preLoaderRoute: typeof AppAnimalAnimalIdEventsIndexRouteImport
+      parentRoute: typeof AppAnimalAnimalIdRouteRoute
+    }
+    '/_app/animal/$animalId/medical-records/': {
+      id: '/_app/animal/$animalId/medical-records/'
+      path: '/medical-records'
+      fullPath: '/animal/$animalId/medical-records/'
+      preLoaderRoute: typeof AppAnimalAnimalIdMedicalRecordsIndexRouteImport
       parentRoute: typeof AppAnimalAnimalIdRouteRoute
     }
   }

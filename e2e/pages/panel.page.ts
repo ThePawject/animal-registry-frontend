@@ -4,9 +4,7 @@ import type { Locator, Page } from '@playwright/test'
 
 export type SpeciesFilter = 'Wszystkie gatunki' | 'Pies' | 'Kot'
 export type StatusFilter =
-  | 'Wszystkie statusy'
-  | 'W schronisku'
-  | 'Poza schroniskiem'
+  'Wszystkie statusy' | 'W schronisku' | 'Poza schroniskiem'
 export type PageSize = 10 | 20 | 50
 
 export const ANIMAL_TABLE_COLUMNS = [

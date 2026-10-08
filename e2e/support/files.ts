@@ -41,7 +41,11 @@ function pngChunk(type: string, data: Buffer) {
 
 export function pngImage(
   name: string,
-  { color = COLORS.green as Rgb, width = 48, height = 32 } = {},
+  {
+    color = COLORS.green,
+    width = 48,
+    height = 32,
+  }: { color?: Rgb; width?: number; height?: number } = {},
 ): UploadFile {
   const header = Buffer.alloc(13)
   header.writeUInt32BE(width, 0)

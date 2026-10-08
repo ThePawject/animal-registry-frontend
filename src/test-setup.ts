@@ -12,7 +12,7 @@ class IntersectionObserverStub {
   observe(target: Element) {
     this.callback(
       [{ target, isIntersecting: true } as IntersectionObserverEntry],
-      this as unknown as IntersectionObserver,
+      this,
     )
   }
 
@@ -25,8 +25,7 @@ class IntersectionObserverStub {
   }
 }
 
-globalThis.IntersectionObserver =
-  IntersectionObserverStub as unknown as typeof IntersectionObserver
+globalThis.IntersectionObserver = IntersectionObserverStub
 
 class ResizeObserverStub {
   observe() {}
@@ -36,5 +35,4 @@ class ResizeObserverStub {
   disconnect() {}
 }
 
-globalThis.ResizeObserver =
-  ResizeObserverStub as unknown as typeof ResizeObserver
+globalThis.ResizeObserver = ResizeObserverStub

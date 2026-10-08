@@ -9,7 +9,7 @@ import type { QueryClient } from '@tanstack/react-query'
 interface MyRouterContext {
   queryClient: QueryClient
   isAuthenticated: boolean
-  getAccessToken: () => Promise<string>
+  getAccessToken: () => Promise<string | undefined>
 }
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
