@@ -1,0 +1,35 @@
+# Disposable infrastructure for the E2E suite. Started and stopped by
+# `e2e/stack/infra.ts`; nothing is persisted, so every run starts from an
+# empty database and an empty blob container.
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: 'Y'
+      MSSQL_SA_PASSWORD: ${E2E_MSSQL_SA_PASSWORD:?set by e2e/stack/infra.ts}
+    ports:
+      - '127.0.0.1:${E2E_MSSQL_PORT:?set by e2e/stack/infra.ts}:1433'
+    tmpfs:
+      - /var/opt/mssql/data
+      - /var/opt/mssql/log
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          '/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -Q "SELECT 1" -b -o /dev/null',
+        ]
+      interval: 3s
+      timeout: 5s
+      retries: 60
+      start_period: 10s
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    command: azurite-blob --blobHost 0.0.0.0 --inMemoryPersistence --loose --skipApiVersionCheck
+    ports:
+      - '127.0.0.1:${E2E_AZURITE_PORT:?set by e2e/stack/infra.ts}:10000'
+    healthcheck:
+      test: ['CMD-SHELL', 'nc -z 127.0.0.1 10000']
+      interval: 2s
+      timeout: 3s
+      retries: 30
