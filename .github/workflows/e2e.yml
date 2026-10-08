@@ -80,8 +80,10 @@ jobs:
 
       # Building up front keeps compiler output out of the test log and
       # makes a broken backend fail here, with a clear message.
+      # NuGet audit is switched off for the same reason as in
+      # e2e/stack/backend.ts: advisories are the backend pipeline's concern.
       - name: Build backend
-        run: dotnet build ../animal-registry-backend/AnimalRegistry
+        run: dotnet build ../animal-registry-backend/AnimalRegistry -p:NuGetAudit=false
 
       - name: Pull container images
         run: docker compose -f e2e/docker-compose.yml pull --quiet

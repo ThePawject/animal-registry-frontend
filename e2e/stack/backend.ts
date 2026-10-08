@@ -31,6 +31,10 @@ const backendEnv: NodeJS.ProcessEnv = {
   ASPNETCORE_URLS: URLS.backend,
   DOTNET_NOLOGO: '1',
   DOTNET_CLI_TELEMETRY_OPTOUT: '1',
+  // The backend treats NuGet vulnerability advisories as build errors. That
+  // gate belongs to the backend's own pipeline: a newly published advisory
+  // must not stop the UI from being tested.
+  NuGetAudit: 'false',
 
   // Development logging prints every SQL statement; keep the test output
   // readable and only surface startup messages, warnings and errors.
