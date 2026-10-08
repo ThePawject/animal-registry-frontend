@@ -155,24 +155,26 @@ export default function AnimalHealthRecordsTab({
   }
 
   const handleCancelEdit = () => {
+    const defaults = createDefaultEditFormData()
     setEditingRecordId(null)
     setEditingFile(null)
     setEditingFileError(null)
     setRemoveDocument(false)
     setEditError(null)
-    form.setFieldValue('occurredOn', createDefaultEditFormData().occurredOn)
-    form.setFieldValue('description', createDefaultEditFormData().description)
+    form.setFieldValue('occurredOn', defaults.occurredOn)
+    form.setFieldValue('description', defaults.description)
   }
 
   const handleShowAddForm = () => {
+    const defaults = createDefaultEditFormData()
     setEditingRecordId(null)
     setEditingFile(null)
     setEditingFileError(null)
     setRemoveDocument(false)
-    form.setFieldValue('occurredOn', createDefaultEditFormData().occurredOn, {
+    form.setFieldValue('occurredOn', defaults.occurredOn, {
       dontValidate: true,
     })
-    form.setFieldValue('description', createDefaultEditFormData().description, {
+    form.setFieldValue('description', defaults.description, {
       dontValidate: true,
     })
     setShowAddForm(true)

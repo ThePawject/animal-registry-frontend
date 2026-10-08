@@ -1,6 +1,7 @@
 import React from 'react'
 import { Calendar, Dog, ListFilter, LucideLoaderCircle } from 'lucide-react'
 import { useForm } from '@tanstack/react-form'
+import { FormField } from '../FormField'
 import { createAndDownloadReport } from '../AnimalTable'
 import {
   Combobox,
@@ -19,7 +20,6 @@ import { Card } from '@/components/ui/card'
 import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { useReportsByDateRange } from '@/api/reports/queries'
 import { genericErrorMessage } from '@/lib/utils'
 import { ANIMAL_EVENT_TYPE_MAP } from '@/api/animals/types'
@@ -35,34 +35,6 @@ const AnimalEventOptions = Object.entries(ANIMAL_EVENT_TYPE_MAP)
     value: event[0],
     label: event[1],
   }))
-
-interface FormFieldProps {
-  icon: React.ElementType
-  label: string
-  children: React.ReactNode
-  error?: string
-}
-
-function FormField({ icon: Icon, label, children, error }: FormFieldProps) {
-  return (
-    <div className="flex items-start gap-3 p-3 rounded-lg transition-colors mb-0">
-      <div className="flex-shrink-0 mt-2">
-        <Icon className="size-5" />
-      </div>
-      <div className="flex-1 min-w-0 space-y-1">
-        <Label htmlFor={label} className="text-sm">
-          {label}
-        </Label>
-        {children}
-        {error && (
-          <p role="alert" className="text-sm text-red-500 font-medium">
-            {error}
-          </p>
-        )}
-      </div>
-    </div>
-  )
-}
 
 interface DateRangeFilterModalProps {
   open: boolean

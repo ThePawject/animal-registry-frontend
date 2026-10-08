@@ -109,7 +109,10 @@ function AnimalTable() {
 
   React.useEffect(() => {
     if (animalsPage && !isPlaceholderData && page > totalPages) {
-      setSearch({ page: totalPages })
+      navigate({
+        search: (prev: IndexSearch) => ({ ...prev, page: totalPages }),
+        replace: true,
+      })
     }
   }, [animalsPage, isPlaceholderData, page, totalPages])
 

@@ -116,21 +116,23 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
   }
 
   const handleCancelEdit = () => {
+    const defaults = createDefaultEditFormData()
     setEditingEventId(null)
-    form.setFieldValue('type', createDefaultEditFormData().type)
-    form.setFieldValue('occurredOn', createDefaultEditFormData().occurredOn)
-    form.setFieldValue('description', createDefaultEditFormData().description)
+    form.setFieldValue('type', defaults.type)
+    form.setFieldValue('occurredOn', defaults.occurredOn)
+    form.setFieldValue('description', defaults.description)
   }
 
   const handleShowAddForm = () => {
+    const defaults = createDefaultEditFormData()
     setEditingEventId(null)
-    form.setFieldValue('type', createDefaultEditFormData().type, {
+    form.setFieldValue('type', defaults.type, {
       dontValidate: true,
     })
-    form.setFieldValue('occurredOn', createDefaultEditFormData().occurredOn, {
+    form.setFieldValue('occurredOn', defaults.occurredOn, {
       dontValidate: true,
     })
-    form.setFieldValue('description', createDefaultEditFormData().description, {
+    form.setFieldValue('description', defaults.description, {
       dontValidate: true,
     })
     setShowAddForm(true)

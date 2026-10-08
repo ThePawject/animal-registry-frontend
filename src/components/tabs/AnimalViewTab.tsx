@@ -57,6 +57,40 @@ function InfoRow({ label, info }: InfoRowProps) {
   )
 }
 
+interface GalleryThumbnailProps {
+  url: string
+  alt: string
+  selected: boolean
+  onSelect: () => void
+}
+
+function GalleryThumbnail({
+  url,
+  alt,
+  selected,
+  onSelect,
+}: GalleryThumbnailProps) {
+  return (
+    <button
+      type="button"
+      aria-pressed={selected}
+      onClick={onSelect}
+      className="rounded-md cursor-pointer"
+    >
+      <img
+        src={url}
+        alt={alt}
+        className={cn(
+          'w-20 h-20 object-cover rounded-md border transition-all',
+          selected
+            ? 'border-emerald-500 ring-2 ring-emerald-400'
+            : 'border-slate-300',
+        )}
+      />
+    </button>
+  )
+}
+
 export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
   const router = useRouter()
   const [selectedIdx, setSelectedIdx] = useState(0)
@@ -187,18 +221,12 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
             {firstFiveUrls.length > 1 && (
               <div className="flex flex-col gap-4 items-center pr-2">
                 {firstFiveUrls.map((url, idx) => (
-                  <img
+                  <GalleryThumbnail
                     key={idx}
-                    src={url}
+                    url={url}
                     alt={animal.name + ' zdjęcie ' + (idx + 1)}
-                    className={cn(
-                      'w-20 h-20 object-cover rounded-md border cursor-pointer transition-all',
-                      selectedIdx === idx
-                        ? 'border-emerald-500 ring-2 ring-emerald-400'
-                        : 'border-slate-300',
-                    )}
-                    aria-current={selectedIdx === idx}
-                    onClick={() => setSelectedIdx(idx)}
+                    selected={selectedIdx === idx}
+                    onSelect={() => setSelectedIdx(idx)}
                   />
                 ))}
               </div>
@@ -206,18 +234,12 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
             {remainingUrls.length > 0 && (
               <div className="flex flex-col gap-4 items-center pr-2">
                 {remainingUrls.map((url, idx) => (
-                  <img
+                  <GalleryThumbnail
                     key={idx}
-                    src={url}
+                    url={url}
                     alt={animal.name + ' zdjęcie ' + (idx + 6)}
-                    className={cn(
-                      'w-20 h-20 object-cover rounded-md border cursor-pointer transition-all',
-                      selectedIdx === idx + 5
-                        ? 'border-emerald-500 ring-2 ring-emerald-400'
-                        : 'border-slate-300',
-                    )}
-                    aria-current={selectedIdx === idx + 5}
-                    onClick={() => setSelectedIdx(idx + 5)}
+                    selected={selectedIdx === idx + 5}
+                    onSelect={() => setSelectedIdx(idx + 5)}
                   />
                 ))}
               </div>

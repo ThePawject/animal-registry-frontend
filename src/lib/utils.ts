@@ -85,7 +85,10 @@ export function todayIsoDate(): string {
 }
 
 export function isFutureDate(isoDate: string): boolean {
-  return isoDate.slice(0, 10) > todayIsoDate()
+  const [year, month, day] = isoDate.split('T')[0].split('-').map(Number)
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  return new Date(year, month - 1, day) > today
 }
 
 export function formatDate(dateString: string): string {

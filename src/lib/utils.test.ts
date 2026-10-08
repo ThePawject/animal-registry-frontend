@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { decodeJwt, getRoles, getShelterName } from './utils'
+import {
+  decodeJwt,
+  getRoles,
+  getShelterName,
+  isFutureDate,
+  todayIsoDate,
+} from './utils'
 
 const ROLES_CLAIM = 'https://ThePawject/roles'
 
@@ -49,5 +55,31 @@ describe('roles from a token', () => {
 
     expect(getRoles(decoded)).toEqual(['Shelter_Access_Schronisko_Łódź'])
     expect(getShelterName(decoded)).toBe('Schronisko Łódź')
+  })
+})
+
+describe('dates', () => {
+  const pad = (value: number) => String(value).padStart(2, '0')
+  const isoDate = (date: Date) =>
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+  const daysFromNow = (days: number) => {
+    const date = new Date()
+    date.setDate(date.getDate() + days)
+    return isoDate(date)
+  }
+
+  it('reads today from the local calendar', () => {
+    expect(todayIsoDate()).toBe(isoDate(new Date()))
+  })
+
+  it('accepts today and the past', () => {
+    expect(isFutureDate(todayIsoDate())).toBe(false)
+    expect(isFutureDate(daysFromNow(-1))).toBe(false)
+    expect(isFutureDate('2000-01-01T00:00:00Z')).toBe(false)
+  })
+
+  it('rejects tomorrow and far-future years', () => {
+    expect(isFutureDate(daysFromNow(1))).toBe(true)
+    expect(isFutureDate('12345-01-01')).toBe(true)
   })
 })
