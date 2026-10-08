@@ -86,7 +86,9 @@ export default function AnimalEventForm({
                     error={field.state.meta.errors[0]}
                   >
                     <Select
-                      value={String(field.state.value)}
+                      value={
+                        field.state.value === 0 ? '' : String(field.state.value)
+                      }
                       onValueChange={(value) =>
                         field.handleChange(Number(value) as AnimalEventType)
                       }

@@ -259,7 +259,6 @@ export class AnimalEventsPage extends RecordsTab {
 export type HealthRecordFormValues = {
   /** ISO date, `YYYY-MM-DD`. */
   occurredOn?: string
-  performedBy?: string
   description?: string
   document?: UploadFile
 }
@@ -307,7 +306,6 @@ export class AnimalHealthRecordsPage extends RecordsTab {
   readonly addButton: Locator
 
   readonly dateField: FormFieldLocator
-  readonly performedByField: FormFieldLocator
   readonly descriptionField: FormFieldLocator
   readonly documentField: FormFieldLocator
   readonly clearDocumentButton: Locator
@@ -322,7 +320,6 @@ export class AnimalHealthRecordsPage extends RecordsTab {
     this.addButton = page.getByRole('button', { name: 'Dodaj kartę zdrowia' })
 
     this.dateField = new FormFieldLocator(this.addForm, 'Data')
-    this.performedByField = new FormFieldLocator(this.addForm, 'Wykonane przez')
     this.descriptionField = new FormFieldLocator(this.addForm, 'Opis')
     this.documentField = new FormFieldLocator(
       this.addForm,
@@ -348,9 +345,6 @@ export class AnimalHealthRecordsPage extends RecordsTab {
   async fillAddForm(values: HealthRecordFormValues) {
     if (values.occurredOn !== undefined) {
       await this.dateField.input.fill(values.occurredOn)
-    }
-    if (values.performedBy !== undefined) {
-      await this.performedByField.input.fill(values.performedBy)
     }
     if (values.description !== undefined) {
       await this.descriptionField.input.fill(values.description)

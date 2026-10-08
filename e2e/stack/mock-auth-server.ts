@@ -96,19 +96,9 @@ const decodeJson = <T>(value: string): T =>
 
 function signJwt(payload: Record<string, unknown>) {
   const header = { alg: 'RS256', typ: 'JWT', kid: KEY_ID }
-  const encodedPayload = base64Url(JSON.stringify(payload))
-
-  // The app reads the access token with `atob`, which only understands the
-  // classic base64 alphabet. Real Auth0 tokens happen to avoid `-` and `_`
-  // because their payloads are plain ASCII without `>`, `?` or `~`; fail
-  // loudly if a test identity would break that assumption.
-  if (/[-_]/.test(encodedPayload)) {
-    throw new Error(
-      'Token payload must not contain ">", "?", "~" or non-ASCII characters: the app decodes it with atob().',
-    )
-  }
-
-  const signingInput = `${base64Url(JSON.stringify(header))}.${encodedPayload}`
+  const signingInput = [header, payload]
+    .map((part) => base64Url(JSON.stringify(part)))
+    .join('.')
   const signature = createSign('RSA-SHA256')
     .update(signingInput)
     .sign(privateKey)

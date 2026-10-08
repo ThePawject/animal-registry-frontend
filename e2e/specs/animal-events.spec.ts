@@ -24,6 +24,8 @@ import type { SeededAnimal } from '../support/api-client.ts'
  * animal's shelter status.
  */
 
+const EVENT_TYPE_PLACEHOLDER = 'Wybierz typ wydarzenia'
+
 test.describe('Animal events', () => {
   let animal: SeededAnimal
 
@@ -81,6 +83,7 @@ test.describe('Animal events', () => {
     await events.openAddForm()
 
     await expect(events.dateField.input).toHaveValue(daysAgo(0))
+    await expect(events.typeField.select).toHaveText(EVENT_TYPE_PLACEHOLDER)
     expect(await listOptions(events.typeField.select)).toEqual(
       Object.values(EVENT_TYPE_LABEL),
     )
@@ -142,9 +145,7 @@ test.describe('Animal events', () => {
 
     await events.openAddForm()
     await expect(events.descriptionField.input).toHaveValue('')
-    await expect(events.typeField.select).not.toContainText(
-      EVENT_TYPE_LABEL.walk,
-    )
+    await expect(events.typeField.select).toHaveText(EVENT_TYPE_PLACEHOLDER)
   })
 
   test('a failed save is reported and keeps the form open', async ({

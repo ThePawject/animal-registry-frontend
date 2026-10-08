@@ -187,7 +187,6 @@ export const animalsService = {
       const formData = new FormData()
       formData.append('OccurredOn', data.occurredOn)
       formData.append('Description', data.description)
-      if (data.performedBy) formData.append('PerformedBy', data.performedBy)
       if (file) formData.append('DocumentFile', file)
 
       const response = await apiClient.post(`animals/${id}/health`, formData, {
@@ -214,7 +213,6 @@ export const animalsService = {
       const formData = new FormData()
       formData.append('OccurredOn', data.occurredOn)
       formData.append('Description', data.description)
-      if (data.performedBy) formData.append('PerformedBy', data.performedBy)
       if (file) formData.append('DocumentFile', file)
       if (deleteDocument) formData.append('DeleteDocument', 'true')
 

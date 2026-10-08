@@ -38,6 +38,18 @@ test.describe('Animal register', () => {
     await auth.expectSignedInTo(user)
     await panel.expectEmpty()
     await expect(panel.addAnimalLink).toBeVisible()
+
+    await test.step('paging shows a single page with nowhere to go', async () => {
+      await panel.expectPage(1, 1)
+      for (const button of [
+        panel.firstPageButton,
+        panel.previousPageButton,
+        panel.nextPageButton,
+        panel.lastPageButton,
+      ]) {
+        await expect(button).toBeDisabled()
+      }
+    })
   })
 
   test('lists every animal with its data, newest signature first', async ({

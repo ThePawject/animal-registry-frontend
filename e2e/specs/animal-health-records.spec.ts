@@ -70,21 +70,20 @@ test.describe('Health records', () => {
     })
   })
 
-  // The form offers a "Wykonane przez" field, but the API has no such input
-  // and always records the signed-in user, so whatever is typed is dropped.
-  test.fixme('the "Wykonane przez" value entered in the form is saved', async ({
+  test('the author is always the signed-in user, never typed in by hand', async ({
     healthRecords,
+    user,
   }) => {
     const description = unique('Zabieg')
-    await healthRecords.addRecord({
-      occurredOn: daysAgo(1),
-      description,
-      performedBy: 'lek. wet. Anna Nowak',
-    })
+    await healthRecords.openAddForm()
 
+    await expect(healthRecords.addForm.getByText('Wykonane przez')).toBeHidden()
+
+    await healthRecords.fillAddForm({ occurredOn: daysAgo(1), description })
+    await healthRecords.saveButton.click()
     await expect(
       healthRecords.row(description).cell(HEALTH_COLUMN.performedBy),
-    ).toHaveText('lek. wet. Anna Nowak')
+    ).toHaveText(user.email)
   })
 
   test('a record can carry a document that opens from the list', async ({

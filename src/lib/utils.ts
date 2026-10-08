@@ -28,9 +28,10 @@ export function pinnedCellClass(
 
 export function decodeJwt(token: string) {
   try {
-    const payload = token.split('.')[1]
-    const decodedPayload = atob(payload)
-    return JSON.parse(decodedPayload)
+    // JWT segments are base64url encoded UTF-8, which `atob` alone cannot read.
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+    const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0))
+    return JSON.parse(new TextDecoder().decode(bytes))
   } catch (error) {
     console.error('Invalid JWT token:', error)
     return null

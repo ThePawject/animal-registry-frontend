@@ -1,5 +1,5 @@
 import React from 'react'
-import { Calendar, File, FileText, Upload, User, X } from 'lucide-react'
+import { Calendar, File, FileText, Upload, X } from 'lucide-react'
 import { useForm } from '@tanstack/react-form'
 import { Textarea } from '../ui/textarea'
 import type { AnimalHealthRecord } from '@/api/animals/types'
@@ -41,14 +41,12 @@ function FormField({ icon: Icon, label, children, error }: FormFieldProps) {
 type AnimalHealthRecordFormData = {
   occurredOn: string
   description: string
-  performedBy: string
   document: File | null
 }
 
 const defaultHealthRecordFormData: AnimalHealthRecordFormData = {
   occurredOn: new Date().toISOString().split('T')[0],
   description: '',
-  performedBy: '',
   document: null,
 }
 
@@ -73,7 +71,6 @@ export default function AnimalHealthRecordForm({
       const recordData: Omit<AnimalHealthRecord, 'id'> = {
         occurredOn: value.occurredOn,
         description: value.description,
-        performedBy: value.performedBy,
       }
 
       await addRecord({
@@ -133,30 +130,6 @@ export default function AnimalHealthRecordForm({
                       onChange={(e) => field.handleChange(e.target.value)}
                       id="Data"
                       className="bg-background"
-                    />
-                  </FormField>
-                </div>
-              )
-            }}
-          />
-
-          <form.Field
-            name="performedBy"
-            children={(field) => {
-              return (
-                <div className="flex-1">
-                  <FormField
-                    icon={User}
-                    label="Wykonane przez"
-                    error={field.state.meta.errors[0]}
-                  >
-                    <Input
-                      type="text"
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      id="Wykonane przez"
-                      className="bg-background"
-                      placeholder="Podaj nazwę lekarza/osoby"
                     />
                   </FormField>
                 </div>

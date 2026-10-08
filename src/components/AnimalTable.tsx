@@ -104,7 +104,7 @@ function AnimalTable() {
   )
 
   const totalPages = animalsPage
-    ? Math.ceil(animalsPage.totalCount / pageSize)
+    ? Math.max(1, Math.ceil(animalsPage.totalCount / pageSize))
     : 1
   const [rowSelection, setRowSelection] = React.useState({})
   const [openEventReportModal, setOpenEventReportModal] = React.useState(false)
