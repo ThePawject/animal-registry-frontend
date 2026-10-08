@@ -1,0 +1,115 @@
+name: e2e
+
+# Runs the Playwright suite against the real backend on a GitHub-hosted
+# runner. The whole stack (SQL Server, Azurite, mock identity provider,
+# backend, Vite) is started by `playwright test` itself; see e2e/README.md.
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      backend_ref:
+        description: 'Branch, tag or commit of animal-registry-backend to test against'
+        required: false
+        default: 'main'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+  DOTNET_VERSION: '9.0.x'
+  BACKEND_REPOSITORY: ThePawject/animal-registry-backend
+
+jobs:
+  e2e:
+    name: End-to-end tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      # The two repositories are checked out side by side, the same layout
+      # the suite expects on a developer machine.
+      - name: Checkout frontend
+        uses: actions/checkout@v4
+        with:
+          path: frontend
+
+      - name: Checkout backend
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.BACKEND_REPOSITORY }}
+          ref: ${{ inputs.backend_ref || 'main' }}
+          path: animal-registry-backend
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
+
+      - name: Setup Node ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Setup .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      # Building up front keeps compiler output out of the test log and
+      # makes a broken backend fail here, with a clear message.
+      - name: Build backend
+        run: dotnet build ../animal-registry-backend/AnimalRegistry
+
+      - name: Pull container images
+        run: docker compose -f e2e/docker-compose.yml pull --quiet
+        env:
+          E2E_MSSQL_SA_PASSWORD: unused-while-pulling
+          E2E_MSSQL_PORT: '14330'
+          E2E_AZURITE_PORT: '10100'
+
+      - name: Run end-to-end tests
+        run: pnpm e2e
+        env:
+          # Hosted runners have few cores; two workers keep the stack calm.
+          E2E_WORKERS: '2'
+
+      - name: Upload HTML report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: frontend/e2e/.artifacts/report
+          retention-days: 14
+          include-hidden-files: true
+
+      - name: Upload traces of failed tests
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results
+          path: frontend/e2e/.artifacts/test-results
+          retention-days: 14
+          include-hidden-files: true

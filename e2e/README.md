@@ -116,6 +116,14 @@ rather than fail:
 While developing, shorten the feedback loop for failing assertions with
 `E2E_SLOW_TIMEOUT_MS=20000 pnpm e2e ...`.
 
+## CI
+
+`.github/workflows/e2e.yml` runs the same `pnpm e2e` on a GitHub-hosted
+runner for every pull request and every push to `main`. It checks the
+backend repository out next to this one (its `main` branch; another ref can
+be chosen when starting the workflow by hand) and uploads the HTML report,
+plus traces of failed tests, as artifacts.
+
 ## Useful switches
 
 | Variable              | Effect                                           |
