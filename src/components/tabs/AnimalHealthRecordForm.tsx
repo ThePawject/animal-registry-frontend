@@ -1,6 +1,6 @@
-import React from 'react'
-import { Calendar, File, FileText, Upload, User, X } from 'lucide-react'
+import { Calendar, File, FileText, Upload, X } from 'lucide-react'
 import { useForm } from '@tanstack/react-form'
+import { FormField } from '../FormField'
 import { Textarea } from '../ui/textarea'
 import type { AnimalHealthRecord } from '@/api/animals/types'
 import {
@@ -11,46 +11,24 @@ import {
 import { useAddAnimalHealthRecord } from '@/api/animals/queries'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { cn, genericErrorMessage } from '@/lib/utils'
-
-interface FormFieldProps {
-  icon: React.ElementType
-  label: string
-  children: React.ReactNode
-  error?: string
-}
-
-function FormField({ icon: Icon, label, children, error }: FormFieldProps) {
-  return (
-    <div className="flex items-start gap-3 p-3 rounded-lg transition-colors mb-0">
-      <div className="flex-shrink-0 mt-2">
-        <Icon className="size-5" />
-      </div>
-      <div className="flex-1 min-w-0 space-y-1">
-        <Label htmlFor={label} className="text-sm">
-          {label}
-        </Label>
-        {children}
-        {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
-      </div>
-    </div>
-  )
-}
+import {
+  cn,
+  genericErrorMessage,
+  isFutureDate,
+  todayIsoDate,
+} from '@/lib/utils'
 
 type AnimalHealthRecordFormData = {
   occurredOn: string
   description: string
-  performedBy: string
   document: File | null
 }
 
-const defaultHealthRecordFormData: AnimalHealthRecordFormData = {
-  occurredOn: new Date().toISOString().split('T')[0],
+const createDefaultHealthRecordFormData = (): AnimalHealthRecordFormData => ({
+  occurredOn: todayIsoDate(),
   description: '',
-  performedBy: '',
   document: null,
-}
+})
 
 interface AnimalHealthRecordFormProps {
   animalId: string
@@ -68,12 +46,11 @@ export default function AnimalHealthRecordForm({
   } = useAddAnimalHealthRecord()
 
   const form = useForm({
-    defaultValues: defaultHealthRecordFormData,
+    defaultValues: createDefaultHealthRecordFormData(),
     onSubmit: async ({ value }) => {
       const recordData: Omit<AnimalHealthRecord, 'id'> = {
         occurredOn: value.occurredOn,
         description: value.description,
-        performedBy: value.performedBy,
       }
 
       await addRecord({
@@ -113,9 +90,8 @@ export default function AnimalHealthRecordForm({
             validators={{
               onChange: ({ value }) => {
                 if (!value) return 'Data jest wymagana'
-                const recordDate = new Date(value)
-                const today = new Date()
-                if (recordDate > today) return 'Data nie może być z przyszłości'
+                if (isFutureDate(value))
+                  return 'Data nie może być z przyszłości'
                 return undefined
               },
             }}
@@ -133,30 +109,6 @@ export default function AnimalHealthRecordForm({
                       onChange={(e) => field.handleChange(e.target.value)}
                       id="Data"
                       className="bg-background"
-                    />
-                  </FormField>
-                </div>
-              )
-            }}
-          />
-
-          <form.Field
-            name="performedBy"
-            children={(field) => {
-              return (
-                <div className="flex-1">
-                  <FormField
-                    icon={User}
-                    label="Wykonane przez"
-                    error={field.state.meta.errors[0]}
-                  >
-                    <Input
-                      type="text"
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      id="Wykonane przez"
-                      className="bg-background"
-                      placeholder="Podaj nazwę lekarza/osoby"
                     />
                   </FormField>
                 </div>
@@ -286,7 +238,7 @@ export default function AnimalHealthRecordForm({
           </Button>
         </div>
         {error && (
-          <p className="text-sm text-red-500 font-medium p-4">
+          <p role="alert" className="text-sm text-red-500 font-medium p-4">
             {genericErrorMessage}
           </p>
         )}

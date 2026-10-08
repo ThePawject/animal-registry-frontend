@@ -42,7 +42,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Card } from '@/components/ui/card'
-import { PINNED_COLUMN_ID, cn, pinnedCellClass } from '@/lib/utils'
+import {
+  PINNED_COLUMN_ID,
+  cn,
+  isFutureDate,
+  pinnedCellClass,
+  todayIsoDate,
+} from '@/lib/utils'
 import { useHorizontalOverflow } from '@/hooks/useHorizontalOverflow'
 
 interface AnimalEventsTabProps {
@@ -54,11 +60,11 @@ const ACTIONS_WIDTH_SAVED = 120
 
 const sortByEventType = sortByMappedText<AnimalEvent>(ANIMAL_EVENT_TYPE_MAP)
 
-const defaultEditFormData: Omit<AnimalEvent, 'id'> = {
+const createDefaultEditFormData = (): Omit<AnimalEvent, 'id'> => ({
   type: 1,
-  occurredOn: new Date().toISOString().split('T')[0],
+  occurredOn: todayIsoDate(),
   description: '',
-}
+})
 
 export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
   const { mutate: deleteEvent, isPending: isDeleting } = useDeleteAnimalEvent()
@@ -73,7 +79,7 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
   )
 
   const form = useForm({
-    defaultValues: defaultEditFormData,
+    defaultValues: createDefaultEditFormData(),
     onSubmit: ({ value }) => {
       const eventData: AnimalEvent = {
         id: editingEventId!,
@@ -110,19 +116,23 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
   }
 
   const handleCancelEdit = () => {
+    const defaults = createDefaultEditFormData()
     setEditingEventId(null)
-    form.setFieldValue('type', defaultEditFormData.type)
-    form.setFieldValue('occurredOn', defaultEditFormData.occurredOn)
-    form.setFieldValue('description', defaultEditFormData.description)
+    form.setFieldValue('type', defaults.type)
+    form.setFieldValue('occurredOn', defaults.occurredOn)
+    form.setFieldValue('description', defaults.description)
   }
 
   const handleShowAddForm = () => {
+    const defaults = createDefaultEditFormData()
     setEditingEventId(null)
-    form.setFieldValue('type', defaultEditFormData.type, { dontValidate: true })
-    form.setFieldValue('occurredOn', defaultEditFormData.occurredOn, {
+    form.setFieldValue('type', defaults.type, {
       dontValidate: true,
     })
-    form.setFieldValue('description', defaultEditFormData.description, {
+    form.setFieldValue('occurredOn', defaults.occurredOn, {
+      dontValidate: true,
+    })
+    form.setFieldValue('description', defaults.description, {
       dontValidate: true,
     })
     setShowAddForm(true)
@@ -185,9 +195,7 @@ export default function AnimalEventsTab({ animal }: AnimalEventsTabProps) {
             validators={{
               onChange: ({ value }) => {
                 if (!value) return 'Data wydarzenia jest wymagana'
-                const eventDate = new Date(value)
-                const today = new Date()
-                if (eventDate > today)
+                if (isFutureDate(value))
                   return 'Data wydarzenia nie może być z przyszłości'
                 return undefined
               },

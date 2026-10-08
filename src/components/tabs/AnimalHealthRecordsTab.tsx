@@ -46,7 +46,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Card } from '@/components/ui/card'
-import { PINNED_COLUMN_ID, cn, pinnedCellClass } from '@/lib/utils'
+import {
+  PINNED_COLUMN_ID,
+  cn,
+  isFutureDate,
+  pinnedCellClass,
+  todayIsoDate,
+} from '@/lib/utils'
 import { useHorizontalOverflow } from '@/hooks/useHorizontalOverflow'
 
 interface AnimalHealthRecordsTabProps {
@@ -67,11 +73,10 @@ const sortByDocument: SortingFn<AnimalHealthRecord> = (rowA, rowB) => {
   return compareText(documentA.fileName, documentB.fileName)
 }
 
-const defaultEditFormData: Omit<AnimalHealthRecord, 'id'> = {
-  occurredOn: new Date().toISOString().split('T')[0],
+const createDefaultEditFormData = (): Omit<AnimalHealthRecord, 'id'> => ({
+  occurredOn: todayIsoDate(),
   description: '',
-  performedBy: '',
-}
+})
 
 export default function AnimalHealthRecordsTab({
   animal,
@@ -95,7 +100,7 @@ export default function AnimalHealthRecordsTab({
   const [editError, setEditError] = React.useState<string | null>(null)
 
   const form = useForm({
-    defaultValues: defaultEditFormData,
+    defaultValues: createDefaultEditFormData(),
     onSubmit: ({ value }) => {
       const recordData: AnimalHealthRecord = {
         id: editingRecordId!,
@@ -147,34 +152,29 @@ export default function AnimalHealthRecordsTab({
     form.setFieldValue('description', record.description, {
       dontValidate: true,
     })
-    form.setFieldValue('performedBy', record.performedBy || '', {
-      dontValidate: true,
-    })
   }
 
   const handleCancelEdit = () => {
+    const defaults = createDefaultEditFormData()
     setEditingRecordId(null)
     setEditingFile(null)
     setEditingFileError(null)
     setRemoveDocument(false)
     setEditError(null)
-    form.setFieldValue('occurredOn', defaultEditFormData.occurredOn)
-    form.setFieldValue('description', defaultEditFormData.description)
-    form.setFieldValue('performedBy', defaultEditFormData.performedBy)
+    form.setFieldValue('occurredOn', defaults.occurredOn)
+    form.setFieldValue('description', defaults.description)
   }
 
   const handleShowAddForm = () => {
+    const defaults = createDefaultEditFormData()
     setEditingRecordId(null)
     setEditingFile(null)
     setEditingFileError(null)
     setRemoveDocument(false)
-    form.setFieldValue('occurredOn', defaultEditFormData.occurredOn, {
+    form.setFieldValue('occurredOn', defaults.occurredOn, {
       dontValidate: true,
     })
-    form.setFieldValue('description', defaultEditFormData.description, {
-      dontValidate: true,
-    })
-    form.setFieldValue('performedBy', defaultEditFormData.performedBy, {
+    form.setFieldValue('description', defaults.description, {
       dontValidate: true,
     })
     setShowAddForm(true)
@@ -231,9 +231,8 @@ export default function AnimalHealthRecordsTab({
             validators={{
               onChange: ({ value }) => {
                 if (!value) return 'Data jest wymagana'
-                const recordDate = new Date(value)
-                const today = new Date()
-                if (recordDate > today) return 'Data nie może być z przyszłości'
+                if (isFutureDate(value))
+                  return 'Data nie może być z przyszłości'
                 return undefined
               },
             }}
@@ -382,7 +381,9 @@ export default function AnimalHealthRecordsTab({
             </label>
           )}
           {editingFileError && (
-            <p className="text-xs text-red-500">{editingFileError}</p>
+            <p role="alert" className="text-xs text-red-500">
+              {editingFileError}
+            </p>
           )}
         </div>
       )
@@ -489,7 +490,9 @@ export default function AnimalHealthRecordsTab({
                   </Button>
                 </div>
                 {editError && (
-                  <p className="text-xs text-red-500">{editError}</p>
+                  <p role="alert" className="text-xs text-red-500">
+                    {editError}
+                  </p>
                 )}
               </div>
             )

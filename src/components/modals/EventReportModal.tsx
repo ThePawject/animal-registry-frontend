@@ -217,7 +217,7 @@ export default function EventReportModal({
               </div>
 
               {(validationError || error) && (
-                <p className="text-sm text-red-500 font-medium">
+                <p role="alert" className="text-sm text-red-500 font-medium">
                   {validationError ?? genericErrorMessage}
                 </p>
               )}

@@ -61,6 +61,9 @@ export const reportsService = {
     try {
       const response = await apiClient.get('reports/animals/date-range', {
         params,
+        paramsSerializer: {
+          indexes: null,
+        },
         responseType: 'blob',
       })
 

@@ -28,9 +28,9 @@ export function pinnedCellClass(
 
 export function decodeJwt(token: string) {
   try {
-    const payload = token.split('.')[1]
-    const decodedPayload = atob(payload)
-    return JSON.parse(decodedPayload)
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+    const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0))
+    return JSON.parse(new TextDecoder().decode(bytes))
   } catch (error) {
     console.error('Invalid JWT token:', error)
     return null
@@ -75,6 +75,20 @@ export function getAuthorizationParams() {
     scope: 'openid offline_access',
     audience: 'https://dev-ThePawject/',
   }
+}
+
+export function todayIsoDate(): string {
+  const now = new Date()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${now.getFullYear()}-${month}-${day}`
+}
+
+export function isFutureDate(isoDate: string): boolean {
+  const [year, month, day] = isoDate.split('T')[0].split('-').map(Number)
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  return new Date(year, month - 1, day) > today
 }
 
 export function formatDate(dateString: string): string {
