@@ -32,7 +32,7 @@ Lista zwierząt to ekran startowy panelu. Znajdziesz tu wszystkie zwierzęta wpi
 
 ### Krok 1. Przejrzyj listę
 
-Każdy wiersz to jedno zwierzę: zdjęcie główne, oznaczenie, imię, rasa, znaki szczególne, gatunek, płeć, umaszczenie, wiek, status i data dodania. Status **W schronisku** lub **Poza schroniskiem** ustawia się sam na podstawie wydarzeń zwierzęcia.
+Każdy wiersz to jedno zwierzę: zdjęcie główne, oznaczenie, imię, rasa, znaki szczególne, gatunek, płeć, umaszczenie, wiek, status i data dodania.
 
 ![Przejrzyj listę](./img/02-lista-zwierzat-01.webp)
 
@@ -86,7 +86,7 @@ Wpisz imię, numer chipa, rasę, znaki szczególne, umaszczenie i datę urodzeni
 
 ### Krok 3. Nadaj oznaczenie
 
-Oznaczenie to numer zwierzęcia w rejestrze w formacie **RRRR/NNNN** (rok i kolejny numer). Po wybraniu gatunku kliknij **Generuj unikalne oznaczenie**, a aplikacja podpowie pierwszy wolny numer. Możesz też wpisać oznaczenie ręcznie. Dwa zwierzęta tego samego gatunku nie mogą mieć tego samego oznaczenia.
+Oznaczenie to numer zwierzęcia w rejestrze w formacie **RRRR/NNNN** (rok i kolejny numer). Oznaczenie można wygenerować dopiero po wybraniu gatunku: dopóki pole **Gatunek** jest puste, przycisk **Generuj unikalne oznaczenie** jest nieaktywny. Wybierz więc najpierw gatunek, a potem kliknij ten przycisk, a aplikacja podpowie pierwszy wolny numer. Możesz też wpisać oznaczenie ręcznie. Dwa zwierzęta tego samego gatunku nie mogą mieć tego samego oznaczenia.
 
 ![Nadaj oznaczenie](./img/03-dodawanie-zwierzecia-03.webp)
 
@@ -126,7 +126,7 @@ Przyciski na karcie prowadzą do kolejnych zakładek: **Edytuj dane**, **Wydarze
 
 ### Krok 3. Przeglądaj galerię zdjęć
 
-W sekcji **Galeria Zdjęć** kliknij miniaturę, aby zobaczyć zdjęcie w powiększeniu.
+W sekcji **Galeria Zdjęć** znajdziesz wszystkie zdjęcia zwierzęcia. Klikaj miniatury po prawej stronie, aby przeglądać zdjęcia po kolei. Wybrane zdjęcie pokazuje się w całości w dużym podglądzie.
 
 ![Przeglądaj galerię zdjęć](./img/04-karta-zwierzecia-03.webp)
 
@@ -138,7 +138,7 @@ Przycisk **Pobierz raport** zapisuje na komputerze plik PDF z danymi i zdjęciam
 
 ### Krok 5. Usuń zwierzę z rejestru
 
-Przycisk **Usuń** otwiera okno z prośbą o potwierdzenie. Dopiero kliknięcie **Usuń** w tym oknie usuwa zwierzę. **Anuluj** zamyka okno bez zmian. Usunięcia nie można cofnąć, dlatego używaj go tylko dla wpisów dodanych przez pomyłkę. Zwierzę, które opuściło schronisko, powinno zostać w rejestrze z odpowiednim wydarzeniem, na przykład adopcją.
+Przycisk **Usuń** otwiera okno z prośbą o potwierdzenie. Dopiero kliknięcie **Usuń** w tym oknie usuwa zwierzę. **Anuluj** zamyka okno bez zmian. Usunięcia nie można cofnąć, dlatego używaj go tylko dla wpisów dodanych przez pomyłkę. Gdy zwierzę opuszcza schronisko, nie usuwaj go z rejestru. Wystarczy dodać mu w zakładce **Wydarzenia** jedno z wydarzeń: **Adopcja**, **Odbiór przez właściciela**, **Wypuszczony do środowiska**, **Eutanazja** lub **Zgon**. Status zwierzęcia zmieni się wtedy na **Poza schroniskiem**, a cała jego historia zostanie w rejestrze. Jeśli zwierzę wróci, dodaj wydarzenie **Przyjęcie do schroniska**, a status wróci na **W schronisku**.
 
 ![Usuń zwierzę z rejestru](./img/04-karta-zwierzecia-05.webp)
 

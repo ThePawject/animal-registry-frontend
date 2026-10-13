@@ -362,7 +362,7 @@ test('Lista zwierząt', async ({ page, panel }) => {
   await guide.step(
     page,
     'Przejrzyj listę',
-    'Każdy wiersz to jedno zwierzę: zdjęcie główne, oznaczenie, imię, rasa, znaki szczególne, gatunek, płeć, umaszczenie, wiek, status i data dodania. Status **W schronisku** lub **Poza schroniskiem** ustawia się sam na podstawie wydarzeń zwierzęcia.',
+    'Każdy wiersz to jedno zwierzę: zdjęcie główne, oznaczenie, imię, rasa, znaki szczególne, gatunek, płeć, umaszczenie, wiek, status i data dodania.',
   )
 
   await panel.searchInfoButton.click()
@@ -459,7 +459,7 @@ test('Dodawanie zwierzęcia', async ({ page, panel, animalForm }) => {
   await guide.step(
     page,
     'Nadaj oznaczenie',
-    'Oznaczenie to numer zwierzęcia w rejestrze w formacie **RRRR/NNNN** (rok i kolejny numer). Po wybraniu gatunku kliknij **Generuj unikalne oznaczenie**, a aplikacja podpowie pierwszy wolny numer. Możesz też wpisać oznaczenie ręcznie. Dwa zwierzęta tego samego gatunku nie mogą mieć tego samego oznaczenia.',
+    'Oznaczenie to numer zwierzęcia w rejestrze w formacie **RRRR/NNNN** (rok i kolejny numer). Oznaczenie można wygenerować dopiero po wybraniu gatunku: dopóki pole **Gatunek** jest puste, przycisk **Generuj unikalne oznaczenie** jest nieaktywny. Wybierz więc najpierw gatunek, a potem kliknij ten przycisk, a aplikacja podpowie pierwszy wolny numer. Możesz też wpisać oznaczenie ręcznie. Dwa zwierzęta tego samego gatunku nie mogą mieć tego samego oznaczenia.',
     { fullPage: true, highlight: animalForm.generateSignatureButton },
   )
 
@@ -537,10 +537,14 @@ test('Karta zwierzęcia', async ({ page, panel, animalDetails }) => {
   await guide.step(
     page,
     'Przeglądaj galerię zdjęć',
-    'W sekcji **Galeria Zdjęć** kliknij miniaturę, aby zobaczyć zdjęcie w powiększeniu.',
+    'W sekcji **Galeria Zdjęć** znajdziesz wszystkie zdjęcia zwierzęcia. Klikaj miniatury po prawej stronie, aby przeglądać zdjęcia po kolei. Wybrane zdjęcie pokazuje się w całości w dużym podglądzie.',
     {
-      highlight: animalDetails.galleryThumbnails.nth(1),
-      area: animalDetails.gallery,
+      fullPage: true,
+      highlight: [
+        animalDetails.galleryThumbnails.nth(0),
+        animalDetails.galleryThumbnails.nth(1),
+        animalDetails.galleryThumbnails.nth(2),
+      ],
     },
   )
 
@@ -555,7 +559,7 @@ test('Karta zwierzęcia', async ({ page, panel, animalDetails }) => {
   await guide.step(
     page,
     'Usuń zwierzę z rejestru',
-    'Przycisk **Usuń** otwiera okno z prośbą o potwierdzenie. Dopiero kliknięcie **Usuń** w tym oknie usuwa zwierzę. **Anuluj** zamyka okno bez zmian. Usunięcia nie można cofnąć, dlatego używaj go tylko dla wpisów dodanych przez pomyłkę. Zwierzę, które opuściło schronisko, powinno zostać w rejestrze z odpowiednim wydarzeniem, na przykład adopcją.',
+    'Przycisk **Usuń** otwiera okno z prośbą o potwierdzenie. Dopiero kliknięcie **Usuń** w tym oknie usuwa zwierzę. **Anuluj** zamyka okno bez zmian. Usunięcia nie można cofnąć, dlatego używaj go tylko dla wpisów dodanych przez pomyłkę. Gdy zwierzę opuszcza schronisko, nie usuwaj go z rejestru. Wystarczy dodać mu w zakładce **Wydarzenia** jedno z wydarzeń: **Adopcja**, **Odbiór przez właściciela**, **Wypuszczony do środowiska**, **Eutanazja** lub **Zgon**. Status zwierzęcia zmieni się wtedy na **Poza schroniskiem**, a cała jego historia zostanie w rejestrze. Jeśli zwierzę wróci, dodaj wydarzenie **Przyjęcie do schroniska**, a status wróci na **W schronisku**.',
     { highlight: animalDetails.confirmDeleteButton },
   )
   await animalDetails.cancelDeleteButton.click()
