@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { useAuth0 } from '@auth0/auth0-react'
+import { BookOpenIcon } from 'lucide-react'
 import { Button } from './ui/button'
 import { getAuthorizationParams, getOriginHomePage } from '@/lib/utils'
 
@@ -52,16 +53,28 @@ export default function Header({ shelterName }: HeaderProps) {
                 />
               </svg>
             ) : isAuthenticated ? (
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  logout({
-                    logoutParams: { returnTo: getOriginHomePage() || '' },
-                  })
-                }}
-              >
-                Wyloguj się
-              </Button>
+              <>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="hover:bg-emerald-700 hover:text-white"
+                >
+                  <Link to="/guide">
+                    <BookOpenIcon />
+                    <span className="sr-only sm:not-sr-only">Przewodnik</span>
+                  </Link>
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    logout({
+                      logoutParams: { returnTo: getOriginHomePage() || '' },
+                    })
+                  }}
+                >
+                  Wyloguj się
+                </Button>
+              </>
             ) : (
               <Button
                 onClick={() =>
