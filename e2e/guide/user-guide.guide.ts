@@ -39,6 +39,8 @@ const NEW_ANIMAL = {
   color: 'Rudy',
 } as const
 
+const MAX_REMOVAL_PASSES = 5
+
 const NEW_EVENT = 'Spacer po lesie, 40 minut. Dobrze chodzi na smyczy.'
 const NEW_HEALTH_RECORD = 'Kontrola po szczepieniu, stan ogólny dobry.'
 
@@ -172,19 +174,33 @@ async function removeAnimals(api: ApiClient) {
         roles: GUIDE_USER.roles,
       },
     })
+    if (!tokenResponse.ok()) {
+      throw new Error(
+        `Token endpoint answered ${tokenResponse.status()} for ${GUIDE_USER.email}`,
+      )
+    }
     const { access_token: accessToken } = (await tokenResponse.json()) as {
       access_token: string
     }
 
-    for (;;) {
+    for (let pass = 0; pass < MAX_REMOVAL_PASSES; pass++) {
       const { items } = await api.listAnimals()
-      if (items.length === 0) break
+      if (items.length === 0) return
       for (const animal of items) {
-        await context.delete(`${URLS.backend}/animals/${animal.id}`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        })
+        const response = await context.delete(
+          `${URLS.backend}/animals/${animal.id}`,
+          { headers: { Authorization: `Bearer ${accessToken}` } },
+        )
+        if (!response.ok()) {
+          throw new Error(
+            `Deleting animal ${animal.id} failed with HTTP ${response.status()}`,
+          )
+        }
       }
     }
+    throw new Error(
+      `The shelter still has animals after ${MAX_REMOVAL_PASSES} removal passes`,
+    )
   } finally {
     await context.dispose()
   }
