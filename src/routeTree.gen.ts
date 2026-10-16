@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppGuideRouteImport } from './routes/_app/guide'
 import { Route as AppPanelRouteImport } from './routes/_app/panel'
 import { Route as AppAnimalAnimalIdRouteRouteImport } from './routes/_app/animal.$animalId/route'
 import { Route as AppCreateIndexRouteImport } from './routes/_app/create/index'
@@ -27,6 +28,11 @@ const IndexRoute = IndexRouteImport.update({
 const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppGuideRoute = AppGuideRouteImport.update({
+  id: '/guide',
+  path: '/guide',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppPanelRoute = AppPanelRouteImport.update({
   id: '/panel',
@@ -68,6 +74,7 @@ const AppAnimalAnimalIdMedicalRecordsIndexRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/guide': typeof AppGuideRoute
   '/panel': typeof AppPanelRoute
   '/animal/$animalId': typeof AppAnimalAnimalIdRouteRouteWithChildren
   '/create/': typeof AppCreateIndexRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/guide': typeof AppGuideRoute
   '/panel': typeof AppPanelRoute
   '/create': typeof AppCreateIndexRoute
   '/animal/$animalId/edit': typeof AppAnimalAnimalIdEditRoute
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
+  '/_app/guide': typeof AppGuideRoute
   '/_app/panel': typeof AppPanelRoute
   '/_app/animal/$animalId': typeof AppAnimalAnimalIdRouteRouteWithChildren
   '/_app/create/': typeof AppCreateIndexRoute
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/guide'
     | '/panel'
     | '/animal/$animalId'
     | '/create/'
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/guide'
     | '/panel'
     | '/create'
     | '/animal/$animalId/edit'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_app'
+    | '/_app/guide'
     | '/_app/panel'
     | '/_app/animal/$animalId'
     | '/_app/create/'
@@ -150,6 +162,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_app/guide': {
+      id: '/_app/guide'
+      path: '/guide'
+      fullPath: '/guide'
+      preLoaderRoute: typeof AppGuideRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/panel': {
       id: '/_app/panel'
@@ -225,12 +244,14 @@ const AppAnimalAnimalIdRouteRouteWithChildren =
   )
 
 interface AppRouteChildren {
+  AppGuideRoute: typeof AppGuideRoute
   AppPanelRoute: typeof AppPanelRoute
   AppAnimalAnimalIdRouteRoute: typeof AppAnimalAnimalIdRouteRouteWithChildren
   AppCreateIndexRoute: typeof AppCreateIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppGuideRoute: AppGuideRoute,
   AppPanelRoute: AppPanelRoute,
   AppAnimalAnimalIdRouteRoute: AppAnimalAnimalIdRouteRouteWithChildren,
   AppCreateIndexRoute: AppCreateIndexRoute,

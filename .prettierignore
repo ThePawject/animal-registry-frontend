@@ -4,3 +4,4 @@ yarn.lock
 routeTree.gen.ts
 e2e/.artifacts
 e2e/.cache
+src/guide/guide.md

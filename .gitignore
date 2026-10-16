@@ -17,5 +17,6 @@ todos.json
 .idea
 *.md
 !README.md
+!src/guide/*.md
 e2e/.artifacts
 e2e/.cache
