@@ -32,13 +32,13 @@ export default function Header({ shelterName }: HeaderProps) {
   return (
     <>
       <header className="bg-emerald-800 text-white">
-        <div className="container mx-auto flex items-center gap-4 p-4 w-full">
-          <h1 className="min-w-0 text-base sm:text-xl font-semibold">
+        <div className="container mx-auto flex items-center gap-4 px-4 py-2 w-full">
+          <h1 className="min-w-0 text-base sm:text-lg font-semibold">
             <Link to="/panel" className="flex gap-2 items-center min-w-0">
               <img
                 src="/animal-shelter-logo.webp"
                 alt="Elektroniczny Rejestr Zwierząt"
-                className="h-8 sm:h-10 shrink-0"
+                className="h-8 shrink-0"
               />
               <span className="truncate">
                 {shelterName
@@ -72,6 +72,7 @@ export default function Header({ shelterName }: HeaderProps) {
               <>
                 <Button
                   asChild
+                  size="sm"
                   variant="ghost"
                   className="hover:bg-emerald-700 hover:text-white"
                 >
@@ -81,6 +82,7 @@ export default function Header({ shelterName }: HeaderProps) {
                   </Link>
                 </Button>
                 <Button
+                  size="sm"
                   variant="secondary"
                   aria-label="Wyloguj się"
                   onClick={() => {
@@ -95,6 +97,7 @@ export default function Header({ shelterName }: HeaderProps) {
               </>
             ) : (
               <Button
+                size="sm"
                 onClick={() =>
                   loginWithRedirect({
                     authorizationParams: getAuthorizationParams(),

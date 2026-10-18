@@ -118,7 +118,12 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
 
   return (
     <div className="flex flex-col gap-8 px-8 md:px-0 pb-8">
-      <div className="flex gap-4 w-full flex-col md:flex-row">
+      <div
+        className={cn(
+          'grid gap-4 w-full grid-cols-1',
+          isVaccinationsEnabled ? 'md:grid-cols-3' : 'md:grid-cols-5',
+        )}
+      >
         <Link
           to="/animal/$animalId/edit"
           params={{ animalId: animal.id }}
