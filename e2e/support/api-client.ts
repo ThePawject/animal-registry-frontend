@@ -33,6 +33,28 @@ export type HealthRecordInput = {
   document?: UploadFile
 }
 
+export type VaccinationInput = {
+  vaccineName: string
+  administeredOn: string
+  validUntil?: string
+  replacesVaccinationId?: string
+}
+
+export type ApiVaccination = {
+  id: string
+  animalId: string
+  vaccineName: string
+  status: number
+  replacesVaccinationId: string | null
+  replacedByVaccinationId: string | null
+}
+
+export type ApiMunicipality = {
+  id: string
+  name: string
+  isArchived: boolean
+}
+
 export type ApiPhoto = { id: string; url: string; fileName: string }
 
 export type ApiEvent = {
@@ -241,6 +263,39 @@ export class ApiClient {
     }
     await this.send('Adding a health record', () =>
       this.context.post(`/animals/${animalId}/health`, { multipart: form }),
+    )
+  }
+
+  async setFeature(key: string, isEnabled: boolean) {
+    await this.send(`Setting feature ${key} to ${isEnabled}`, () =>
+      this.context.put(`/shelter/features/${key}`, { data: { isEnabled } }),
+    )
+  }
+
+  async createMunicipality(name: string) {
+    return this.send<ApiMunicipality>(`Adding municipality ${name}`, () =>
+      this.context.post('/municipalities', { data: { name } }),
+    )
+  }
+
+  async createVaccination(animalId: string, input: VaccinationInput) {
+    return this.send<ApiVaccination>(
+      `Adding vaccination ${input.vaccineName}`,
+      () =>
+        this.context.post(`/animals/${animalId}/vaccinations`, {
+          data: {
+            vaccineName: input.vaccineName,
+            administeredOn: input.administeredOn,
+            validUntil: input.validUntil ?? null,
+            replacesVaccinationId: input.replacesVaccinationId ?? null,
+          },
+        }),
+    )
+  }
+
+  async listVaccinations(animalId: string) {
+    return this.read<Array<ApiVaccination>>('Listing vaccinations', () =>
+      this.context.get(`/animals/${animalId}/vaccinations`),
     )
   }
 

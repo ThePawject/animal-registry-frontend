@@ -34,9 +34,13 @@ function buildUser(
   } satisfies TestUser
 }
 
-export function createShelterUser(label = 'staff') {
+export const SHELTER_ADMIN_ROLE = 'Shelter_Admin'
+
+export function createShelterUser(label = 'staff', { admin = false } = {}) {
   const shelterId = `E2E_${uniqueToken()}`
-  return buildUser(label, [`${AUTH.shelterRolePrefix}${shelterId}`], shelterId)
+  const roles = [`${AUTH.shelterRolePrefix}${shelterId}`]
+  if (admin) roles.push(SHELTER_ADMIN_ROLE)
+  return buildUser(label, roles, shelterId)
 }
 
 export function createColleagueOf(colleague: TestUser, label = 'colleague') {

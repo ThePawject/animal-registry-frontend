@@ -1,5 +1,6 @@
 import { test as base, request } from '@playwright/test'
 import { BLOB, URLS } from '../config/env.ts'
+import { AddonsPage } from '../pages/addons.page.ts'
 import { AnimalDetailsPage, Breadcrumbs } from '../pages/animal-details.page.ts'
 import { AnimalFormPage } from '../pages/animal-form.page.ts'
 import {
@@ -8,6 +9,7 @@ import {
 } from '../pages/animal-records.page.ts'
 import { AuthScreens, MockLoginPage } from '../pages/auth.page.ts'
 import { LandingPage } from '../pages/landing.page.ts'
+import { MunicipalitiesPage } from '../pages/municipalities.page.ts'
 import { PanelPage } from '../pages/panel.page.ts'
 import {
   AnimalsReportCard,
@@ -15,6 +17,7 @@ import {
   EventReportCard,
   ReportsPage,
 } from '../pages/report-cards.ts'
+import { VaccinationsPage } from '../pages/vaccinations.page.ts'
 import { ApiClient } from './api-client.ts'
 import { AuthStateCache } from './auth-session.ts'
 import { pngImage } from './files.ts'
@@ -24,6 +27,7 @@ import type { TestUser } from './users.ts'
 
 type Options = {
   shelter: 'shared' | 'isolated'
+  admin: boolean
   signedIn: boolean
 }
 
@@ -41,6 +45,9 @@ type TestFixtures = {
   events: AnimalEventsPage
   healthRecords: AnimalHealthRecordsPage
   breadcrumbs: Breadcrumbs
+  addons: AddonsPage
+  vaccinations: VaccinationsPage
+  municipalities: MunicipalitiesPage
   reportsPage: ReportsPage
   animalsReport: AnimalsReportCard
   eventReport: EventReportCard
@@ -68,6 +75,7 @@ export function toLocalBlobUrl(publicUrl: string) {
 
 export const test = base.extend<TestFixtures & Options, WorkerFixtures>({
   shelter: ['shared', { option: true }],
+  admin: [false, { option: true }],
   signedIn: [true, { option: true }],
 
   workerUser: [
@@ -95,8 +103,12 @@ export const test = base.extend<TestFixtures & Options, WorkerFixtures>({
     { scope: 'worker' },
   ],
 
-  user: async ({ shelter, workerUser }, use) => {
-    await use(shelter === 'isolated' ? createShelterUser() : workerUser)
+  user: async ({ shelter, admin, workerUser }, use) => {
+    await use(
+      shelter === 'isolated' || admin
+        ? createShelterUser('staff', { admin })
+        : workerUser,
+    )
   },
 
   storageState: async ({ signedIn, user, authStates }, use) => {
@@ -151,6 +163,9 @@ export const test = base.extend<TestFixtures & Options, WorkerFixtures>({
   healthRecords: async ({ page }, use) =>
     use(new AnimalHealthRecordsPage(page)),
   breadcrumbs: async ({ page }, use) => use(new Breadcrumbs(page)),
+  addons: async ({ page }, use) => use(new AddonsPage(page)),
+  vaccinations: async ({ page }, use) => use(new VaccinationsPage(page)),
+  municipalities: async ({ page }, use) => use(new MunicipalitiesPage(page)),
   reportsPage: async ({ page }, use) => use(new ReportsPage(page)),
   animalsReport: async ({ page }, use) => use(new AnimalsReportCard(page)),
   eventReport: async ({ page }, use) => use(new EventReportCard(page)),
