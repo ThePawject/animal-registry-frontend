@@ -112,7 +112,7 @@ export default function AnimalVaccinationsTab({
         </Button>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div role="list" className="flex flex-col gap-4">
         {data.length === 0 && (
           <p className="text-center text-muted-foreground py-8">
             Brak szczepień.
@@ -121,6 +121,7 @@ export default function AnimalVaccinationsTab({
         {data.map((vaccination) => (
           <div
             key={vaccination.id}
+            role="listitem"
             className="flex flex-col gap-4 rounded-md border p-4"
           >
             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -135,7 +136,7 @@ export default function AnimalVaccinationsTab({
                 />
               </div>
               <div className="flex items-center gap-2">
-                {vaccination.status !== 3 && (
+                {!vaccination.replacedByVaccinationId && (
                   <Button
                     size="sm"
                     className="bg-emerald-600 hover:bg-emerald-700 text-white"

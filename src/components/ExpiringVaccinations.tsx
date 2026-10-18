@@ -79,7 +79,7 @@ export default function ExpiringVaccinations() {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="flex flex-col gap-2">
+      <CardContent role="list" className="flex flex-col gap-2">
         {!isDaysValid && (
           <p role="alert" className="text-sm text-red-500 font-medium">
             Liczba dni musi być z zakresu od 0 do {MAX_DAYS}.
@@ -96,6 +96,7 @@ export default function ExpiringVaccinations() {
           data?.map(({ vaccination, animalName, animalSignature, species }) => (
             <div
               key={vaccination.id}
+              role="listitem"
               className="flex flex-wrap items-center justify-between gap-4 rounded-md border p-3"
             >
               <div className="flex flex-col gap-1">

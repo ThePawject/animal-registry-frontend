@@ -75,7 +75,7 @@ export default function Municipalities() {
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="flex flex-col gap-2">
+      <CardContent role="list" className="flex flex-col gap-2">
         {data.length === 0 && (
           <EmptyMunicipalitiesNotice>
             <Button
@@ -90,6 +90,7 @@ export default function Municipalities() {
         {data.map((municipality) => (
           <div
             key={municipality.id}
+            role="listitem"
             className="flex items-center justify-between gap-4 rounded-md border p-3"
           >
             <div className="flex items-center gap-2">

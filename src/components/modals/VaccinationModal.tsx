@@ -90,11 +90,11 @@ export default function VaccinationModal({
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   const existingAttachment = removeAttachment ? null : vaccination?.attachment
+  const isReplacedByOther = (item: AnimalVaccination) =>
+    Boolean(item.replacedByVaccinationId) &&
+    item.replacedByVaccinationId !== vaccination?.id
   const replaceableVaccinations = animalVaccinations.filter(
-    (item) =>
-      item.id !== vaccination?.id &&
-      (item.replacedByVaccinationId === null ||
-        item.replacedByVaccinationId === vaccination?.id),
+    (item) => item.id !== vaccination?.id,
   )
 
   const form = useForm({
@@ -264,6 +264,8 @@ export default function VaccinationModal({
                   const replaced = replaceableVaccinations.find(
                     (item) => item.id === value,
                   )
+                  if (replaced && isReplacedByOther(replaced))
+                    return 'To szczepienie zostało już zastąpione innym'
                   const administeredOn =
                     fieldApi.form.getFieldValue('administeredOn')
                   if (
@@ -295,8 +297,13 @@ export default function VaccinationModal({
                         Nie zastępuje żadnego
                       </SelectItem>
                       {replaceableVaccinations.map((item) => (
-                        <SelectItem key={item.id} value={item.id}>
+                        <SelectItem
+                          key={item.id}
+                          value={item.id}
+                          disabled={isReplacedByOther(item)}
+                        >
                           {item.vaccineName} ({formatDate(item.administeredOn)})
+                          {isReplacedByOther(item) && ' – już zastąpione'}
                         </SelectItem>
                       ))}
                     </SelectContent>
