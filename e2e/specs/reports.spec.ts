@@ -2,7 +2,7 @@ import { captureDownload, expectPdfDownload } from '../pages/components.ts'
 import {
   DATE_RANGE_REPORT_ERRORS,
   EVENT_REPORT_ERRORS,
-} from '../pages/report-dialogs.ts'
+} from '../pages/report-cards.ts'
 import { buildAnimal, buildAnimals, daysAgo, unique } from '../support/data.ts'
 import {
   EVENT_TYPE,
@@ -29,7 +29,8 @@ const REPORT = {
 test.describe('Report of all animals', () => {
   test('downloads the full register as a PDF', async ({
     api,
-    panel,
+    reportsPage,
+    animalsReport,
     page,
     user,
   }) => {
@@ -37,10 +38,10 @@ test.describe('Report of all animals', () => {
       buildAnimal(),
       buildAnimal({ species: 'cat' }),
     ])
-    await panel.goto()
+    await reportsPage.goto()
 
     const download = await captureDownload(page, () =>
-      panel.allAnimalsReportButton.click(),
+      animalsReport.generateButton.click(),
     )
 
     const text = await expectPdfDownload(download)
@@ -48,10 +49,7 @@ test.describe('Report of all animals', () => {
     expect(text).toContain(dog.name)
     expect(text).toContain(cat.name)
     expect(text).toContain(dog.signature)
-    await expect(panel.allAnimalsReportButton).toBeEnabled()
-    await expect(panel.allAnimalsReportButton).toHaveText(
-      'Raport wszystkie zwierzeta',
-    )
+    await expect(animalsReport.generateButton).toBeEnabled()
   })
 })
 
@@ -151,7 +149,7 @@ test.describe('Report of selected animals', () => {
 })
 
 test.describe('Event report', () => {
-  test.beforeEach(async ({ api, panel }) => {
+  test.beforeEach(async ({ api, reportsPage }) => {
     const [dog, cat] = await api.createAnimals([
       buildAnimal(),
       buildAnimal({ species: 'cat' }),
@@ -166,8 +164,7 @@ test.describe('Event report', () => {
       occurredOn: daysAgo(20),
       description: 'Wazenie do raportu',
     })
-    await panel.goto()
-    await panel.eventReportButton.click()
+    await reportsPage.goto()
   })
 
   test('covers the last week, month and quarter by default', async ({
@@ -194,7 +191,6 @@ test.describe('Event report', () => {
       'Month',
       'Quarter',
     ])
-    await eventReport.expectClosed()
   })
 
   test('can be limited to a single period', async ({ eventReport, page }) => {
@@ -273,36 +269,21 @@ test.describe('Event report', () => {
     await expect(eventReport.root).toBeVisible()
   })
 
-  test('forgets a custom range when it is unticked or the dialog is cancelled', async ({
+  test('forgets a custom range when it is unticked', async ({
     eventReport,
-    panel,
   }) => {
     await eventReport.period('Własny zakres dat').check()
     await eventReport.customStartDate.fill(daysAgo(10))
     await eventReport.customEndDate.fill(daysAgo(1))
 
-    await test.step('unticking hides and clears the dates', async () => {
-      await eventReport.period('Własny zakres dat').uncheck()
-      await expect(eventReport.customStartDate).toBeHidden()
-      await eventReport.period('Własny zakres dat').check()
-      await expect(eventReport.customStartDate).toHaveValue('')
-      await expect(eventReport.customEndDate).toHaveValue('')
-    })
-
-    await test.step('cancelling restores the defaults', async () => {
-      await eventReport.setPeriods(['Własny zakres dat'])
-      await eventReport.cancelButton.click()
-      await eventReport.expectClosed()
-
-      await panel.eventReportButton.click()
-      await expect(eventReport.period('Ostatni tydzień')).toBeChecked()
-      await expect(eventReport.period('Ostatni miesiąc')).toBeChecked()
-      await expect(eventReport.period('Ostatni kwartał')).toBeChecked()
-      await expect(eventReport.period('Własny zakres dat')).not.toBeChecked()
-    })
+    await eventReport.period('Własny zakres dat').uncheck()
+    await expect(eventReport.customStartDate).toBeHidden()
+    await eventReport.period('Własny zakres dat').check()
+    await expect(eventReport.customStartDate).toHaveValue('')
+    await expect(eventReport.customEndDate).toHaveValue('')
   })
 
-  test('reports a server failure and stays open for another try', async ({
+  test('reports a server failure and can be tried again', async ({
     eventReport,
     page,
   }) => {
@@ -311,7 +292,6 @@ test.describe('Event report', () => {
     await eventReport.generateButton.click()
 
     await expect(eventReport.error).toHaveText(GENERIC_ERROR_MESSAGE)
-    await expect(eventReport.root).toBeVisible()
     await expect(eventReport.generateButton).toBeEnabled()
   })
 })
@@ -321,7 +301,7 @@ test.describe('Date range report', () => {
   const adoptedCat = buildAnimal({ species: 'cat' })
   const weighedCat = buildAnimal({ species: 'cat' })
 
-  test.beforeEach(async ({ api, panel }) => {
+  test.beforeEach(async ({ api, reportsPage }) => {
     const [dog, adopted, weighed] = await api.createAnimals([
       walkedDog,
       adoptedCat,
@@ -342,8 +322,7 @@ test.describe('Date range report', () => {
       occurredOn: daysAgo(2),
       description: 'Wazenie w zakresie',
     })
-    await panel.goto()
-    await panel.dateRangeReportButton.click()
+    await reportsPage.goto()
   })
 
   test('requires a start and an end date, in that order', async ({
@@ -401,7 +380,6 @@ test.describe('Date range report', () => {
       String(SPECIES.cat),
     ])
     expect(queryValues(request, 'eventTypes')).toEqual([])
-    await dateRangeReport.expectClosed()
   })
 
   test('leaves out events outside the chosen dates', async ({
@@ -468,17 +446,18 @@ test.describe('Date range report', () => {
     ])
   })
 
-  test('cancelling discards the filters', async ({
+  test('clears the filters once the report is downloaded', async ({
     dateRangeReport,
-    panel,
+    page,
   }) => {
     await dateRangeReport.setRange(daysAgo(30), daysAgo(0))
     await dateRangeReport.pick(dateRangeReport.speciesField, ['Psy'])
 
-    await dateRangeReport.cancelButton.click()
-    await dateRangeReport.expectClosed()
+    const download = await captureDownload(page, () =>
+      dateRangeReport.generateButton.click(),
+    )
 
-    await panel.dateRangeReportButton.click()
+    await expectPdfDownload(download)
     await expect(dateRangeReport.startDateField.input).toHaveValue('')
     await expect(dateRangeReport.endDateField.input).toHaveValue('')
     await expect(
@@ -486,7 +465,7 @@ test.describe('Date range report', () => {
     ).toHaveCount(0)
   })
 
-  test('reports a server failure and stays open for another try', async ({
+  test('reports a server failure and can be tried again', async ({
     dateRangeReport,
     page,
   }) => {
@@ -498,7 +477,6 @@ test.describe('Date range report', () => {
     await expect(
       dateRangeReport.root.getByText(GENERIC_ERROR_MESSAGE),
     ).toBeVisible()
-    await expect(dateRangeReport.root).toBeVisible()
     await expect(dateRangeReport.generateButton).toBeEnabled()
   })
 })

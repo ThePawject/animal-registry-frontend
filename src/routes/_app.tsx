@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 
 import { useAxiosWithAuth } from '@/api/useAxiosWithAuth'
+import { RolesContext } from '@/hooks/RolesContext'
 import { useUserInfo } from '@/hooks/useUserInfo'
 import Header from '@/components/Header'
 import { AuthTransition } from '@/components/AuthTransition'
@@ -42,13 +43,15 @@ function AppLayout() {
       authenticatedComponent={
         <>
           {!userHasNoRoles && (
-            <div className="flex flex-col gap-8">
-              <Header shelterName={shelterName} />
-              <div className="container mx-auto flex flex-col gap-8">
-                <Breadcrumbs />
-                <Outlet />
+            <RolesContext.Provider value={roles}>
+              <div className="flex flex-col gap-8">
+                <Header shelterName={shelterName} />
+                <div className="container mx-auto flex flex-col gap-8">
+                  <Breadcrumbs />
+                  <Outlet />
+                </div>
               </div>
-            </div>
+            </RolesContext.Provider>
           )}
           <LoginModal
             open={isLoginModalOpen}

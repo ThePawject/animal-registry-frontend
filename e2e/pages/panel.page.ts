@@ -67,10 +67,7 @@ export class PanelPage {
   readonly lastPageButton: Locator
   readonly selectAllCheckbox: Locator
 
-  readonly eventReportButton: Locator
-  readonly allAnimalsReportButton: Locator
   readonly selectedAnimalsReportButton: Locator
-  readonly dateRangeReportButton: Locator
 
   private readonly skeletons: Locator
   private readonly tableWrapper: Locator
@@ -113,19 +110,9 @@ export class PanelPage {
     this.nextPageButton = page.getByRole('button', { name: 'Następna strona' })
     this.lastPageButton = page.getByRole('button', { name: 'Ostatnia strona' })
 
-    this.eventReportButton = page.getByRole('button', {
-      name: 'Raport zdarzeń',
-      exact: true,
-    })
-    this.allAnimalsReportButton = page.getByTitle(
-      'Eksport tekstowy danych zwierząt do PDF (bez zdjęć).',
-    )
     this.selectedAnimalsReportButton = page.getByTitle(
       'PDF zawierający dane i zdjęcia wybranych zwierząt (siatka zdjęć).',
     )
-    this.dateRangeReportButton = page.getByRole('button', {
-      name: 'Raport zdarzen w zakresie',
-    })
   }
 
   async goto(search: Record<string, string | number | boolean> = {}) {

@@ -22,8 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from './ui/select'
-import DateRangeFilterModal from './modals/DateRangeFilterModal'
-import EventReportModal from './modals/EventReportModal'
 import { InfoCard } from './InfoCard'
 import type { IndexSearch } from '@/routes/_app/panel'
 import type { ColumnDef } from '@tanstack/react-table'
@@ -35,19 +33,14 @@ import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAnimals } from '@/api/animals/queries'
-import { cn, formatDate, pinnedCellClass } from '@/lib/utils'
+import {
+  cn,
+  createAndDownloadReport,
+  formatDate,
+  pinnedCellClass,
+} from '@/lib/utils'
 import { useHorizontalOverflow } from '@/hooks/useHorizontalOverflow'
-import { useReportsBySelectedIds, useReportsDump } from '@/api/reports/queries'
-
-export const createAndDownloadReport = (blob: Blob, filename: string) => {
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.setAttribute('download', filename)
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-}
+import { useReportsBySelectedIds } from '@/api/reports/queries'
 
 const SEARCH_INFO_KEY = 'animal-search-info-dismissed'
 
@@ -92,10 +85,6 @@ function AnimalTable() {
     isInShelter: search.isInShelter ?? null,
   })
 
-  const { mutate: getReportsDump, isPending: isReportsDumpPending } =
-    useReportsDump(({ blob, filename }) =>
-      createAndDownloadReport(blob, filename),
-    )
   const {
     mutate: getReportsBySelectedIds,
     isPending: isReportsBySelectedIdsPending,
@@ -117,8 +106,6 @@ function AnimalTable() {
   }, [animalsPage, isPlaceholderData, page, totalPages])
 
   const [rowSelection, setRowSelection] = React.useState({})
-  const [openEventReportModal, setOpenEventReportModal] = React.useState(false)
-  const [openDateRangeModal, setOpenDateRangeModal] = React.useState(false)
 
   const { ref: scrollRef, hasOverflow } =
     useHorizontalOverflow<HTMLDivElement>()
@@ -379,29 +366,6 @@ function AnimalTable() {
     <div className="space-y-4 mx-auto px-4 md:px-0 w-full pb-8">
       <div className="flex gap-2 items-center flex-wrap justify-end">
         <Button
-          variant="outline"
-          title="Wygeneruj PDF z zestawieniem zdarzeń za wybrany okres (Raport-Zdarzen)"
-          onClick={() => {
-            setOpenEventReportModal(true)
-          }}
-        >
-          Raport zdarzeń
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => {
-            getReportsDump()
-          }}
-          title="Eksport tekstowy danych zwierząt do PDF (bez zdjęć)."
-          disabled={isReportsDumpPending}
-        >
-          {isReportsDumpPending ? (
-            <LucideLoaderCircle className="w-4 h-4 animate-spin" />
-          ) : (
-            'Raport wszystkie zwierzeta'
-          )}
-        </Button>
-        <Button
           disabled={selectedCount === 0 || isReportsBySelectedIdsPending}
           variant="outline"
           onClick={() => {
@@ -419,16 +383,6 @@ function AnimalTable() {
             'Raport z wybranych zwierzat'
           )}
         </Button>
-        <Button
-          variant="outline"
-          onClick={() => {
-            setOpenDateRangeModal(true)
-          }}
-          title="Wygeneruj raport dla zdefiniowanego zakresu dat (miesiąc/kwartał/tydzień)."
-        >
-          Raport zdarzen w zakresie
-        </Button>
-
         <Button
           asChild
           className="bg-emerald-600 hover:bg-emerald-700 text-white"
@@ -712,15 +666,6 @@ function AnimalTable() {
           </div>
         </div>
       </div>
-
-      <DateRangeFilterModal
-        open={openDateRangeModal}
-        onClose={() => setOpenDateRangeModal(false)}
-      />
-      <EventReportModal
-        open={openEventReportModal}
-        onClose={() => setOpenEventReportModal(false)}
-      />
     </div>
   )
 }

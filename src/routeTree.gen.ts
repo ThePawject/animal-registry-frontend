@@ -11,14 +11,20 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppAddonsRouteImport } from './routes/_app/addons'
 import { Route as AppGuideRouteImport } from './routes/_app/guide'
 import { Route as AppPanelRouteImport } from './routes/_app/panel'
+import { Route as AppReportsRouteImport } from './routes/_app/reports'
+import { Route as AppVaccinationsRouteImport } from './routes/_app/vaccinations'
+import { Route as AppAddonsIndexRouteImport } from './routes/_app/addons/index'
+import { Route as AppAddonsAddonKeyRouteImport } from './routes/_app/addons/$addonKey'
 import { Route as AppAnimalAnimalIdRouteRouteImport } from './routes/_app/animal.$animalId/route'
 import { Route as AppCreateIndexRouteImport } from './routes/_app/create/index'
 import { Route as AppAnimalAnimalIdIndexRouteImport } from './routes/_app/animal.$animalId/index'
 import { Route as AppAnimalAnimalIdEditRouteImport } from './routes/_app/animal.$animalId/edit'
 import { Route as AppAnimalAnimalIdEventsIndexRouteImport } from './routes/_app/animal.$animalId/events/index'
 import { Route as AppAnimalAnimalIdMedicalRecordsIndexRouteImport } from './routes/_app/animal.$animalId/medical-records/index'
+import { Route as AppAnimalAnimalIdVaccinationsIndexRouteImport } from './routes/_app/animal.$animalId/vaccinations/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -29,6 +35,11 @@ const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppAddonsRoute = AppAddonsRouteImport.update({
+  id: '/addons',
+  path: '/addons',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppGuideRoute = AppGuideRouteImport.update({
   id: '/guide',
   path: '/guide',
@@ -38,6 +49,26 @@ const AppPanelRoute = AppPanelRouteImport.update({
   id: '/panel',
   path: '/panel',
   getParentRoute: () => AppRoute,
+} as any)
+const AppReportsRoute = AppReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppVaccinationsRoute = AppVaccinationsRouteImport.update({
+  id: '/vaccinations',
+  path: '/vaccinations',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAddonsIndexRoute = AppAddonsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppAddonsRoute,
+} as any)
+const AppAddonsAddonKeyRoute = AppAddonsAddonKeyRouteImport.update({
+  id: '/$addonKey',
+  path: '/$addonKey',
+  getParentRoute: () => AppAddonsRoute,
 } as any)
 const AppAnimalAnimalIdRouteRoute = AppAnimalAnimalIdRouteRouteImport.update({
   id: '/animal/$animalId',
@@ -71,75 +102,115 @@ const AppAnimalAnimalIdMedicalRecordsIndexRoute =
     path: '/medical-records/',
     getParentRoute: () => AppAnimalAnimalIdRouteRoute,
   } as any)
+const AppAnimalAnimalIdVaccinationsIndexRoute =
+  AppAnimalAnimalIdVaccinationsIndexRouteImport.update({
+    id: '/vaccinations/',
+    path: '/vaccinations/',
+    getParentRoute: () => AppAnimalAnimalIdRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/addons': typeof AppAddonsRouteWithChildren
   '/guide': typeof AppGuideRoute
   '/panel': typeof AppPanelRoute
+  '/reports': typeof AppReportsRoute
+  '/vaccinations': typeof AppVaccinationsRoute
   '/animal/$animalId': typeof AppAnimalAnimalIdRouteRouteWithChildren
+  '/addons/$addonKey': typeof AppAddonsAddonKeyRoute
+  '/addons/': typeof AppAddonsIndexRoute
   '/create/': typeof AppCreateIndexRoute
   '/animal/$animalId/edit': typeof AppAnimalAnimalIdEditRoute
   '/animal/$animalId/': typeof AppAnimalAnimalIdIndexRoute
   '/animal/$animalId/events/': typeof AppAnimalAnimalIdEventsIndexRoute
   '/animal/$animalId/medical-records/': typeof AppAnimalAnimalIdMedicalRecordsIndexRoute
+  '/animal/$animalId/vaccinations/': typeof AppAnimalAnimalIdVaccinationsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/guide': typeof AppGuideRoute
   '/panel': typeof AppPanelRoute
+  '/reports': typeof AppReportsRoute
+  '/vaccinations': typeof AppVaccinationsRoute
+  '/addons/$addonKey': typeof AppAddonsAddonKeyRoute
+  '/addons': typeof AppAddonsIndexRoute
   '/create': typeof AppCreateIndexRoute
   '/animal/$animalId/edit': typeof AppAnimalAnimalIdEditRoute
   '/animal/$animalId': typeof AppAnimalAnimalIdIndexRoute
   '/animal/$animalId/events': typeof AppAnimalAnimalIdEventsIndexRoute
   '/animal/$animalId/medical-records': typeof AppAnimalAnimalIdMedicalRecordsIndexRoute
+  '/animal/$animalId/vaccinations': typeof AppAnimalAnimalIdVaccinationsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
+  '/_app/addons': typeof AppAddonsRouteWithChildren
   '/_app/guide': typeof AppGuideRoute
   '/_app/panel': typeof AppPanelRoute
+  '/_app/reports': typeof AppReportsRoute
+  '/_app/vaccinations': typeof AppVaccinationsRoute
   '/_app/animal/$animalId': typeof AppAnimalAnimalIdRouteRouteWithChildren
+  '/_app/addons/$addonKey': typeof AppAddonsAddonKeyRoute
+  '/_app/addons/': typeof AppAddonsIndexRoute
   '/_app/create/': typeof AppCreateIndexRoute
   '/_app/animal/$animalId/edit': typeof AppAnimalAnimalIdEditRoute
   '/_app/animal/$animalId/': typeof AppAnimalAnimalIdIndexRoute
   '/_app/animal/$animalId/events/': typeof AppAnimalAnimalIdEventsIndexRoute
   '/_app/animal/$animalId/medical-records/': typeof AppAnimalAnimalIdMedicalRecordsIndexRoute
+  '/_app/animal/$animalId/vaccinations/': typeof AppAnimalAnimalIdVaccinationsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/addons'
     | '/guide'
     | '/panel'
+    | '/reports'
+    | '/vaccinations'
     | '/animal/$animalId'
+    | '/addons/$addonKey'
+    | '/addons/'
     | '/create/'
     | '/animal/$animalId/edit'
     | '/animal/$animalId/'
     | '/animal/$animalId/events/'
     | '/animal/$animalId/medical-records/'
+    | '/animal/$animalId/vaccinations/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/guide'
     | '/panel'
+    | '/reports'
+    | '/vaccinations'
+    | '/addons/$addonKey'
+    | '/addons'
     | '/create'
     | '/animal/$animalId/edit'
     | '/animal/$animalId'
     | '/animal/$animalId/events'
     | '/animal/$animalId/medical-records'
+    | '/animal/$animalId/vaccinations'
   id:
     | '__root__'
     | '/'
     | '/_app'
+    | '/_app/addons'
     | '/_app/guide'
     | '/_app/panel'
+    | '/_app/reports'
+    | '/_app/vaccinations'
     | '/_app/animal/$animalId'
+    | '/_app/addons/$addonKey'
+    | '/_app/addons/'
     | '/_app/create/'
     | '/_app/animal/$animalId/edit'
     | '/_app/animal/$animalId/'
     | '/_app/animal/$animalId/events/'
     | '/_app/animal/$animalId/medical-records/'
+    | '/_app/animal/$animalId/vaccinations/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -163,6 +234,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/addons': {
+      id: '/_app/addons'
+      path: '/addons'
+      fullPath: '/addons'
+      preLoaderRoute: typeof AppAddonsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/guide': {
       id: '/_app/guide'
       path: '/guide'
@@ -176,6 +254,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/panel'
       preLoaderRoute: typeof AppPanelRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/_app/reports': {
+      id: '/_app/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof AppReportsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/vaccinations': {
+      id: '/_app/vaccinations'
+      path: '/vaccinations'
+      fullPath: '/vaccinations'
+      preLoaderRoute: typeof AppVaccinationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/addons/': {
+      id: '/_app/addons/'
+      path: '/'
+      fullPath: '/addons/'
+      preLoaderRoute: typeof AppAddonsIndexRouteImport
+      parentRoute: typeof AppAddonsRoute
+    }
+    '/_app/addons/$addonKey': {
+      id: '/_app/addons/$addonKey'
+      path: '/$addonKey'
+      fullPath: '/addons/$addonKey'
+      preLoaderRoute: typeof AppAddonsAddonKeyRouteImport
+      parentRoute: typeof AppAddonsRoute
     }
     '/_app/animal/$animalId': {
       id: '/_app/animal/$animalId'
@@ -219,14 +325,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAnimalAnimalIdMedicalRecordsIndexRouteImport
       parentRoute: typeof AppAnimalAnimalIdRouteRoute
     }
+    '/_app/animal/$animalId/vaccinations/': {
+      id: '/_app/animal/$animalId/vaccinations/'
+      path: '/vaccinations'
+      fullPath: '/animal/$animalId/vaccinations/'
+      preLoaderRoute: typeof AppAnimalAnimalIdVaccinationsIndexRouteImport
+      parentRoute: typeof AppAnimalAnimalIdRouteRoute
+    }
   }
 }
+
+interface AppAddonsRouteChildren {
+  AppAddonsAddonKeyRoute: typeof AppAddonsAddonKeyRoute
+  AppAddonsIndexRoute: typeof AppAddonsIndexRoute
+}
+
+const AppAddonsRouteChildren: AppAddonsRouteChildren = {
+  AppAddonsAddonKeyRoute: AppAddonsAddonKeyRoute,
+  AppAddonsIndexRoute: AppAddonsIndexRoute,
+}
+
+const AppAddonsRouteWithChildren = AppAddonsRoute._addFileChildren(
+  AppAddonsRouteChildren,
+)
 
 interface AppAnimalAnimalIdRouteRouteChildren {
   AppAnimalAnimalIdEditRoute: typeof AppAnimalAnimalIdEditRoute
   AppAnimalAnimalIdIndexRoute: typeof AppAnimalAnimalIdIndexRoute
   AppAnimalAnimalIdEventsIndexRoute: typeof AppAnimalAnimalIdEventsIndexRoute
   AppAnimalAnimalIdMedicalRecordsIndexRoute: typeof AppAnimalAnimalIdMedicalRecordsIndexRoute
+  AppAnimalAnimalIdVaccinationsIndexRoute: typeof AppAnimalAnimalIdVaccinationsIndexRoute
 }
 
 const AppAnimalAnimalIdRouteRouteChildren: AppAnimalAnimalIdRouteRouteChildren =
@@ -236,6 +364,8 @@ const AppAnimalAnimalIdRouteRouteChildren: AppAnimalAnimalIdRouteRouteChildren =
     AppAnimalAnimalIdEventsIndexRoute: AppAnimalAnimalIdEventsIndexRoute,
     AppAnimalAnimalIdMedicalRecordsIndexRoute:
       AppAnimalAnimalIdMedicalRecordsIndexRoute,
+    AppAnimalAnimalIdVaccinationsIndexRoute:
+      AppAnimalAnimalIdVaccinationsIndexRoute,
   }
 
 const AppAnimalAnimalIdRouteRouteWithChildren =
@@ -244,15 +374,21 @@ const AppAnimalAnimalIdRouteRouteWithChildren =
   )
 
 interface AppRouteChildren {
+  AppAddonsRoute: typeof AppAddonsRouteWithChildren
   AppGuideRoute: typeof AppGuideRoute
   AppPanelRoute: typeof AppPanelRoute
+  AppReportsRoute: typeof AppReportsRoute
+  AppVaccinationsRoute: typeof AppVaccinationsRoute
   AppAnimalAnimalIdRouteRoute: typeof AppAnimalAnimalIdRouteRouteWithChildren
   AppCreateIndexRoute: typeof AppCreateIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAddonsRoute: AppAddonsRouteWithChildren,
   AppGuideRoute: AppGuideRoute,
   AppPanelRoute: AppPanelRoute,
+  AppReportsRoute: AppReportsRoute,
+  AppVaccinationsRoute: AppVaccinationsRoute,
   AppAnimalAnimalIdRouteRoute: AppAnimalAnimalIdRouteRouteWithChildren,
   AppCreateIndexRoute: AppCreateIndexRoute,
 }

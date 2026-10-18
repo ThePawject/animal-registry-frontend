@@ -2,8 +2,12 @@ import axios from 'axios'
 import { apiClient } from '../useAxiosWithAuth'
 import type {
   EventReportParams,
+  ExpiringVaccinationsReportParams,
+  OriginMonthlyReportParams,
+  OriginYearlyReportParams,
   ReportDateRangeParams,
   ReportSelectedParams,
+  VaccinationsReportParams,
 } from './types'
 
 interface ReportsResponse {
@@ -120,6 +124,100 @@ export const reportsService = {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         throw new Error(`Failed to fetch reports dump: ${error.message}`)
+      }
+      throw error
+    }
+  },
+  async getOriginMonthlyReport(
+    params: OriginMonthlyReportParams,
+  ): Promise<ReportsResponse> {
+    try {
+      const response = await apiClient.get('reports/origin/monthly', {
+        params,
+        responseType: 'blob',
+      })
+
+      const filename = extractFilename(response.headers)
+
+      return {
+        blob: response.data,
+        filename: filename,
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(
+          `Failed to fetch origin monthly report: ${error.message}`,
+        )
+      }
+      throw error
+    }
+  },
+  async getOriginYearlyReport(
+    params: OriginYearlyReportParams,
+  ): Promise<ReportsResponse> {
+    try {
+      const response = await apiClient.get('reports/origin/yearly', {
+        params,
+        responseType: 'blob',
+      })
+
+      const filename = extractFilename(response.headers)
+
+      return {
+        blob: response.data,
+        filename: filename,
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(
+          `Failed to fetch origin yearly report: ${error.message}`,
+        )
+      }
+      throw error
+    }
+  },
+  async getVaccinationsReport(
+    params: VaccinationsReportParams,
+  ): Promise<ReportsResponse> {
+    try {
+      const response = await apiClient.get('reports/vaccinations', {
+        params,
+        responseType: 'blob',
+      })
+
+      const filename = extractFilename(response.headers)
+
+      return {
+        blob: response.data,
+        filename: filename,
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to fetch vaccinations report: ${error.message}`)
+      }
+      throw error
+    }
+  },
+  async getExpiringVaccinationsReport(
+    params: ExpiringVaccinationsReportParams,
+  ): Promise<ReportsResponse> {
+    try {
+      const response = await apiClient.get('reports/vaccinations/expiring', {
+        params,
+        responseType: 'blob',
+      })
+
+      const filename = extractFilename(response.headers)
+
+      return {
+        blob: response.data,
+        filename: filename,
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(
+          `Failed to fetch expiring vaccinations report: ${error.message}`,
+        )
       }
       throw error
     }

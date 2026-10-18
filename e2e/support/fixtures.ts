@@ -10,9 +10,11 @@ import { AuthScreens, MockLoginPage } from '../pages/auth.page.ts'
 import { LandingPage } from '../pages/landing.page.ts'
 import { PanelPage } from '../pages/panel.page.ts'
 import {
-  DateRangeReportDialog,
-  EventReportDialog,
-} from '../pages/report-dialogs.ts'
+  AnimalsReportCard,
+  DateRangeReportCard,
+  EventReportCard,
+  ReportsPage,
+} from '../pages/report-cards.ts'
 import { ApiClient } from './api-client.ts'
 import { AuthStateCache } from './auth-session.ts'
 import { pngImage } from './files.ts'
@@ -39,8 +41,10 @@ type TestFixtures = {
   events: AnimalEventsPage
   healthRecords: AnimalHealthRecordsPage
   breadcrumbs: Breadcrumbs
-  eventReport: EventReportDialog
-  dateRangeReport: DateRangeReportDialog
+  reportsPage: ReportsPage
+  animalsReport: AnimalsReportCard
+  eventReport: EventReportCard
+  dateRangeReport: DateRangeReportCard
 
   blobProxy: void
 }
@@ -147,9 +151,10 @@ export const test = base.extend<TestFixtures & Options, WorkerFixtures>({
   healthRecords: async ({ page }, use) =>
     use(new AnimalHealthRecordsPage(page)),
   breadcrumbs: async ({ page }, use) => use(new Breadcrumbs(page)),
-  eventReport: async ({ page }, use) => use(new EventReportDialog(page)),
-  dateRangeReport: async ({ page }, use) =>
-    use(new DateRangeReportDialog(page)),
+  reportsPage: async ({ page }, use) => use(new ReportsPage(page)),
+  animalsReport: async ({ page }, use) => use(new AnimalsReportCard(page)),
+  eventReport: async ({ page }, use) => use(new EventReportCard(page)),
+  dateRangeReport: async ({ page }, use) => use(new DateRangeReportCard(page)),
 })
 
 export { expect } from '@playwright/test'

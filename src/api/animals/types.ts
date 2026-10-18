@@ -16,11 +16,55 @@ export type Animal = {
   mainPhoto: Photo | null
 }
 
+export const ADMISSION_METHOD_MAP = {
+  0: 'Brak przypisania',
+  1: 'Interwencja (Straż Miejska / Policja)',
+  2: 'Podrzucony',
+  3: 'Doprowadzony przez osobę fizyczną',
+  4: 'Zwrot z adopcji',
+  5: 'Przekazany z innego schroniska',
+  6: 'Inne',
+} as const
+
+export type AdmissionMethod = keyof typeof ADMISSION_METHOD_MAP
+
+export type MunicipalityReference = {
+  id: string | null
+  name: string
+}
+
+export type AnimalOrigin = {
+  isAssigned: boolean
+  admissionDate: string | null
+  admissionMethod: AdmissionMethod
+  admissionMethodName: string
+  foundStreet: string
+  foundMunicipality: MunicipalityReference
+  contractorMunicipality: MunicipalityReference
+}
+
+export type AnimalOriginForm = {
+  admissionDate: string
+  admissionMethod: AdmissionMethod
+  foundStreet: string
+  foundMunicipalityId: string
+  contractorMunicipalityId: string
+}
+
+export const emptyAnimalOriginForm: AnimalOriginForm = {
+  admissionDate: '',
+  admissionMethod: 0,
+  foundStreet: '',
+  foundMunicipalityId: '',
+  contractorMunicipalityId: '',
+}
+
 export type AnimalById = Omit<Animal, 'mainPhoto'> & {
   photos: Array<Photo>
   events: Array<AnimalEvent>
   healthRecords: Array<AnimalHealthRecord>
   mainPhotoId: string | null
+  origin?: AnimalOrigin | null
 }
 
 export type Photo = {
@@ -104,6 +148,7 @@ export type AddAnimal = {
   signature: string
   species: Species
   transponderCode: string | null
+  origin: AnimalOriginForm | null
 }
 
 export type EditAnimal = {
@@ -121,6 +166,7 @@ export type EditAnimal = {
   signature: string
   species: Species
   transponderCode: string | null
+  origin: AnimalOriginForm | null
 }
 
 export type EditAnimalForm = Omit<

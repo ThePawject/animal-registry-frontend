@@ -1,7 +1,21 @@
 import { Link } from '@tanstack/react-router'
 import { useAuth0 } from '@auth0/auth0-react'
-import { BookOpenIcon } from 'lucide-react'
+import {
+  BookOpenIcon,
+  FileTextIcon,
+  LogOutIcon,
+  PawPrintIcon,
+  PuzzleIcon,
+} from 'lucide-react'
+import PinnedAddonLinks from './PinnedAddonLinks'
 import { Button } from './ui/button'
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+} from './ui/navigation-menu'
+import { navLinkClassName } from '@/lib/navigation'
 import { getAuthorizationParams, getOriginHomePage } from '@/lib/utils'
 
 type HeaderProps = {
@@ -17,21 +31,23 @@ export default function Header({ shelterName }: HeaderProps) {
 
   return (
     <>
-      <header className="p-4 flex items-center bg-emerald-800 text-white shadow-md">
-        <div className="container mx-auto flex items-center w-full">
-          <h1 className="text-xl font-semibold">
-            <Link to="/panel" className="flex gap-2 items-center">
+      <header className="bg-emerald-800 text-white">
+        <div className="container mx-auto flex items-center gap-4 p-4 w-full">
+          <h1 className="min-w-0 text-base sm:text-xl font-semibold">
+            <Link to="/panel" className="flex gap-2 items-center min-w-0">
               <img
                 src="/animal-shelter-logo.webp"
                 alt="Elektroniczny Rejestr Zwierząt"
-                className="h-10"
+                className="h-8 sm:h-10 shrink-0"
               />
-              {shelterName
-                ? `Panel ${shelterName}`
-                : 'Elektroniczny Rejestr Zwierząt'}
+              <span className="truncate">
+                {shelterName
+                  ? `Panel ${shelterName}`
+                  : 'Elektroniczny Rejestr Zwierząt'}
+              </span>
             </Link>
           </h1>
-          <div className="ml-auto space-x-4 flex items-center justify-center min-w-[100px]">
+          <div className="ml-auto flex shrink-0 items-center justify-center gap-2 sm:gap-4 min-w-[40px]">
             {isLoading ? (
               <svg
                 className="w-5 h-5 animate-spin text-white"
@@ -66,13 +82,15 @@ export default function Header({ shelterName }: HeaderProps) {
                 </Button>
                 <Button
                   variant="secondary"
+                  aria-label="Wyloguj się"
                   onClick={() => {
                     logout({
                       logoutParams: { returnTo: getOriginHomePage() || '' },
                     })
                   }}
                 >
-                  Wyloguj się
+                  <LogOutIcon className="sm:hidden" />
+                  <span className="hidden sm:inline">Wyloguj się</span>
                 </Button>
               </>
             ) : (
@@ -88,6 +106,44 @@ export default function Header({ shelterName }: HeaderProps) {
             )}
           </div>
         </div>
+        {isAuthenticated && (
+          <div>
+            <nav aria-label="Nawigacja główna" className="container mx-auto">
+              <NavigationMenu
+                viewport={false}
+                className="max-w-full justify-start overflow-x-auto px-2 sm:px-4"
+              >
+                <NavigationMenuList className="flex-none items-end justify-start gap-2">
+                  <NavigationMenuItem>
+                    <NavigationMenuLink asChild className={navLinkClassName}>
+                      <Link to="/panel">
+                        <PawPrintIcon />
+                        Zwierzęta
+                      </Link>
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                  <PinnedAddonLinks />
+                  <NavigationMenuItem>
+                    <NavigationMenuLink asChild className={navLinkClassName}>
+                      <Link to="/reports">
+                        <FileTextIcon />
+                        Raporty
+                      </Link>
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
+                    <NavigationMenuLink asChild className={navLinkClassName}>
+                      <Link to="/addons">
+                        <PuzzleIcon />
+                        Dodatki
+                      </Link>
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                </NavigationMenuList>
+              </NavigationMenu>
+            </nav>
+          </div>
+        )}
       </header>
     </>
   )

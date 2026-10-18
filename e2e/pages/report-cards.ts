@@ -16,23 +16,35 @@ export const EVENT_REPORT_ERRORS = {
   customRangeInverted: 'Data początkowa nie może być późniejsza niż końcowa.',
 } as const
 
-export class EventReportDialog {
+export class ReportCard {
   readonly root: Locator
-  readonly customStartDate: Locator
-  readonly customEndDate: Locator
   readonly generateButton: Locator
-  readonly cancelButton: Locator
   readonly error: Locator
 
-  constructor(readonly page: Page) {
-    this.root = page.getByRole('dialog', { name: 'Raport zdarzeń' })
-    this.customStartDate = this.root.getByLabel('Data początkowa')
-    this.customEndDate = this.root.getByLabel('Data końcowa')
+  constructor(
+    readonly page: Page,
+    title: string,
+  ) {
+    this.root = page.locator('[data-slot="card"]').filter({
+      has: page
+        .locator('[data-slot="card-title"]')
+        .getByText(title, { exact: true }),
+    })
     this.generateButton = this.root.getByRole('button', {
       name: 'Generuj raport',
     })
-    this.cancelButton = this.root.getByRole('button', { name: 'Anuluj' })
     this.error = this.root.getByRole('alert')
+  }
+}
+
+export class EventReportCard extends ReportCard {
+  readonly customStartDate: Locator
+  readonly customEndDate: Locator
+
+  constructor(page: Page) {
+    super(page, 'Raport zdarzeń')
+    this.customStartDate = this.root.getByLabel('Data początkowa')
+    this.customEndDate = this.root.getByLabel('Data końcowa')
   }
 
   period(label: EventReportPeriod) {
@@ -50,10 +62,6 @@ export class EventReportDialog {
       await this.period(label).setChecked(selected.includes(label))
     }
   }
-
-  async expectClosed() {
-    await expect(this.root).toBeHidden()
-  }
 }
 
 export const DATE_RANGE_REPORT_ERRORS = {
@@ -62,29 +70,22 @@ export const DATE_RANGE_REPORT_ERRORS = {
   endNotAfterStart: 'Data końcowa musi być późniejsza niż data początkowa',
 } as const
 
-export class DateRangeReportDialog {
-  readonly root: Locator
+export class DateRangeReportCard extends ReportCard {
   readonly startDateField: FormFieldLocator
   readonly endDateField: FormFieldLocator
   readonly eventTypeField: FormFieldLocator
   readonly speciesField: FormFieldLocator
-  readonly generateButton: Locator
-  readonly cancelButton: Locator
   private readonly title: Locator
 
-  constructor(readonly page: Page) {
-    this.root = page
-      .locator('[data-slot="dialog-content"]')
-      .filter({ hasText: 'Filtruj raport' })
-    this.title = this.root.getByText('Filtruj raport', { exact: true })
+  constructor(page: Page) {
+    super(page, 'Raport zdarzeń w zakresie')
+    this.title = this.root.getByText('Raport zdarzeń w zakresie', {
+      exact: true,
+    })
     this.startDateField = new FormFieldLocator(this.root, 'Data początkowa')
     this.endDateField = new FormFieldLocator(this.root, 'Data końcowa')
     this.eventTypeField = new FormFieldLocator(this.root, 'Typ zdarzenia')
     this.speciesField = new FormFieldLocator(this.root, 'Gatunek')
-    this.generateButton = this.root.getByRole('button', {
-      name: 'Generuj raport',
-    })
-    this.cancelButton = this.root.getByRole('button', { name: 'Anuluj' })
   }
 
   async setRange(startDate: string, endDate: string) {
@@ -110,8 +111,23 @@ export class DateRangeReportDialog {
   chips(field: FormFieldLocator) {
     return field.root.locator('[data-slot="combobox-chip"]')
   }
+}
 
-  async expectClosed() {
-    await expect(this.root).toBeHidden()
+export class AnimalsReportCard extends ReportCard {
+  constructor(page: Page) {
+    super(page, 'Wszystkie zwierzęta')
+  }
+}
+
+export class ReportsPage {
+  static readonly path = '/reports'
+
+  constructor(readonly page: Page) {}
+
+  async goto() {
+    await this.page.goto(ReportsPage.path)
+    await expect(
+      this.page.getByRole('heading', { name: 'Zwierzęta', level: 2 }),
+    ).toBeVisible({ timeout: TIMEOUTS.slow })
   }
 }

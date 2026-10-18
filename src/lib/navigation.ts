@@ -1,0 +1,2 @@
+export const navLinkClassName =
+  "flex-row items-center gap-2 whitespace-nowrap rounded-b-none rounded-t-md bg-transparent px-4 py-2 text-base font-medium text-white hover:bg-emerald-700 hover:text-white focus:bg-emerald-700 focus:text-white data-[status=active]:bg-slate-50 data-[status=active]:text-foreground data-[status=active]:hover:bg-slate-50 data-[status=active]:focus:bg-slate-50 [&_svg:not([class*='text-'])]:text-white data-[status=active]:[&_svg:not([class*='text-'])]:text-emerald-600"

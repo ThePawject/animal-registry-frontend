@@ -6,6 +6,8 @@ import {
   Edit2Icon,
   FileTextIcon,
   ImagesIcon,
+  MapPinIcon,
+  SyringeIcon,
   TrashIcon,
 } from 'lucide-react'
 import { Badge } from '../ui/badge'
@@ -17,12 +19,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../ui/dialog'
-import { createAndDownloadReport } from '../AnimalTable'
 import type { AnimalById } from '@/api/animals/types'
 import { Card } from '@/components/ui/card'
 import { SEX_MAP, SPECIES_MAP } from '@/api/animals/types'
-import { cn } from '@/lib/utils'
+import { cn, createAndDownloadReport } from '@/lib/utils'
 import { useDeleteAnimal } from '@/api/animals/queries'
+import { useFeature } from '@/api/features/queries'
 import { useReportsBySelectedIds } from '@/api/reports/queries'
 
 function formatDate(date: string | Date | null | undefined): string {
@@ -92,6 +94,7 @@ function GalleryThumbnail({
 }
 
 export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
+  const { isEnabled: isVaccinationsEnabled } = useFeature('animal-vaccinations')
   const router = useRouter()
   const [selectedIdx, setSelectedIdx] = useState(0)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
@@ -140,6 +143,16 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
           <BriefcaseMedicalIcon className="size-5" />
           <span className="text-lg font-medium">Medyczne</span>
         </Link>
+        {isVaccinationsEnabled && (
+          <Link
+            to="/animal/$animalId/vaccinations"
+            params={{ animalId: animal.id }}
+            className="bg-white flex flex-1 gap-3 text-slate-700 items-center border border-slate-300 rounded-lg p-2 py-3 w-full hover:bg-emerald-600 hover:text-white justify-center"
+          >
+            <SyringeIcon className="size-5" />
+            <span className="text-lg font-medium">Szczepienia</span>
+          </Link>
+        )}
         <Button
           onClick={() => mutate({ ids: [animal.id] })}
           disabled={isPending}
@@ -204,6 +217,36 @@ export default function AnimalViewTab({ animal }: { animal: AnimalById }) {
           {`${animal.isInShelter ? 'W schronisku' : 'Poza schroniskiem'}`}
         </Badge>
       </Card>
+      {animal.origin && (
+        <Card className="w-full p-8 flex flex-col gap-8">
+          <div className="flex gap-2 items-center">
+            <MapPinIcon className="size-8 text-emerald-500" />
+            <span className="text-2xl font-semibold ml-2">Pochodzenie</span>
+          </div>
+          <div className="grid gap-8 grid-cols-2 md:grid-cols-3">
+            <InfoRow
+              label="Data przyjęcia"
+              info={formatDate(animal.origin.admissionDate)}
+            />
+            <InfoRow
+              label="Sposób przyjęcia"
+              info={animal.origin.admissionMethodName}
+            />
+            <InfoRow
+              label="Miejsce znalezienia"
+              info={animal.origin.foundStreet}
+            />
+            <InfoRow
+              label="Gmina znalezienia"
+              info={animal.origin.foundMunicipality.name}
+            />
+            <InfoRow
+              label="Gmina zlecająca"
+              info={animal.origin.contractorMunicipality.name}
+            />
+          </div>
+        </Card>
+      )}
       <Card className="w-full p-8 flex flex-col gap-8">
         <div className="flex gap-2 items-center">
           <ImagesIcon className="size-8 text-emerald-500" />
