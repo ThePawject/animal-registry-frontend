@@ -1,6 +1,7 @@
 import { expect } from '@playwright/test'
 import { FormFieldLocator } from './components.ts'
 import type { Locator, Page } from '@playwright/test'
+import type { UploadFile } from '../support/files.ts'
 
 export type VaccinationFormValues = {
   vaccineName?: string
@@ -19,6 +20,7 @@ export class VaccinationsPage {
   readonly validUntilField: FormFieldLocator
   readonly replacesField: FormFieldLocator
   readonly saveButton: Locator
+  readonly fileError: Locator
   readonly expiringEmpty: Locator
 
   constructor(readonly page: Page) {
@@ -32,6 +34,7 @@ export class VaccinationsPage {
       'Zastępuje szczepienie',
     )
     this.saveButton = this.dialog.getByRole('button', { name: 'Zapisz' })
+    this.fileError = new FormFieldLocator(this.dialog, 'Skan dokumentu').error
     this.expiringEmpty = page.getByText(
       'Brak szczepień spełniających kryteria.',
     )
@@ -79,6 +82,14 @@ export class VaccinationsPage {
     if (values.validUntil !== undefined) {
       await this.validUntilField.input.fill(values.validUntil)
     }
+  }
+
+  async attach(file: UploadFile) {
+    await this.dialog.locator('input[type="file"]').setInputFiles(file)
+  }
+
+  attachment(vaccineName: string) {
+    return this.row(vaccineName).getByRole('button', { name: /\.\w+$/ })
   }
 
   async chooseReplaced(option: string | RegExp) {

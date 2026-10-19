@@ -47,6 +47,7 @@ export type ApiVaccination = {
   status: number
   replacesVaccinationId: string | null
   replacedByVaccinationId: string | null
+  attachment: { fileName: string } | null
 }
 
 export type ApiMunicipality = {

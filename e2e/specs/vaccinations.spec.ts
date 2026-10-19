@@ -1,6 +1,13 @@
+import { captureDownload, expectPdfDownload } from '../pages/components.ts'
 import { VaccinationsPage } from '../pages/vaccinations.page.ts'
 import { buildAnimal, daysAgo, unique } from '../support/data.ts'
+import { pdfDocument } from '../support/files.ts'
 import { expect, test } from '../support/fixtures.ts'
+import {
+  forbidBackendRequests,
+  queryValues,
+  waitForBackendRequest,
+} from '../support/network.ts'
 
 test.use({ admin: true })
 
@@ -160,6 +167,324 @@ test.describe('Renewing a vaccination', () => {
     await expect(vaccinations.row(newer)).toHaveCount(0)
     await expect(vaccinations.renewButton(old)).toBeVisible()
     await expect(vaccinations.status(old)).toHaveText('Bez terminu ważności')
+  })
+})
+
+test.describe('The renewal dialog', () => {
+  test('refuses a date that is not later than the renewed vaccination', async ({
+    api,
+    vaccinations,
+  }) => {
+    const animal = await api.createAnimal(buildAnimal())
+    const old = unique('Stara')
+    await api.createVaccination(animal.id, {
+      vaccineName: old,
+      administeredOn: daysAgo(10),
+    })
+    await vaccinations.goto(animal.id)
+    await vaccinations.renewButton(old).click()
+
+    await vaccinations.fill({ administeredOn: daysAgo(10) })
+    await expect(vaccinations.replacesField.error).toHaveText(
+      'Zastępowane szczepienie musi być wcześniejsze niż to',
+    )
+    await expect(vaccinations.saveButton).toBeDisabled()
+
+    await vaccinations.fill({ administeredOn: daysAgo(9) })
+    await expect(vaccinations.replacesField.error).toBeHidden()
+    await expect(vaccinations.saveButton).toBeEnabled()
+  })
+
+  test('can be used to add a vaccination that replaces nothing', async ({
+    api,
+    vaccinations,
+  }) => {
+    const animal = await api.createAnimal(buildAnimal())
+    const old = unique('Stara')
+    const another = unique('Inna')
+    await api.createVaccination(animal.id, {
+      vaccineName: old,
+      administeredOn: daysAgo(10),
+    })
+    await vaccinations.goto(animal.id)
+    await vaccinations.renewButton(old).click()
+
+    await vaccinations.chooseReplaced('Nie zastępuje żadnego')
+    await vaccinations.fill({ vaccineName: another })
+    await vaccinations.save()
+
+    await expect(vaccinations.row(another)).toBeVisible()
+    await expect(vaccinations.renewButton(old)).toBeVisible()
+    await expect(vaccinations.status(old)).toHaveText('Bez terminu ważności')
+  })
+
+  test('the link to the renewed vaccination can be removed when editing', async ({
+    api,
+    vaccinations,
+  }) => {
+    const animal = await api.createAnimal(buildAnimal())
+    const old = unique('Stara')
+    const newer = unique('Nowa')
+    const oldVaccination = await api.createVaccination(animal.id, {
+      vaccineName: old,
+      administeredOn: daysAgo(60),
+    })
+    await api.createVaccination(animal.id, {
+      vaccineName: newer,
+      administeredOn: daysAgo(30),
+      replacesVaccinationId: oldVaccination.id,
+    })
+    await vaccinations.goto(animal.id)
+
+    await vaccinations
+      .row(newer)
+      .getByRole('button', { name: 'Edytuj' })
+      .click()
+    await expect(vaccinations.replacesField.select).toContainText(old)
+    await vaccinations.chooseReplaced('Nie zastępuje żadnego')
+    await vaccinations.save()
+
+    await expect(vaccinations.renewButton(old)).toBeVisible()
+    await expect(vaccinations.row(newer)).not.toContainText('Zastępuje')
+    const saved = await api.listVaccinations(animal.id)
+    expect(saved.every((item) => item.replacesVaccinationId === null)).toBe(
+      true,
+    )
+  })
+})
+
+test.describe('Vaccination attachments', () => {
+  test('a scan is saved with the vaccination', async ({
+    api,
+    vaccinations,
+  }) => {
+    const animal = await api.createAnimal(buildAnimal())
+    const name = unique('Nobivac')
+    await vaccinations.goto(animal.id)
+
+    await vaccinations.addButton.click()
+    await vaccinations.fill({ vaccineName: name })
+    await vaccinations.attach(pdfDocument('swiadectwo.pdf'))
+    await vaccinations.save()
+
+    await expect(vaccinations.attachment(name)).toHaveText('swiadectwo.pdf')
+    const [saved] = await api.listVaccinations(animal.id)
+    expect(saved.attachment?.fileName).toBe('swiadectwo.pdf')
+  })
+
+  test('only accepts documents and images', async ({ api, vaccinations }) => {
+    const animal = await api.createAnimal(buildAnimal())
+    await vaccinations.goto(animal.id)
+    await vaccinations.addButton.click()
+
+    await vaccinations.attach({
+      name: 'notatki.txt',
+      mimeType: 'text/plain',
+      buffer: Buffer.from('to nie jest skan'),
+    })
+
+    await expect(vaccinations.fileError).toContainText('Niedozwolony typ pliku')
+    await expect(vaccinations.dialog).not.toContainText('notatki.txt')
+  })
+
+  test('can be replaced and removed when editing', async ({
+    api,
+    vaccinations,
+  }) => {
+    const animal = await api.createAnimal(buildAnimal())
+    const name = unique('Nobivac')
+    await vaccinations.goto(animal.id)
+    await vaccinations.addButton.click()
+    await vaccinations.fill({ vaccineName: name })
+    await vaccinations.attach(pdfDocument('pierwszy.pdf'))
+    await vaccinations.save()
+    await expect(vaccinations.attachment(name)).toHaveText('pierwszy.pdf')
+
+    await test.step('a new file replaces the old one', async () => {
+      await vaccinations
+        .row(name)
+        .getByRole('button', { name: 'Edytuj' })
+        .click()
+      await vaccinations.attach(pdfDocument('drugi.pdf'))
+      await vaccinations.save()
+      await expect(vaccinations.attachment(name)).toHaveText('drugi.pdf')
+    })
+
+    await test.step('removing it leaves the vaccination without a scan', async () => {
+      await vaccinations
+        .row(name)
+        .getByRole('button', { name: 'Edytuj' })
+        .click()
+      await vaccinations.dialog.getByRole('button', { name: 'Usuń' }).click()
+      await vaccinations.save()
+      await expect(vaccinations.row(name)).toBeVisible()
+      await expect(vaccinations.attachment(name)).toHaveCount(0)
+      const [saved] = await api.listVaccinations(animal.id)
+      expect(saved.attachment).toBeNull()
+    })
+  })
+})
+
+test.describe('Vaccination reports', () => {
+  test('list the vaccinations given in the chosen period', async ({
+    api,
+    reportsPage,
+    vaccinationsReport,
+    page,
+  }) => {
+    const animal = await api.createAnimal(buildAnimal())
+    const inside = unique('Wewnatrz')
+    const outside = unique('Poza')
+    await api.createVaccination(animal.id, {
+      vaccineName: inside,
+      administeredOn: daysAgo(5),
+    })
+    await api.createVaccination(animal.id, {
+      vaccineName: outside,
+      administeredOn: daysAgo(60),
+    })
+    await reportsPage.goto()
+
+    await vaccinationsReport.setRange(daysAgo(10), daysAgo(0))
+    const reportRequest = waitForBackendRequest(page, {
+      method: 'GET',
+      pathname: '/reports/vaccinations',
+    })
+    const download = await captureDownload(page, () =>
+      vaccinationsReport.generateButton.click(),
+    )
+
+    const text = await expectPdfDownload(download)
+    expect(text).toContain(inside)
+    expect(text).toContain(animal.name)
+    expect(text).not.toContain(outside)
+    expect(queryValues(await reportRequest, 'from')).toEqual([
+      `${daysAgo(10)}T00:00:00.000Z`,
+    ])
+  })
+
+  test('mark replaced vaccinations', async ({
+    api,
+    reportsPage,
+    vaccinationsReport,
+    page,
+  }) => {
+    const animal = await api.createAnimal(buildAnimal())
+    const old = await api.createVaccination(animal.id, {
+      vaccineName: unique('Stara'),
+      administeredOn: daysAgo(8),
+    })
+    await api.createVaccination(animal.id, {
+      vaccineName: unique('Nowa'),
+      administeredOn: daysAgo(2),
+      replacesVaccinationId: old.id,
+    })
+    await reportsPage.goto()
+    await vaccinationsReport.setRange(daysAgo(10), daysAgo(0))
+
+    const download = await captureDownload(page, () =>
+      vaccinationsReport.generateButton.click(),
+    )
+
+    const text = await expectPdfDownload(download)
+    expect(text).toContain('Zastąpione')
+    expect(text).toContain('Aktywne')
+  })
+
+  test('need a period that starts before it ends', async ({
+    reportsPage,
+    vaccinationsReport,
+    page,
+  }) => {
+    const backend = await forbidBackendRequests(page, {
+      method: 'GET',
+      pathname: '/reports/vaccinations',
+    })
+    await reportsPage.goto()
+
+    await vaccinationsReport.setRange(daysAgo(1), daysAgo(5))
+
+    await expect(vaccinationsReport.error).toHaveText(
+      'Data początkowa nie może być późniejsza niż końcowa.',
+    )
+    await expect(vaccinationsReport.generateButton).toBeDisabled()
+    await backend.expectNoneSent()
+  })
+
+  test('about expiring vaccinations leave out renewed and expired ones', async ({
+    api,
+    reportsPage,
+    expiringVaccinationsReport,
+    page,
+  }) => {
+    const animal = await api.createAnimal(buildAnimal())
+    const due = unique('Konczaca')
+    const expired = unique('Przeterminowana')
+    const renewed = await api.createVaccination(animal.id, {
+      vaccineName: unique('Odnowiona'),
+      administeredOn: daysAgo(300),
+      validUntil: daysAgo(-5),
+    })
+    await api.createVaccination(animal.id, {
+      vaccineName: due,
+      administeredOn: daysAgo(300),
+      validUntil: daysAgo(-6),
+    })
+    await api.createVaccination(animal.id, {
+      vaccineName: expired,
+      administeredOn: daysAgo(300),
+      validUntil: daysAgo(3),
+    })
+    await api.createVaccination(animal.id, {
+      vaccineName: unique('Nastepczyni'),
+      administeredOn: daysAgo(1),
+      validUntil: daysAgo(-360),
+      replacesVaccinationId: renewed.id,
+    })
+    await reportsPage.goto()
+
+    const reportRequest = waitForBackendRequest(page, {
+      method: 'GET',
+      pathname: '/reports/vaccinations/expiring',
+    })
+    const download = await captureDownload(page, () =>
+      expiringVaccinationsReport.generateButton.click(),
+    )
+
+    const text = await expectPdfDownload(download)
+    expect(text).toContain(due)
+    expect(text).not.toContain(expired)
+    expect(text).not.toContain(renewed.vaccineName)
+    const request = await reportRequest
+    expect(queryValues(request, 'expiresInDays')).toEqual(['30'])
+    expect(queryValues(request, 'includeExpired')).toEqual(['false'])
+    expect(queryValues(request, 'inShelterOnly')).toEqual(['true'])
+
+    await test.step('expired ones can be included', async () => {
+      await expiringVaccinationsReport.includeExpired.check()
+      const download = await captureDownload(page, () =>
+        expiringVaccinationsReport.generateButton.click(),
+      )
+      const text = await expectPdfDownload(download)
+      expect(text).toContain(due)
+      expect(text).toContain(expired)
+    })
+  })
+
+  test('about expiring vaccinations need a sensible number of days', async ({
+    reportsPage,
+    expiringVaccinationsReport,
+  }) => {
+    await reportsPage.goto()
+
+    await expiringVaccinationsReport.daysField.input.fill('4000')
+    await expect(expiringVaccinationsReport.generateButton).toBeDisabled()
+
+    await expiringVaccinationsReport.daysField.input.fill('')
+    await expect(expiringVaccinationsReport.generateButton).toBeDisabled()
+
+    await expiringVaccinationsReport.daysField.input.fill('0')
+    await expect(expiringVaccinationsReport.generateButton).toBeEnabled()
   })
 })
 

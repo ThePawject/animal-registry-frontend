@@ -15,7 +15,9 @@ import {
   AnimalsReportCard,
   DateRangeReportCard,
   EventReportCard,
+  ExpiringVaccinationsReportCard,
   ReportsPage,
+  VaccinationsReportCard,
 } from '../pages/report-cards.ts'
 import { VaccinationsPage } from '../pages/vaccinations.page.ts'
 import { ApiClient } from './api-client.ts'
@@ -52,6 +54,8 @@ type TestFixtures = {
   animalsReport: AnimalsReportCard
   eventReport: EventReportCard
   dateRangeReport: DateRangeReportCard
+  vaccinationsReport: VaccinationsReportCard
+  expiringVaccinationsReport: ExpiringVaccinationsReportCard
 
   blobProxy: void
 }
@@ -170,6 +174,10 @@ export const test = base.extend<TestFixtures & Options, WorkerFixtures>({
   animalsReport: async ({ page }, use) => use(new AnimalsReportCard(page)),
   eventReport: async ({ page }, use) => use(new EventReportCard(page)),
   dateRangeReport: async ({ page }, use) => use(new DateRangeReportCard(page)),
+  vaccinationsReport: async ({ page }, use) =>
+    use(new VaccinationsReportCard(page)),
+  expiringVaccinationsReport: async ({ page }, use) =>
+    use(new ExpiringVaccinationsReportCard(page)),
 })
 
 export { expect } from '@playwright/test'

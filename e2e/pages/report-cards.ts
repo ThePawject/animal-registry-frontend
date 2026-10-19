@@ -131,3 +131,36 @@ export class ReportsPage {
     ).toBeVisible({ timeout: TIMEOUTS.slow })
   }
 }
+
+export class VaccinationsReportCard extends ReportCard {
+  readonly fromField: FormFieldLocator
+  readonly toField: FormFieldLocator
+
+  constructor(page: Page) {
+    super(page, 'Szczepienia w okresie')
+    this.fromField = new FormFieldLocator(this.root, 'Data początkowa')
+    this.toField = new FormFieldLocator(this.root, 'Data końcowa')
+  }
+
+  async setRange(from: string, to: string) {
+    await this.fromField.input.fill(from)
+    await this.toField.input.fill(to)
+  }
+}
+
+export class ExpiringVaccinationsReportCard extends ReportCard {
+  readonly daysField: FormFieldLocator
+  readonly includeExpired: Locator
+  readonly inShelterOnly: Locator
+
+  constructor(page: Page) {
+    super(page, 'Kończące się szczepienia')
+    this.daysField = new FormFieldLocator(this.root, 'Wygasają w ciągu (dni)')
+    this.includeExpired = this.root.getByRole('checkbox', {
+      name: 'Uwzględnij już wygasłe',
+    })
+    this.inShelterOnly = this.root.getByRole('checkbox', {
+      name: 'Tylko zwierzęta w schronisku',
+    })
+  }
+}
