@@ -462,12 +462,12 @@ test.describe('Vaccination reports', () => {
 
     await test.step('expired ones can be included', async () => {
       await expiringVaccinationsReport.includeExpired.check()
-      const download = await captureDownload(page, () =>
+      const withExpired = await captureDownload(page, () =>
         expiringVaccinationsReport.generateButton.click(),
       )
-      const text = await expectPdfDownload(download)
-      expect(text).toContain(due)
-      expect(text).toContain(expired)
+      const textWithExpired = await expectPdfDownload(withExpired)
+      expect(textWithExpired).toContain(due)
+      expect(textWithExpired).toContain(expired)
     })
   })
 
