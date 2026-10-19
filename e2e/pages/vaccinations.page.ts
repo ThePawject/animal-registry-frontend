@@ -19,6 +19,8 @@ export class VaccinationsPage {
   readonly administeredOnField: FormFieldLocator
   readonly validUntilField: FormFieldLocator
   readonly replacesField: FormFieldLocator
+  readonly veterinarianField: FormFieldLocator
+  readonly batchNumberField: FormFieldLocator
   readonly saveButton: Locator
   readonly fileError: Locator
   readonly expiringEmpty: Locator
@@ -33,6 +35,11 @@ export class VaccinationsPage {
       this.dialog,
       'Zastępuje szczepienie',
     )
+    this.veterinarianField = new FormFieldLocator(
+      this.dialog,
+      'Lekarz weterynarii',
+    )
+    this.batchNumberField = new FormFieldLocator(this.dialog, 'Numer serii')
     this.saveButton = this.dialog.getByRole('button', { name: 'Zapisz' })
     this.fileError = new FormFieldLocator(this.dialog, 'Skan dokumentu').error
     this.expiringEmpty = page.getByText(

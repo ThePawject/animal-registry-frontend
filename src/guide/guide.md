@@ -1,6 +1,6 @@
 # Przewodnik po MojeSchronisko.pl
 
-Ten przewodnik pokazuje krok po kroku, jak prowadzić elektroniczny rejestr zwierząt: od zalogowania, przez dodawanie zwierząt, wydarzeń i kart zdrowia, po pobieranie raportów. Na zrzutach ekranu czerwoną ramką zaznaczono miejsce, w które należy kliknąć. Kliknij dowolny zrzut, aby go powiększyć.
+Ten przewodnik pokazuje krok po kroku, jak prowadzić elektroniczny rejestr zwierząt: od zalogowania, przez dodawanie zwierząt, wydarzeń i kart zdrowia, po pobieranie raportów i korzystanie z dodatków, takich jak pochodzenie zwierząt i szczepienia. Na zrzutach ekranu czerwoną ramką zaznaczono miejsce, w które należy kliknąć. Kliknij dowolny zrzut, aby go powiększyć.
 
 ## 1. Logowanie
 
@@ -18,11 +18,17 @@ Po zalogowaniu otwiera się lista zwierząt. W lewym górnym rogu widzisz nazwę
 
 ![Sprawdź, czy jesteś w swoim schronisku](./img/01-logowanie-02.webp)
 
-### Krok 3. Wyloguj się po zakończeniu pracy
+### Krok 3. Poznaj menu
+
+Pod paskiem z nazwą schroniska jest menu z zakładkami: **Zwierzęta** (lista zwierząt), **Raporty** i **Dodatki**. Zakładka, w której jesteś, jest podświetlona. Gdy włączysz dodatek **Szczepienia**, w menu pojawi się także jego zakładka. Przycisk **Przewodnik** w prawym górnym rogu otwiera tę instrukcję.
+
+![Poznaj menu](./img/01-logowanie-03.webp)
+
+### Krok 4. Wyloguj się po zakończeniu pracy
 
 Gdy kończysz pracę, zwłaszcza na wspólnym komputerze, kliknij **Wyloguj się** w prawym górnym rogu.
 
-![Wyloguj się po zakończeniu pracy](./img/01-logowanie-03.webp)
+![Wyloguj się po zakończeniu pracy](./img/01-logowanie-04.webp)
 
 > **Wskazówka:** Jeśli po zalogowaniu widzisz komunikat „Nie masz przypisanej roli”, Twoje konto nie zostało jeszcze przypisane do schroniska. Skontaktuj się z administratorem.
 
@@ -248,36 +254,154 @@ Kliknij **Edytuj** w wierszu. Możesz zmienić datę i opis, a w kolumnie **Doku
 
 ## 8. Raporty
 
-Wszystkie raporty pobierają się jako pliki PDF gotowe do druku. Przyciski raportów znajdują się nad listą zwierząt.
+Wszystkie raporty pobierają się jako pliki PDF gotowe do druku. Większość raportów znajdziesz w zakładce **Raporty**, a raport z wybranych zwierząt przy liście zwierząt.
 
-### Krok 1. Znajdź przyciski raportów
-
-Nad listą zwierząt są cztery raporty: **Raport zdarzeń**, **Raport wszystkie zwierzeta**, **Raport z wybranych zwierzat** oraz **Raport zdarzen w zakresie**. Po najechaniu kursorem na przycisk zobaczysz krótki opis raportu.
-
-![Znajdź przyciski raportów](./img/08-raporty-01.webp)
-
-### Krok 2. Pobierz raport wszystkich zwierząt
-
-Kliknij **Raport wszystkie zwierzeta**, aby pobrać tekstowe zestawienie danych wszystkich zwierząt z rejestru (bez zdjęć). Plik zapisuje się od razu, bez dodatkowych pytań.
-
-![Pobierz raport wszystkich zwierząt](./img/08-raporty-02.webp)
-
-### Krok 3. Pobierz raport wybranych zwierząt
+### Krok 1. Pobierz raport wybranych zwierząt
 
 Zaznacz pola wyboru przy zwierzętach, które mają trafić do raportu. Przycisk **Raport z wybranych zwierzat** staje się wtedy aktywny i pokazuje w nawiasie liczbę zaznaczonych zwierząt. Raport zawiera dane i zdjęcia wybranych zwierząt. Zaznaczenie jest pamiętane także po przejściu na kolejną stronę listy.
 
-![Pobierz raport wybranych zwierząt](./img/08-raporty-03.webp)
+![Pobierz raport wybranych zwierząt](./img/08-raporty-01.webp)
+
+### Krok 2. Otwórz zakładkę Raporty
+
+Pozostałe raporty znajdziesz w zakładce **Raporty** w menu. Raporty są podzielone na sekcje: **Zwierzęta** i **Zdarzenia**. Po włączeniu dodatków pojawiają się kolejne sekcje.
+
+![Otwórz zakładkę Raporty](./img/08-raporty-02.webp)
+
+### Krok 3. Pobierz raport wszystkich zwierząt
+
+W sekcji **Zwierzęta** kliknij **Generuj raport**, aby pobrać tekstowe zestawienie danych wszystkich zwierząt z rejestru (bez zdjęć). Plik zapisuje się od razu, bez dodatkowych pytań.
+
+![Pobierz raport wszystkich zwierząt](./img/08-raporty-03.webp)
 
 ### Krok 4. Wygeneruj raport zdarzeń
 
-Kliknij **Raport zdarzeń** i zaznacz okresy, które mają się znaleźć w zestawieniu: ostatni tydzień, miesiąc, kwartał lub **Własny zakres dat**. Przy własnym zakresie podaj datę początkową i końcową. Kliknij **Generuj raport**.
+W karcie **Raport zdarzeń** zaznacz okresy, które mają się znaleźć w zestawieniu: ostatni tydzień, miesiąc, kwartał lub **Własny zakres dat**. Przy własnym zakresie podaj datę początkową i końcową. Kliknij **Generuj raport**.
 
 ![Wygeneruj raport zdarzeń](./img/08-raporty-04.webp)
 
 ### Krok 5. Wygeneruj raport zdarzeń w zakresie dat
 
-Kliknij **Raport zdarzen w zakresie** i podaj datę początkową oraz końcową. Opcjonalnie zawęź raport do wybranych typów zdarzeń i gatunków. Puste pola oznaczają „wszystkie”. Kliknij **Generuj raport**.
+W karcie **Raport zdarzeń w zakresie** podaj datę początkową oraz końcową. Opcjonalnie zawęź raport do wybranych typów zdarzeń i gatunków. Puste pola oznaczają „wszystkie”. Kliknij **Generuj raport**.
 
 ![Wygeneruj raport zdarzeń w zakresie dat](./img/08-raporty-05.webp)
 
 > **Wskazówka:** Pobrane raporty znajdziesz w folderze pobierania swojej przeglądarki, zwykle „Pobrane”.
+
+## 9. Dodatki
+
+Dodatki to dodatkowe funkcje rejestru, które włączasz tylko wtedy, gdy ich potrzebujesz. Dodatek zmienia się dla całego schroniska: włączony jest widoczny dla wszystkich pracowników.
+
+### Krok 1. Otwórz listę dodatków
+
+Kliknij zakładkę **Dodatki** w menu. Każdy dodatek to osobna karta z krótkim opisem i oznaczeniem **Włączony** lub **Wyłączony**. Kliknij kartę, aby zobaczyć szczegóły.
+
+![Otwórz listę dodatków](./img/09-dodatki-01.webp)
+
+### Krok 2. Włącz dodatek
+
+Na stronie dodatku przeczytasz, co dokładnie robi. Administrator schroniska włącza go przyciskiem **Włącz dodatek**, a wyłącza przyciskiem **Wyłącz dodatek**. Dane wpisane w dodatku nie znikają po jego wyłączeniu.
+
+![Włącz dodatek](./img/09-dodatki-02.webp)
+
+### Krok 3. Sprawdź, czy dodatek jest włączony
+
+Po włączeniu przy nazwie dodatku widzisz oznaczenie **Włączony**, a pod opisem pojawia się część do pracy z dodatkiem. Tutaj jest to lista gmin.
+
+![Sprawdź, czy dodatek jest włączony](./img/09-dodatki-03.webp)
+
+### Krok 4. Włącz także szczepienia
+
+Dodatek **Szczepienia** włączasz tak samo. Dodatki, z których korzystasz codziennie, mają własną zakładkę w menu. Po włączeniu szczepień zobaczysz tam nową zakładkę **Szczepienia**.
+
+![Włącz także szczepienia](./img/09-dodatki-04.webp)
+
+> **Wskazówka:** Dodatki włącza i wyłącza tylko administrator schroniska. Pozostali pracownicy widzą listę dodatków i ich opisy, ale nie mają przycisku włączania. Jeśli potrzebujesz dodatku, poproś o jego włączenie administratora.
+
+## 10. Pochodzenie zwierzęcia
+
+Dodatek **Pochodzenie zwierzęcia** zapisuje, skąd i w jaki sposób zwierzę trafiło do schroniska oraz która gmina płaci za jego pobyt. Na tej podstawie przygotujesz miesięczne i roczne zestawienia do rozliczeń z gminami.
+
+### Krok 1. Najpierw uzupełnij listę gmin
+
+Zanim dodasz lub zmienisz zwierzę, na liście muszą być gminy. Dopóki jest pusta, formularz zwierzęcia nie da się zapisać. Kliknij **Dodaj pierwszą gminę**.
+
+![Najpierw uzupełnij listę gmin](./img/10-pochodzenie-zwierzecia-01.webp)
+
+### Krok 2. Wpisz nazwę gminy
+
+Wpisz nazwę gminy i kliknij **Zapisz**. W ten sam sposób dodajesz kolejne gminy, z którymi współpracuje schronisko.
+
+![Wpisz nazwę gminy](./img/10-pochodzenie-zwierzecia-02.webp)
+
+### Krok 3. Zarządzaj listą gmin
+
+Każdą gminę możesz zmienić przyciskiem **Edytuj** lub schować przyciskiem **Archiwizuj**. Zarchiwizowanej gminy nie da się wybrać w formularzu, ale zwierzęta, które jej dotyczą, zachowują wpis. Zaznacz **Pokaż zarchiwizowane**, aby ją zobaczyć i przywrócić.
+
+![Zarządzaj listą gmin](./img/10-pochodzenie-zwierzecia-03.webp)
+
+### Krok 4. Uzupełnij pochodzenie zwierzęcia
+
+W formularzu dodawania i edycji pojawia się sekcja **Pochodzenie zwierzęcia**. Wpisz datę i sposób przyjęcia, miejsce znalezienia oraz wybierz **Gminę znalezienia** i **Gminę zlecającą**, czyli tę, która płaci za pobyt zwierzęcia. Wszystkie pola są wymagane.
+
+![Uzupełnij pochodzenie zwierzęcia](./img/10-pochodzenie-zwierzecia-04.webp)
+
+### Krok 5. Sprawdź pochodzenie na karcie zwierzęcia
+
+Zapisane dane widać na karcie zwierzęcia w sekcji **Pochodzenie**. U zwierząt dodanych przed włączeniem dodatku zobaczysz napis **Brak przypisania**, dopóki ich nie uzupełnisz.
+
+![Sprawdź pochodzenie na karcie zwierzęcia](./img/10-pochodzenie-zwierzecia-05.webp)
+
+### Krok 6. Pobierz zestawienia dla gmin
+
+W zakładce **Raporty** pojawia się sekcja **Pochodzenie**. **Zestawienie miesięczne** pokazuje zwierzęta przyjęte w wybranym miesiącu, pogrupowane według gminy zlecającej, a **Zestawienie roczne** liczbę przyjętych zwierząt w każdym miesiącu. Wybierz miesiąc lub rok i kliknij **Generuj raport**.
+
+![Pobierz zestawienia dla gmin](./img/10-pochodzenie-zwierzecia-06.webp)
+
+## 11. Szczepienia
+
+Dodatek **Szczepienia** prowadzi rejestr szczepień każdego zwierzęcia: nazwę szczepionki, datę podania, termin ważności, lekarza, numer serii, notatkę i skan dokumentu. Pokazuje też, którym zwierzętom szczepienie niedługo się kończy.
+
+### Krok 1. Otwórz zakładkę „Szczepienia”
+
+Na karcie zwierzęcia kliknij **Szczepienia**. Przycisk jest widoczny tylko wtedy, gdy dodatek jest włączony.
+
+![Otwórz zakładkę „Szczepienia”](./img/11-szczepienia-01.webp)
+
+### Krok 2. Dodaj szczepienie
+
+Kliknij **Dodaj szczepienie**. Obowiązkowe są tylko nazwa szczepionki i data podania. Możesz też wpisać termin ważności (**Ważne do**), lekarza, numer serii, notatkę i dołączyć skan dokumentu: PDF, DOC, DOCX lub zdjęcie do 10 MB. Zatwierdź przyciskiem **Zapisz**.
+
+![Dodaj szczepienie](./img/11-szczepienia-02.webp)
+
+### Krok 3. Sprawdź status szczepienia
+
+Przy każdym szczepieniu widzisz status: **Ważne**, **Wygasa za N dni** (gdy do końca ważności zostało 30 dni lub mniej), **Wygasło** albo **Bez terminu ważności**. Kliknięcie nazwy pliku otwiera dołączony skan.
+
+![Sprawdź status szczepienia](./img/11-szczepienia-03.webp)
+
+### Krok 4. Odnów szczepienie
+
+Gdy szczepienie trzeba powtórzyć, kliknij **Odnów**. Okno otwiera się z tą samą szczepionką, a pole **Zastępuje szczepienie** jest już ustawione na poprzednie szczepienie. Wpisz nową datę podania i termin ważności, a następnie zapisz.
+
+![Odnów szczepienie](./img/11-szczepienia-04.webp)
+
+### Krok 5. Zobacz zastąpione szczepienie
+
+Poprzednie szczepienie dostaje status **Zastąpione nowszym** i przestaje być wskazywane jako kończące się. Przy obu wpisach widzisz, które szczepienie zastępuje, a które je zastąpiło. Szczepienie, które zostało już zastąpione, nie ma przycisku **Odnów**.
+
+![Zobacz zastąpione szczepienie](./img/11-szczepienia-05.webp)
+
+### Krok 6. Zobacz, które szczepienia się kończą
+
+Zakładka **Szczepienia** w menu pokazuje szczepienia wszystkich zwierząt, których ważność kończy się w podanej liczbie dni (domyślnie 30), od najbliższego terminu. Możesz zmienić liczbę dni, pokazać już wygasłe i wybrać, czy pokazywać tylko zwierzęta przebywające w schronisku. Kliknięcie zwierzęcia otwiera jego szczepienia.
+
+![Zobacz, które szczepienia się kończą](./img/11-szczepienia-06.webp)
+
+### Krok 7. Pobierz raporty szczepień
+
+W zakładce **Raporty** pojawia się sekcja **Szczepienia** z dwoma raportami: **Szczepienia w okresie** (podane szczepienia w wybranym zakresie dat) i **Kończące się szczepienia** (te, których ważność kończy się w podanej liczbie dni). Kliknij **Generuj raport**, aby pobrać PDF.
+
+![Pobierz raporty szczepień](./img/11-szczepienia-07.webp)
+
+> **Wskazówka:** Szczepienie możesz też poprawić przyciskiem **Edytuj** lub usunąć przyciskiem **Usuń**. Po usunięciu szczepienia, które zastąpiło inne, poprzednie znów jest traktowane jako ważne albo wygasłe.
