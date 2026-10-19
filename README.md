@@ -54,3 +54,7 @@ Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
 ```bash
 pnpm dlx shadcn@latest add button
 ```
+
+## License
+
+This project is licensed under the [GNU General Public License v3.0](LICENSE), the same license as [animal-registry-backend](https://github.com/ThePawject/animal-registry-backend).
