@@ -1,6 +1,6 @@
 import { captureDownload, expectPdfDownload } from '../pages/components.ts'
 import { VaccinationsPage } from '../pages/vaccinations.page.ts'
-import { buildAnimal, daysAgo, unique } from '../support/data.ts'
+import { buildAnimal, daysAgo, monthsAfter, unique } from '../support/data.ts'
 import { pdfDocument } from '../support/files.ts'
 import { expect, test } from '../support/fixtures.ts'
 import {
@@ -253,6 +253,52 @@ test.describe('The renewal dialog', () => {
   })
 })
 
+test.describe('Vaccination validity', () => {
+  test('can be picked as a period from the administration date', async ({
+    api,
+    vaccinations,
+  }) => {
+    const animal = await api.createAnimal(buildAnimal())
+    const name = unique('Wscieklizna')
+    const administeredOn = daysAgo(10)
+    await vaccinations.goto(animal.id)
+    await vaccinations.addButton.click()
+    await vaccinations.fill({ vaccineName: name, administeredOn })
+
+    await vaccinations.validityPeriod('1 rok').click()
+    await expect(vaccinations.validUntilField.input).toHaveValue(
+      monthsAfter(administeredOn, 12),
+    )
+    await expect(vaccinations.validityPeriod('1 rok')).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+
+    await test.step('another period replaces the date', async () => {
+      await vaccinations.validityPeriod('6 miesięcy').click()
+      await expect(vaccinations.validUntilField.input).toHaveValue(
+        monthsAfter(administeredOn, 6),
+      )
+      await expect(vaccinations.validityPeriod('1 rok')).toHaveAttribute(
+        'aria-pressed',
+        'false',
+      )
+    })
+
+    await test.step('a date typed by hand matches no period', async () => {
+      await vaccinations.fill({ validUntil: daysAgo(-3) })
+      await expect(
+        vaccinations.validityPeriods.locator('[aria-pressed="true"]'),
+      ).toHaveCount(0)
+    })
+
+    await vaccinations.validityPeriod('2 lata').click()
+    await vaccinations.save()
+    const [saved] = await api.listVaccinations(animal.id)
+    expect(saved.validUntil?.slice(0, 10)).toBe(monthsAfter(administeredOn, 24))
+  })
+})
+
 test.describe('Vaccination attachments', () => {
   test('a scan is saved with the vaccination', async ({
     api,
@@ -305,7 +351,9 @@ test.describe('Vaccination attachments', () => {
         .row(name)
         .getByRole('button', { name: 'Edytuj' })
         .click()
+      await expect(vaccinations.dialog.getByText('pierwszy.pdf')).toBeVisible()
       await vaccinations.attach(pdfDocument('drugi.pdf'))
+      await expect(vaccinations.dialog.getByText('drugi.pdf')).toBeVisible()
       await vaccinations.save()
       await expect(vaccinations.attachment(name)).toHaveText('drugi.pdf')
     })
@@ -315,7 +363,8 @@ test.describe('Vaccination attachments', () => {
         .row(name)
         .getByRole('button', { name: 'Edytuj' })
         .click()
-      await vaccinations.dialog.getByRole('button', { name: 'Usuń' }).click()
+      await vaccinations.removeFileButton.click()
+      await expect(vaccinations.dialog.getByText('drugi.pdf')).toHaveCount(0)
       await vaccinations.save()
       await expect(vaccinations.row(name)).toBeVisible()
       await expect(vaccinations.attachment(name)).toHaveCount(0)
@@ -343,7 +392,7 @@ test.describe('Vaccination reports', () => {
       vaccineName: outside,
       administeredOn: daysAgo(60),
     })
-    await reportsPage.goto()
+    await reportsPage.goto('vaccinations')
 
     await vaccinationsReport.setRange(daysAgo(10), daysAgo(0))
     const reportRequest = waitForBackendRequest(page, {
@@ -379,7 +428,7 @@ test.describe('Vaccination reports', () => {
       administeredOn: daysAgo(2),
       replacesVaccinationId: old.id,
     })
-    await reportsPage.goto()
+    await reportsPage.goto('vaccinations')
     await vaccinationsReport.setRange(daysAgo(10), daysAgo(0))
 
     const download = await captureDownload(page, () =>
@@ -400,7 +449,7 @@ test.describe('Vaccination reports', () => {
       method: 'GET',
       pathname: '/reports/vaccinations',
     })
-    await reportsPage.goto()
+    await reportsPage.goto('vaccinations')
 
     await vaccinationsReport.setRange(daysAgo(1), daysAgo(5))
 
@@ -441,7 +490,7 @@ test.describe('Vaccination reports', () => {
       validUntil: daysAgo(-360),
       replacesVaccinationId: renewed.id,
     })
-    await reportsPage.goto()
+    await reportsPage.goto('vaccinations')
 
     const reportRequest = waitForBackendRequest(page, {
       method: 'GET',
@@ -475,7 +524,7 @@ test.describe('Vaccination reports', () => {
     reportsPage,
     expiringVaccinationsReport,
   }) => {
-    await reportsPage.goto()
+    await reportsPage.goto('vaccinations')
 
     await expiringVaccinationsReport.daysField.input.fill('4000')
     await expect(expiringVaccinationsReport.generateButton).toBeDisabled()
@@ -521,6 +570,80 @@ test.describe('Expiring vaccinations', () => {
       /Wygasa za \d+ dni/,
     )
     await expect(vaccinations.expiringRow(renewedAnimal.name!)).toHaveCount(0)
+  })
+
+  test('can be narrowed to a period from the dropdown', async ({
+    api,
+    vaccinations,
+  }) => {
+    const [soonAnimal, laterAnimal] = await api.createAnimals([
+      buildAnimal(),
+      buildAnimal(),
+    ])
+    await api.createVaccination(soonAnimal.id, {
+      vaccineName: unique('Wkrotce'),
+      administeredOn: daysAgo(300),
+      validUntil: daysAgo(-3),
+    })
+    await api.createVaccination(laterAnimal.id, {
+      vaccineName: unique('Pozniej'),
+      administeredOn: daysAgo(300),
+      validUntil: daysAgo(-60),
+    })
+    await vaccinations.gotoExpiring()
+
+    await expect(vaccinations.expiryPeriod).toHaveText('miesiąca')
+    await expect(vaccinations.expiringRows).toHaveCount(1)
+
+    await vaccinations.setExpiryPeriod('3 miesięcy')
+    await expect(vaccinations.expiringRows).toHaveCount(2)
+
+    await vaccinations.setExpiryPeriod('tygodnia')
+    await expect(vaccinations.expiringRows).toHaveCount(1)
+    await expect(vaccinations.expiringRow(soonAnimal.name!)).toBeVisible()
+
+    await test.step('any number of days can be typed in', async () => {
+      await expect(vaccinations.customExpiryDays).toBeHidden()
+      await vaccinations.setExpiryPeriod('wybór dni')
+      await expect(vaccinations.customExpiryDays).toBeFocused()
+      await vaccinations.customExpiryDays.fill('1')
+      await expect(vaccinations.expiringEmpty).toBeVisible()
+      await vaccinations.customExpiryDays.fill('61')
+      await expect(vaccinations.expiringRows).toHaveCount(2)
+    })
+  })
+
+  test('accept a new vaccination for any animal', async ({
+    api,
+    vaccinations,
+    page,
+  }) => {
+    const animal = await api.createAnimal(buildAnimal())
+    const name = unique('Nobivac')
+    await vaccinations.gotoExpiring()
+    await expect(vaccinations.expiringEmpty).toBeVisible()
+
+    await vaccinations.addButton.click()
+    await vaccinations.fill({ vaccineName: name, validUntil: daysAgo(-10) })
+
+    await test.step('the animal has to be chosen first', async () => {
+      const backend = await forbidBackendRequests(page, {
+        method: 'POST',
+        pathname: `/animals/${animal.id}/vaccinations`,
+      })
+      await vaccinations.saveButton.click()
+      await expect(vaccinations.animalField.error).toHaveText('Wybierz zwierzę')
+      await backend.expectNoneSent()
+      await page.unrouteAll()
+    })
+
+    await vaccinations.chooseAnimal(animal.name!)
+    await expect(vaccinations.animalField.error).toBeHidden()
+    await vaccinations.save()
+
+    await expect(vaccinations.expiringRow(animal.name!)).toContainText(name)
+    const [saved] = await api.listVaccinations(animal.id)
+    expect(saved.vaccineName).toBe(name)
   })
 
   test('are empty when nothing is about to expire', async ({

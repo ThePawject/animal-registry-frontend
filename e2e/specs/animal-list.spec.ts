@@ -67,7 +67,6 @@ test.describe('Animal register', () => {
     await panel.goto()
 
     await expect(panel.table.locator('th')).toHaveText([
-      '',
       ...ANIMAL_TABLE_COLUMNS,
     ])
     await panel.expectColumn('Oznaczenie', [
@@ -227,6 +226,29 @@ test.describe('Animal register', () => {
     await breadcrumbs.link('Lista Zwierząt').click()
     await expect(page).toHaveURL(new RegExp(`${PanelPage.path}`))
     await panel.expectLoaded()
+  })
+})
+
+test.describe('Page layout', () => {
+  test('keeps the top bar in place while the content scrolls', async ({
+    api,
+    panel,
+    page,
+  }) => {
+    await api.createAnimals(buildAnimals(20, unique('Przewijanie')))
+    await panel.goto()
+    const header = page.locator('header')
+    const before = await header.boundingBox()
+
+    await panel.rows.last().scrollIntoViewIfNeeded()
+    await expect(panel.rows.last()).toBeInViewport()
+
+    expect(await header.boundingBox()).toEqual(before)
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollHeight <= window.innerHeight,
+      ),
+    ).toBe(true)
   })
 })
 

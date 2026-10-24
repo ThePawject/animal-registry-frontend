@@ -44,6 +44,7 @@ export type ApiVaccination = {
   id: string
   animalId: string
   vaccineName: string
+  validUntil: string | null
   status: number
   replacesVaccinationId: string | null
   replacedByVaccinationId: string | null
