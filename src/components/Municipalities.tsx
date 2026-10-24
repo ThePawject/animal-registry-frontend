@@ -24,8 +24,10 @@ export default function Municipalities() {
   const [editedMunicipality, setEditedMunicipality] =
     useState<Municipality | null>(null)
 
+  // Archived ones are always fetched, so adding or renaming can catch
+  // a duplicate of an archived municipality.
   const { data, isLoading, isError } = useMunicipalities(
-    { includeArchived },
+    { includeArchived: true },
     isEnabled,
   )
   const {
@@ -35,9 +37,9 @@ export default function Municipalities() {
     error,
   } = useSetMunicipalityArchived()
 
-  const sortedMunicipalities = [...(data ?? [])].sort((a, b) =>
-    a.name.localeCompare(b.name, 'pl'),
-  )
+  const visibleMunicipalities = (data ?? [])
+    .filter((municipality) => includeArchived || !municipality.isArchived)
+    .sort((a, b) => a.name.localeCompare(b.name, 'pl'))
 
   if (isLoadingFeature || (isEnabled && isLoading)) {
     return <Skeleton className="h-40 w-full" />
@@ -67,12 +69,10 @@ export default function Municipalities() {
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <AddMunicipalityForm
-          existingNames={data.map((municipality) => municipality.name)}
-        />
-        {data.length === 0 && <EmptyMunicipalitiesNotice />}
+        <AddMunicipalityForm municipalities={data} />
+        {visibleMunicipalities.length === 0 && <EmptyMunicipalitiesNotice />}
         <div role="list" className="flex flex-col gap-2">
-          {sortedMunicipalities.map((municipality) => (
+          {visibleMunicipalities.map((municipality) => (
             <div
               key={municipality.id}
               role="listitem"
@@ -124,6 +124,7 @@ export default function Municipalities() {
           key={editedMunicipality.id}
           open
           municipality={editedMunicipality}
+          municipalities={data}
           onClose={() => setEditedMunicipality(null)}
         />
       )}

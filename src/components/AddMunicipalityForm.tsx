@@ -1,21 +1,20 @@
 import { useRef, useState } from 'react'
 import { CircleCheckIcon, LucideLoaderCircle, PlusIcon } from 'lucide-react'
 import type { FormEvent } from 'react'
-import { MUNICIPALITY_NAME_MAX_LENGTH } from '@/api/municipalities/types'
+import type { Municipality } from '@/api/municipalities/types'
+import { validateMunicipalityName } from '@/api/municipalities/validation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAddMunicipality } from '@/api/municipalities/queries'
 import { genericErrorMessage } from '@/lib/utils'
 
-const normalizeName = (name: string) => name.trim().toLocaleLowerCase('pl')
-
 interface AddMunicipalityFormProps {
-  existingNames: Array<string>
+  municipalities: Array<Municipality>
 }
 
 export default function AddMunicipalityForm({
-  existingNames,
+  municipalities,
 }: AddMunicipalityFormProps) {
   const [name, setName] = useState('')
   const [validationError, setValidationError] = useState<string | null>(null)
@@ -28,23 +27,9 @@ export default function AddMunicipalityForm({
     reset,
   } = useAddMunicipality()
 
-  const validate = (value: string) => {
-    const trimmed = value.trim()
-    if (!trimmed) return 'Nazwa gminy jest wymagana'
-    if (trimmed.length > MUNICIPALITY_NAME_MAX_LENGTH)
-      return `Nazwa gminy może mieć maksymalnie ${MUNICIPALITY_NAME_MAX_LENGTH} znaków`
-    if (
-      existingNames.some(
-        (existing) => normalizeName(existing) === normalizeName(trimmed),
-      )
-    )
-      return `Gmina „${trimmed}” jest już na liście`
-    return null
-  }
-
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const errorMessage = validate(name)
+    const errorMessage = validateMunicipalityName(name, municipalities) ?? null
     setValidationError(errorMessage)
     if (errorMessage) return
 

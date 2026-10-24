@@ -2,7 +2,7 @@ import { Building2, LucideLoaderCircle } from 'lucide-react'
 import { useForm } from '@tanstack/react-form'
 import { FormField } from '../FormField'
 import type { Municipality } from '@/api/municipalities/types'
-import { MUNICIPALITY_NAME_MAX_LENGTH } from '@/api/municipalities/types'
+import { validateMunicipalityName } from '@/api/municipalities/validation'
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -13,12 +13,14 @@ import { genericErrorMessage } from '@/lib/utils'
 interface MunicipalityModalProps {
   open: boolean
   municipality: Municipality
+  municipalities: Array<Municipality>
   onClose: () => void
 }
 
 export default function MunicipalityModal({
   open,
   municipality,
+  municipalities,
   onClose,
 }: MunicipalityModalProps) {
   const {
@@ -66,12 +68,12 @@ export default function MunicipalityModal({
             <form.Field
               name="name"
               validators={{
-                onChange: ({ value }) => {
-                  if (!value.trim()) return 'Nazwa gminy jest wymagana'
-                  if (value.trim().length > MUNICIPALITY_NAME_MAX_LENGTH)
-                    return `Nazwa gminy może mieć maksymalnie ${MUNICIPALITY_NAME_MAX_LENGTH} znaków`
-                  return undefined
-                },
+                onChange: ({ value }) =>
+                  validateMunicipalityName(
+                    value,
+                    municipalities,
+                    municipality.id,
+                  ),
               }}
               children={(field) => {
                 return (
