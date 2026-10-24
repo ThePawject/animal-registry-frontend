@@ -279,6 +279,18 @@ export class ApiClient {
     )
   }
 
+  async archiveAllMunicipalities() {
+    const municipalities = await this.read<Array<ApiMunicipality>>(
+      'Listing municipalities',
+      () => this.context.get('/municipalities'),
+    )
+    for (const municipality of municipalities) {
+      await this.send(`Archiving municipality ${municipality.name}`, () =>
+        this.context.delete(`/municipalities/${municipality.id}`),
+      )
+    }
+  }
+
   async createVaccination(animalId: string, input: VaccinationInput) {
     return this.send<ApiVaccination>(
       `Adding vaccination ${input.vaccineName}`,

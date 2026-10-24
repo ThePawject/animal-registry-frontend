@@ -8,6 +8,7 @@ import { newAnonymousContext } from '../support/auth-session.ts'
 import { daysAgo } from '../support/data.ts'
 import { pdfDocument } from '../support/files.ts'
 import { expect, test } from '../support/fixtures.ts'
+import { SHELTER_ADMIN_ROLE } from '../support/users.ts'
 import { GuideWriter } from './guide-writer.ts'
 import { drawIllustrations } from './illustrations.ts'
 import type { AnimalInput, SeededAnimal } from '../support/api-client.ts'
@@ -19,7 +20,7 @@ const SHELTER_ID = 'Schronisko_Azyl'
 const GUIDE_USER: TestUser = {
   id: 'e2e|guide',
   email: 'anna.kowalska@schronisko-azyl.pl',
-  roles: [`${AUTH.shelterRolePrefix}${SHELTER_ID}`],
+  roles: [`${AUTH.shelterRolePrefix}${SHELTER_ID}`, SHELTER_ADMIN_ROLE],
   shelterId: SHELTER_ID,
   shelterName: SHELTER_ID.replace(/_/g, ' '),
 }
@@ -28,7 +29,7 @@ test.use({ user: GUIDE_USER })
 
 const guide = new GuideWriter(
   'Przewodnik po MojeSchronisko.pl',
-  'Ten przewodnik pokazuje krok po kroku, jak prowadzić elektroniczny rejestr zwierząt: od zalogowania, przez dodawanie zwierząt, wydarzeń i kart zdrowia, po pobieranie raportów. Na zrzutach ekranu czerwoną ramką zaznaczono miejsce, w które należy kliknąć. Kliknij dowolny zrzut, aby go powiększyć.',
+  'Ten przewodnik pokazuje krok po kroku, jak prowadzić elektroniczny rejestr zwierząt: od zalogowania, przez dodawanie zwierząt, wydarzeń i kart zdrowia, po pobieranie raportów i korzystanie z dodatków, takich jak pochodzenie zwierząt i szczepienia. Na zrzutach ekranu czerwoną ramką zaznaczono miejsce, w które należy kliknąć. Kliknij dowolny zrzut, aby go powiększyć.',
 )
 
 const NEW_ANIMAL = {
@@ -210,6 +211,10 @@ async function seedShelter() {
   const api = await ApiClient.forUser(GUIDE_USER)
   try {
     await removeAnimals(api)
+    await api.setFeature('animal-origin', true)
+    await api.archiveAllMunicipalities()
+    await api.setFeature('animal-origin', false)
+    await api.setFeature('animal-vaccinations', false)
 
     const animals = await api.createAnimals(registerAnimals())
     const byName = (name: string) =>
@@ -316,7 +321,7 @@ test.afterAll(async () => {
   await guide.write()
 })
 
-test('Logowanie', async ({ browser, page, panel, auth }) => {
+test('Logowanie', async ({ browser, page, panel, auth, addons }) => {
   guide.chapter(
     'Logowanie',
     'Rejestr jest dostępny tylko dla zalogowanych pracowników schroniska. Każde schronisko widzi wyłącznie swoje zwierzęta.',
@@ -352,6 +357,13 @@ test('Logowanie', async ({ browser, page, panel, auth }) => {
         name: `Panel ${GUIDE_USER.shelterName}`,
       }),
     },
+  )
+
+  await guide.step(
+    page,
+    'Poznaj menu',
+    'Pod paskiem z nazwą schroniska jest menu z zakładkami: **Zwierzęta** (lista zwierząt), **Raporty** i **Dodatki**. Zakładka, w której jesteś, jest podświetlona. Gdy włączysz dodatek **Szczepienia**, w menu pojawi się także jego zakładka. Przycisk **Przewodnik** w prawym górnym rogu otwiera tę instrukcję.',
+    { highlight: addons.mainNavigation, area: auth.header },
   )
 
   await guide.step(
@@ -800,6 +812,7 @@ test('Karty zdrowia', async ({ page, animalDetails, healthRecords }) => {
 test('Raporty', async ({
   page,
   panel,
+  addons,
   reportsPage,
   animalsReport,
   eventReport,
@@ -807,7 +820,7 @@ test('Raporty', async ({
 }) => {
   guide.chapter(
     'Raporty',
-    'Wszystkie raporty pobierają się jako pliki PDF gotowe do druku. Większość raportów znajdziesz na stronie **Raporty**, a raport z wybranych zwierząt przy liście zwierząt.',
+    'Wszystkie raporty pobierają się jako pliki PDF gotowe do druku. Większość raportów znajdziesz w zakładce **Raporty**, a raport z wybranych zwierząt przy liście zwierząt.',
   )
 
   await panel.goto()
@@ -833,9 +846,9 @@ test('Raporty', async ({
   await reportsPage.goto()
   await guide.step(
     page,
-    'Otwórz stronę Raporty',
-    'Pozostałe raporty znajdziesz na stronie **Raporty**, dostępnej w menu pod nazwą schroniska. Raporty są podzielone na sekcje: **Zwierzęta** i **Zdarzenia**.',
-    { highlight: animalsReport.generateButton },
+    'Otwórz zakładkę Raporty',
+    'Pozostałe raporty znajdziesz w zakładce **Raporty** w menu. Raporty są podzielone na sekcje: **Zwierzęta** i **Zdarzenia**. Po włączeniu dodatków pojawiają się kolejne sekcje.',
+    { highlight: addons.navLink('Raporty') },
   )
 
   await guide.step(
@@ -870,5 +883,274 @@ test('Raporty', async ({
 
   guide.note(
     'Pobrane raporty znajdziesz w folderze pobierania swojej przeglądarki, zwykle „Pobrane”.',
+  )
+})
+
+test('Dodatki', async ({ page, addons }) => {
+  guide.chapter(
+    'Dodatki',
+    'Dodatki to dodatkowe funkcje rejestru, które włączasz tylko wtedy, gdy ich potrzebujesz. Dodatek zmienia się dla całego schroniska: włączony jest widoczny dla wszystkich pracowników.',
+  )
+
+  await addons.goto()
+  await guide.step(
+    page,
+    'Otwórz listę dodatków',
+    'Kliknij zakładkę **Dodatki** w menu. Każdy dodatek to osobna karta z krótkim opisem i oznaczeniem **Włączony** lub **Wyłączony**. Kliknij kartę, aby zobaczyć szczegóły.',
+    {
+      highlight: [
+        addons.navLink('Dodatki'),
+        addons.card('Pochodzenie zwierzęcia'),
+      ],
+      fullPage: true,
+    },
+  )
+
+  await addons.card('Pochodzenie zwierzęcia').click()
+  await expect(addons.statusBadge).toHaveText('Wyłączony')
+  await guide.step(
+    page,
+    'Włącz dodatek',
+    'Na stronie dodatku przeczytasz, co dokładnie robi. Administrator schroniska włącza go przyciskiem **Włącz dodatek**, a wyłącza przyciskiem **Wyłącz dodatek**. Dane wpisane w dodatku nie znikają po jego wyłączeniu.',
+    { highlight: page.getByRole('button', { name: 'Włącz dodatek' }) },
+  )
+
+  await addons.enable()
+  await guide.step(
+    page,
+    'Sprawdź, czy dodatek jest włączony',
+    'Po włączeniu przy nazwie dodatku widzisz oznaczenie **Włączony**, a pod opisem pojawia się część do pracy z dodatkiem. Tutaj jest to lista gmin.',
+    { highlight: addons.statusBadge, fullPage: true },
+  )
+
+  await addons.gotoDetail('animal-vaccinations')
+  await addons.enable()
+  await guide.step(
+    page,
+    'Włącz także szczepienia',
+    'Dodatek **Szczepienia** włączasz tak samo. Dodatki, z których korzystasz codziennie, mają własną zakładkę w menu. Po włączeniu szczepień zobaczysz tam nową zakładkę **Szczepienia**.',
+    { highlight: addons.navLink('Szczepienia'), area: addons.mainNavigation },
+  )
+
+  guide.note(
+    'Dodatki włącza i wyłącza tylko administrator schroniska. Pozostali pracownicy widzą listę dodatków i ich opisy, ale nie mają przycisku włączania. Jeśli potrzebujesz dodatku, poproś o jego włączenie administratora.',
+  )
+})
+
+test('Pochodzenie zwierzęcia', async ({
+  page,
+  api,
+  animalDetails,
+  animalForm,
+  municipalities,
+  reportsPage,
+}) => {
+  guide.chapter(
+    'Pochodzenie zwierzęcia',
+    'Dodatek **Pochodzenie zwierzęcia** zapisuje, skąd i w jaki sposób zwierzę trafiło do schroniska oraz która gmina płaci za jego pobyt. Na tej podstawie przygotujesz miesięczne i roczne zestawienia do rozliczeń z gminami.',
+  )
+
+  await municipalities.goto()
+  await expect(municipalities.emptyNotice).toBeVisible()
+  await guide.step(
+    page,
+    'Najpierw uzupełnij listę gmin',
+    'Zanim dodasz lub zmienisz zwierzę, na liście muszą być gminy. Dopóki jest pusta, formularz zwierzęcia nie da się zapisać. Kliknij **Dodaj pierwszą gminę**.',
+    {
+      highlight: municipalities.emptyNotice.getByRole('button', {
+        name: 'Dodaj pierwszą gminę',
+      }),
+      area: municipalities.emptyNotice,
+    },
+  )
+
+  await municipalities.addButton.click()
+  await municipalities.nameField.input.fill('Gmina Ząbki')
+  await guide.step(
+    page,
+    'Wpisz nazwę gminy',
+    'Wpisz nazwę gminy i kliknij **Zapisz**. W ten sam sposób dodajesz kolejne gminy, z którymi współpracuje schronisko.',
+    { highlight: municipalities.saveButton },
+  )
+  await municipalities.saveButton.click()
+  await expect(municipalities.dialog).toBeHidden()
+  await api.createMunicipality('Gmina Marki')
+  await api.createMunicipality('Gmina Wołomin')
+  await municipalities.goto()
+
+  await guide.step(
+    page,
+    'Zarządzaj listą gmin',
+    'Każdą gminę możesz zmienić przyciskiem **Edytuj** lub schować przyciskiem **Archiwizuj**. Zarchiwizowanej gminy nie da się wybrać w formularzu, ale zwierzęta, które jej dotyczą, zachowują wpis. Zaznacz **Pokaż zarchiwizowane**, aby ją zobaczyć i przywrócić.',
+    { highlight: municipalities.showArchived, fullPage: true },
+  )
+
+  await animalForm.gotoEdit(burek.id)
+  await expect(animalForm.originSection).toBeVisible()
+  await animalForm.fillOrigin({
+    admissionDate: daysAgo(60),
+    admissionMethod: 'Interwencja (Straż Miejska / Policja)',
+    foundStreet: 'ul. Leśna 12',
+    foundMunicipality: 'Gmina Ząbki',
+    contractorMunicipality: 'Gmina Ząbki',
+  })
+  await guide.step(
+    page,
+    'Uzupełnij pochodzenie zwierzęcia',
+    'W formularzu dodawania i edycji pojawia się sekcja **Pochodzenie zwierzęcia**. Wpisz datę i sposób przyjęcia, miejsce znalezienia oraz wybierz **Gminę znalezienia** i **Gminę zlecającą**, czyli tę, która płaci za pobyt zwierzęcia. Wszystkie pola są wymagane.',
+    {
+      area: [
+        animalForm.originSection,
+        animalForm.originContractorMunicipality.root,
+      ],
+      highlight: [
+        animalForm.originFoundMunicipality.root,
+        animalForm.originContractorMunicipality.root,
+      ],
+    },
+  )
+  await animalForm.submitSave()
+  await expect(page).toHaveURL(new RegExp(`/animal/${burek.id}$`))
+
+  await animalDetails.expectOpen(burek.id)
+  const origin = page.getByText('Pochodzenie', { exact: true })
+  await expect(origin).toBeVisible()
+  await guide.step(
+    page,
+    'Sprawdź pochodzenie na karcie zwierzęcia',
+    'Zapisane dane widać na karcie zwierzęcia w sekcji **Pochodzenie**. U zwierząt dodanych przed włączeniem dodatku zobaczysz napis **Brak przypisania**, dopóki ich nie uzupełnisz.',
+    { highlight: origin, fullPage: true },
+  )
+
+  await reportsPage.goto()
+  await guide.step(
+    page,
+    'Pobierz zestawienia dla gmin',
+    'W zakładce **Raporty** pojawia się sekcja **Pochodzenie**. **Zestawienie miesięczne** pokazuje zwierzęta przyjęte w wybranym miesiącu, pogrupowane według gminy zlecającej, a **Zestawienie roczne** liczbę przyjętych zwierząt w każdym miesiącu. Wybierz miesiąc lub rok i kliknij **Generuj raport**.',
+    {
+      highlight: page.getByRole('heading', { name: 'Pochodzenie', level: 2 }),
+      fullPage: true,
+    },
+  )
+})
+
+test('Szczepienia', async ({
+  page,
+  api,
+  addons,
+  animalDetails,
+  vaccinations,
+  vaccinationsReport,
+  reportsPage,
+}) => {
+  guide.chapter(
+    'Szczepienia',
+    'Dodatek **Szczepienia** prowadzi rejestr szczepień każdego zwierzęcia: nazwę szczepionki, datę podania, termin ważności, lekarza, numer serii, notatkę i skan dokumentu. Pokazuje też, którym zwierzętom szczepienie niedługo się kończy.',
+  )
+
+  await animalDetails.goto(burek.id)
+  await expectImageLoaded(animalDetails.mainPhoto)
+  const tabLink = page.getByRole('link', { name: 'Szczepienia' }).last()
+  await guide.step(
+    page,
+    'Otwórz zakładkę „Szczepienia”',
+    'Na karcie zwierzęcia kliknij **Szczepienia**. Przycisk jest widoczny tylko wtedy, gdy dodatek jest włączony.',
+    { highlight: tabLink },
+  )
+
+  await vaccinations.goto(burek.id)
+  await vaccinations.addButton.click()
+  await vaccinations.fill({
+    vaccineName: 'Nobivac Rabies',
+    administeredOn: daysAgo(340),
+    validUntil: daysAgo(-25),
+  })
+  await vaccinations.veterinarianField.input.fill('lek. wet. Anna Nowak')
+  await vaccinations.batchNumberField.input.fill('A1234')
+  await vaccinations.attach(pdfDocument('swiadectwo-szczepienia.pdf'))
+  await vaccinations.dialog.getByRole('heading').click()
+  await guide.step(
+    page,
+    'Dodaj szczepienie',
+    'Kliknij **Dodaj szczepienie**. Obowiązkowe są tylko nazwa szczepionki i data podania. Możesz też wpisać termin ważności (**Ważne do**), lekarza, numer serii, notatkę i dołączyć skan dokumentu: PDF, DOC, DOCX lub zdjęcie do 10 MB. Zatwierdź przyciskiem **Zapisz**.',
+    { highlight: vaccinations.saveButton, area: vaccinations.dialog },
+  )
+  await vaccinations.save()
+
+  await expect(vaccinations.row('Nobivac Rabies')).toBeVisible()
+  await guide.step(
+    page,
+    'Sprawdź status szczepienia',
+    'Przy każdym szczepieniu widzisz status: **Ważne**, **Wygasa za N dni** (gdy do końca ważności zostało 30 dni lub mniej), **Wygasło** albo **Bez terminu ważności**. Kliknięcie nazwy pliku otwiera dołączony skan.',
+    {
+      highlight: vaccinations.status('Nobivac Rabies'),
+      area: vaccinations.row('Nobivac Rabies'),
+    },
+  )
+
+  await vaccinations.renewButton('Nobivac Rabies').click()
+  await expect(vaccinations.dialog).toContainText('Odnów szczepienie')
+  await vaccinations.fill({
+    administeredOn: daysAgo(1),
+    validUntil: daysAgo(-364),
+  })
+  await vaccinations.dialog.getByRole('heading').click()
+  await guide.step(
+    page,
+    'Odnów szczepienie',
+    'Gdy szczepienie trzeba powtórzyć, kliknij **Odnów**. Okno otwiera się z tą samą szczepionką, a pole **Zastępuje szczepienie** jest już ustawione na poprzednie szczepienie. Wpisz nową datę podania i termin ważności, a następnie zapisz.',
+    { highlight: vaccinations.replacesField.root, area: vaccinations.dialog },
+  )
+  await vaccinations.save()
+
+  await expect(vaccinations.status('Nobivac Rabies').first()).toBeVisible()
+  await expect(vaccinations.page.getByText('Zastąpione nowszym')).toBeVisible()
+  await guide.step(
+    page,
+    'Zobacz zastąpione szczepienie',
+    'Poprzednie szczepienie dostaje status **Zastąpione nowszym** i przestaje być wskazywane jako kończące się. Przy obu wpisach widzisz, które szczepienie zastępuje, a które je zastąpiło. Szczepienie, które zostało już zastąpione, nie ma przycisku **Odnów**.',
+    {
+      highlight: vaccinations.page.getByText('Zastąpione nowszym'),
+      fullPage: true,
+    },
+  )
+
+  const [kora, sonia] = await Promise.all([
+    api.listAnimals('Kora'),
+    api.listAnimals('Sonia'),
+  ])
+  await api.createVaccination(kora.items[0].id, {
+    vaccineName: 'Nobivac DHPPi',
+    administeredOn: daysAgo(350),
+    validUntil: daysAgo(-12),
+  })
+  await api.createVaccination(sonia.items[0].id, {
+    vaccineName: 'Nobivac Rabies',
+    administeredOn: daysAgo(360),
+    validUntil: daysAgo(-4),
+  })
+  await addons.navLink('Szczepienia').click()
+  await expect(vaccinations.expiringRows.first()).toBeVisible()
+  await guide.step(
+    page,
+    'Zobacz, które szczepienia się kończą',
+    'Zakładka **Szczepienia** w menu pokazuje szczepienia wszystkich zwierząt, których ważność kończy się w podanej liczbie dni (domyślnie 30), od najbliższego terminu. Możesz zmienić liczbę dni, pokazać już wygasłe i wybrać, czy pokazywać tylko zwierzęta przebywające w schronisku. Kliknięcie zwierzęcia otwiera jego szczepienia.',
+    { highlight: vaccinations.expiringRows.first(), fullPage: true },
+  )
+
+  await reportsPage.goto()
+  await vaccinationsReport.setRange(daysAgo(30), daysAgo(0))
+  await guide.step(
+    page,
+    'Pobierz raporty szczepień',
+    'W zakładce **Raporty** pojawia się sekcja **Szczepienia** z dwoma raportami: **Szczepienia w okresie** (podane szczepienia w wybranym zakresie dat) i **Kończące się szczepienia** (te, których ważność kończy się w podanej liczbie dni). Kliknij **Generuj raport**, aby pobrać PDF.',
+    {
+      highlight: page.getByRole('heading', { name: 'Szczepienia', level: 2 }),
+      fullPage: true,
+    },
+  )
+
+  guide.note(
+    'Szczepienie możesz też poprawić przyciskiem **Edytuj** lub usunąć przyciskiem **Usuń**. Po usunięciu szczepienia, które zastąpiło inne, poprzednie znów jest traktowane jako ważne albo wygasłe.',
   )
 })
