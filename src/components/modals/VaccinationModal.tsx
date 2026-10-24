@@ -1,16 +1,16 @@
 import React from 'react'
 import {
   Calendar,
-  ExternalLink,
+  FileIcon,
   FileText,
   Hash,
   LucideLoaderCircle,
   RefreshCw,
   Stethoscope,
   Syringe,
-  Upload,
 } from 'lucide-react'
 import { useForm } from '@tanstack/react-form'
+import DocumentPicker from '../DocumentPicker'
 import { FormField } from '../FormField'
 import QuickPicks from '../QuickPicks'
 import type { QuickPick } from '../QuickPicks'
@@ -24,11 +24,7 @@ import {
   VACCINE_NAME_MAX_LENGTH,
   VETERINARIAN_MAX_LENGTH,
 } from '@/api/vaccinations/types'
-import {
-  ALLOWED_DOCUMENT_EXTENSIONS,
-  ALLOWED_DOCUMENT_TYPES,
-  MAX_DOCUMENT_SIZE,
-} from '@/api/animals/types'
+import { ALLOWED_DOCUMENT_TYPES, MAX_DOCUMENT_SIZE } from '@/api/animals/types'
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -96,7 +92,6 @@ export default function VaccinationModal({
   const [file, setFile] = React.useState<File | null>(null)
   const [fileError, setFileError] = React.useState<string | null>(null)
   const [removeAttachment, setRemoveAttachment] = React.useState(false)
-  const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   const existingAttachment = removeAttachment ? null : vaccination?.attachment
   const isReplacedByOther = (item: AnimalVaccination) =>
@@ -129,11 +124,7 @@ export default function VaccinationModal({
     onClose()
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0]
-    e.target.value = ''
-    if (!selected) return
-
+  const handleFileSelect = (selected: File) => {
     if (!ALLOWED_DOCUMENT_TYPES.includes(selected.type)) {
       setFileError(
         'Niedozwolony typ pliku. Dozwolone: PDF, DOC, DOCX, JPEG, PNG, WEBP (max 10MB)',
@@ -421,60 +412,20 @@ export default function VaccinationModal({
             />
 
             <FormField
-              icon={Upload}
+              icon={FileIcon}
               label="Skan dokumentu"
               error={fileError ?? undefined}
             >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept={ALLOWED_DOCUMENT_EXTENSIONS}
-                onChange={handleFileChange}
-                className="hidden"
+              <DocumentPicker
+                fileName={file?.name ?? existingAttachment?.fileName ?? null}
+                hasError={Boolean(fileError)}
+                onSelect={handleFileSelect}
+                onClear={() => {
+                  setFile(null)
+                  setFileError(null)
+                  setRemoveAttachment(true)
+                }}
               />
-              {file || existingAttachment ? (
-                <div className="flex flex-col gap-2">
-                  <div className="text-sm font-medium flex items-center gap-1 text-gray-600">
-                    <ExternalLink className="w-4 h-4 shrink-0" />
-                    <span className="truncate">
-                      {file?.name ?? existingAttachment?.fileName}
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      Zmień plik
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600 hover:border-red-300"
-                      onClick={() => {
-                        setFile(null)
-                        setFileError(null)
-                        setRemoveAttachment(true)
-                      }}
-                    >
-                      Usuń
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Upload />
-                  Wybierz plik
-                </Button>
-              )}
             </FormField>
 
             {error && (
