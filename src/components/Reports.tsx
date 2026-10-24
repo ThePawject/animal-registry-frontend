@@ -2,6 +2,7 @@ import AnimalsDumpReportCard from './reports/AnimalsDumpReportCard'
 import DateRangeReportCard from './reports/DateRangeReportCard'
 import EventReportCard from './reports/EventReportCard'
 import OriginReportCards from './reports/OriginReportCards'
+import SelectedAnimalsReportCard from './reports/SelectedAnimalsReportCard'
 import VaccinationReportCards from './reports/VaccinationReportCards'
 import type { ReactNode } from 'react'
 import { useFeature } from '@/api/features/queries'
@@ -29,6 +30,7 @@ export default function Reports() {
     <div className="flex flex-col gap-8 px-8 md:px-0 pb-8">
       <ReportsSection title="Zwierzęta">
         <AnimalsDumpReportCard />
+        <SelectedAnimalsReportCard />
       </ReportsSection>
       <ReportsSection title="Zdarzenia">
         <EventReportCard />

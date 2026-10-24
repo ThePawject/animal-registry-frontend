@@ -9,7 +9,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Eye,
-  LucideLoaderCircle,
   Plus,
 } from 'lucide-react'
 import { useDebouncedValue } from '@tanstack/react-pacer'
@@ -30,18 +29,11 @@ import { SPECIES_MAP } from '@/api/animals/types'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAnimals } from '@/api/animals/queries'
-import {
-  cn,
-  createAndDownloadReport,
-  formatDate,
-  pinnedCellClass,
-} from '@/lib/utils'
+import { cn, formatDate, pinnedCellClass } from '@/lib/utils'
 import { getAppScrollContainer } from '@/lib/navigation'
 import { useHorizontalOverflow } from '@/hooks/useHorizontalOverflow'
-import { useReportsBySelectedIds } from '@/api/reports/queries'
 
 const SEARCH_INFO_KEY = 'animal-search-info-dismissed'
 
@@ -86,13 +78,6 @@ function AnimalTable() {
     isInShelter: search.isInShelter ?? null,
   })
 
-  const {
-    mutate: getReportsBySelectedIds,
-    isPending: isReportsBySelectedIdsPending,
-  } = useReportsBySelectedIds(({ blob, filename }) =>
-    createAndDownloadReport(blob, filename),
-  )
-
   const totalPages = animalsPage
     ? Math.max(1, Math.ceil(animalsPage.totalCount / pageSize))
     : 1
@@ -106,46 +91,11 @@ function AnimalTable() {
     }
   }, [animalsPage, isPlaceholderData, page, totalPages])
 
-  const [rowSelection, setRowSelection] = React.useState({})
-
   const { ref: scrollRef, hasOverflow } =
     useHorizontalOverflow<HTMLDivElement>()
 
   const columns = React.useMemo<Array<ColumnDef<Animal, any>>>(
     () => [
-      {
-        id: 'select',
-        header: () => {
-          const selectedCount = Object.keys(
-            table.getState().rowSelection,
-          ).length
-          if (selectedCount === 0) return null
-          return (
-            <div className="h-10 flex items-center justify-center">
-              <Checkbox
-                checked
-                onCheckedChange={(value) =>
-                  table.toggleAllRowsSelected(!!value)
-                }
-                aria-label="Select all rows"
-              />
-            </div>
-          )
-        },
-
-        cell: ({ row }) => (
-          <div className="h-10 flex items-center justify-center">
-            <Checkbox
-              checked={row.getIsSelected()}
-              onCheckedChange={(value) => row.toggleSelected(!!value)}
-              aria-label="Select row"
-              onClick={(e) => e.stopPropagation()} // Prevent modal open on checkbox click
-            />
-          </div>
-        ),
-        enableSorting: false,
-        enableHiding: false,
-      },
       {
         id: 'mainPhoto',
         header: 'Zdjęcie',
@@ -327,21 +277,12 @@ function AnimalTable() {
   const table = useReactTable({
     data: animalsPage?.items || [],
     columns,
-    state: {
-      rowSelection,
-    },
-    enableMultiRowSelection: true,
     getRowId: (row) => row.id.toString(),
-    onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
     pageCount: totalPages,
   })
 
-  const selectedRows = table.getState().rowSelection
-  const selectedIds = Object.keys(selectedRows)
-
-  const selectedCount = Object.keys(table.getState().rowSelection).length
   const [infoOpen, setInfoOpen] = React.useState(false)
   const [hasBeenDismissed, setHasBeenDismissed] = React.useState(() => {
     if (typeof window !== 'undefined') {
@@ -366,24 +307,6 @@ function AnimalTable() {
   return (
     <div className="space-y-4 mx-auto px-4 md:px-0 w-full pb-8">
       <div className="flex gap-2 items-center flex-wrap justify-end">
-        <Button
-          disabled={selectedCount === 0 || isReportsBySelectedIdsPending}
-          variant="outline"
-          onClick={() => {
-            if (selectedIds.length > 0) {
-              getReportsBySelectedIds({ ids: selectedIds })
-            }
-          }}
-          title="PDF zawierający dane i zdjęcia wybranych zwierząt (siatka zdjęć)."
-        >
-          {isReportsBySelectedIdsPending ? (
-            <LucideLoaderCircle className="w-4 h-4 animate-spin" />
-          ) : selectedCount > 0 ? (
-            `Raport z wybranych zwierzat (${selectedCount})`
-          ) : (
-            'Raport z wybranych zwierzat'
-          )}
-        </Button>
         <Button
           asChild
           className="bg-emerald-600 hover:bg-emerald-700 text-white"
@@ -570,7 +493,6 @@ function AnimalTable() {
               table.getRowModel().rows.map((row) => (
                 <tr
                   key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
                   className="border-b bg-background transition-colors hover:bg-muted"
                 >
                   {row.getVisibleCells().map((cell) => (
