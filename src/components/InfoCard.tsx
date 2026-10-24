@@ -10,6 +10,8 @@ type InfoCardProps = {
   className?: string
   iconClassName?: string
   icon?: LucideIcon
+  side?: 'top' | 'right' | 'bottom' | 'left'
+  align?: 'start' | 'center' | 'end'
   children: ReactNode
 }
 
@@ -19,6 +21,8 @@ export function InfoCard({
   className,
   iconClassName,
   icon: Icon = Info,
+  side = 'right',
+  align = 'start',
   children,
 }: InfoCardProps) {
   return (
@@ -35,7 +39,7 @@ export function InfoCard({
           <Icon className={cn('size-8 text-blue-600', iconClassName)} />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-96" side="right" align="start">
+      <PopoverContent className="w-96" side={side} align={align}>
         {children}
       </PopoverContent>
     </Popover>

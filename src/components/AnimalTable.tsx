@@ -323,15 +323,18 @@ function AnimalTable() {
                 onFocus={handleInputFocus}
               />
               <InputGroupAddon>
-                <Search />
+                <Search className="size-4 text-slate-400" />
               </InputGroupAddon>
-              <InputGroupAddon align="inline-end">
+              <InputGroupAddon align="inline-end" className="gap-1">
+                <span aria-hidden className="h-5 w-px bg-slate-200" />
                 <InfoCard
                   infoOpen={infoOpen}
                   setInfoOpen={setInfoOpen}
                   icon={CircleHelp}
-                  className="p-1"
-                  iconClassName="size-4 text-muted-foreground hover:text-foreground"
+                  side="bottom"
+                  align="end"
+                  className="group flex size-7 cursor-pointer items-center justify-center rounded-md p-0 transition-colors hover:bg-slate-100 focus-visible:ring-2 focus:ring-0"
+                  iconClassName="size-[18px] text-slate-400 transition-colors group-hover:text-slate-700 group-data-[state=open]:text-emerald-600"
                 >
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-2">
