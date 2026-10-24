@@ -83,7 +83,7 @@ export default function SelectAnimalsModal({
         if (!openState) onClose()
       }}
     >
-      <DialogContent className="flex h-[85vh] w-full max-w-7xl flex-col gap-4 overflow-hidden p-6">
+      <DialogContent className="flex h-[85vh] max-w-[min(80rem,calc(100%-2rem))] flex-col gap-4 overflow-hidden p-6">
         <DialogHeader>
           <DialogTitle>Wybierz zwierzęta do raportu</DialogTitle>
           <DialogDescription>
