@@ -36,7 +36,12 @@ export default function SelectAnimalsModal({
 }: SelectAnimalsModalProps) {
   const [query, setQuery] = useState('')
   const [debouncedQuery] = useDebouncedValue(query, { wait: 300 })
-  const [page, setPage] = useState(1)
+  // The page belongs to the search it was picked for, so it falls back to 1
+  // together with the debounced query rather than on every keystroke.
+  const [pagination, setPagination] = useState({ query: '', page: 1 })
+  const page = pagination.query === debouncedQuery ? pagination.page : 1
+  const setPage = (nextPage: number) =>
+    setPagination({ query: debouncedQuery, page: nextPage })
 
   const { data, isPending, isPlaceholderData } = useAnimals({
     page,
@@ -86,10 +91,7 @@ export default function SelectAnimalsModal({
         <Input
           placeholder="Szukaj po imieniu lub sygnaturze"
           value={query}
-          onChange={(e) => {
-            setQuery(e.target.value)
-            setPage(1)
-          }}
+          onChange={(e) => setQuery(e.target.value)}
           className="bg-background"
         />
 
