@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import VaccinationStatusBadge from './VaccinationStatusBadge'
 import DisabledAddon from '@/components/DisabledAddon'
@@ -7,18 +7,38 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useFeature } from '@/api/features/queries'
 import { useExpiringVaccinations } from '@/api/vaccinations/queries'
 import { formatDate } from '@/lib/utils'
 
 const MAX_DAYS = 3650
+const DEFAULT_DAYS = 30
+const CUSTOM_PERIOD = 'custom'
+
+const EXPIRY_PERIODS = [
+  { label: 'tygodnia', days: 7 },
+  { label: '2 tygodni', days: 14 },
+  { label: 'miesiąca', days: 30 },
+  { label: '3 miesięcy', days: 90 },
+  { label: 'pół roku', days: 180 },
+]
 
 export default function ExpiringVaccinations() {
   const { isEnabled, isLoading: isLoadingFeature } = useFeature(
     'animal-vaccinations',
   )
-  const [days, setDays] = useState('30')
+  const [days, setDays] = useState(String(DEFAULT_DAYS))
+  const [isCustomPeriod, setIsCustomPeriod] = useState(false)
+  const customDaysInputRef = useRef<HTMLInputElement>(null)
+  const shouldFocusCustomDaysRef = useRef(false)
   const [includeExpired, setIncludeExpired] = useState(false)
   const [inShelterOnly, setInShelterOnly] = useState(true)
 
@@ -48,16 +68,51 @@ export default function ExpiringVaccinations() {
         <CardTitle>Terminy szczepień</CardTitle>
         <div className="flex flex-wrap items-center gap-6">
           <div className="flex items-center gap-2">
-            <Label htmlFor="expires-in-days">Wygasają w ciągu (dni)</Label>
-            <Input
-              id="expires-in-days"
-              type="number"
-              min={0}
-              max={MAX_DAYS}
-              value={days}
-              onChange={(e) => setDays(e.target.value)}
-              className="w-24 bg-background"
-            />
+            <Label htmlFor="expiry-period">Wygasają w ciągu</Label>
+            <Select
+              value={isCustomPeriod ? CUSTOM_PERIOD : days}
+              onValueChange={(value) => {
+                setIsCustomPeriod(value === CUSTOM_PERIOD)
+                shouldFocusCustomDaysRef.current = value === CUSTOM_PERIOD
+                if (value !== CUSTOM_PERIOD) setDays(value)
+              }}
+            >
+              <SelectTrigger
+                id="expiry-period"
+                size="sm"
+                className="w-36 bg-background"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent
+                onCloseAutoFocus={(e) => {
+                  if (!shouldFocusCustomDaysRef.current) return
+                  e.preventDefault()
+                  shouldFocusCustomDaysRef.current = false
+                  customDaysInputRef.current?.select()
+                }}
+              >
+                {EXPIRY_PERIODS.map(({ label, days: periodDays }) => (
+                  <SelectItem key={periodDays} value={String(periodDays)}>
+                    {label}
+                  </SelectItem>
+                ))}
+                <SelectItem value={CUSTOM_PERIOD}>wybór dni</SelectItem>
+              </SelectContent>
+            </Select>
+            {isCustomPeriod && (
+              <Input
+                ref={customDaysInputRef}
+                id="expires-in-days"
+                aria-label="Wygasają w ciągu (dni)"
+                type="number"
+                min={0}
+                max={MAX_DAYS}
+                value={days}
+                onChange={(e) => setDays(e.target.value)}
+                className="h-8 w-20 bg-background"
+              />
+            )}
           </div>
           <div className="flex items-center gap-2">
             <Checkbox
