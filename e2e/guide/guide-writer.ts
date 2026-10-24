@@ -47,11 +47,8 @@ function slug(text: string) {
 const asArray = <T>(value: T | Array<T> | undefined) =>
   value === undefined ? [] : Array.isArray(value) ? value : [value]
 
-// The app scrolls inside this container, not the window (src/lib/navigation.ts).
 const APP_SCROLL_CONTAINER = '#app-scroll-container'
 
-// A full-page shot only sees the document, so the container is let out to
-// its content's height first, keeping the current scroll position.
 function setAppScrollReleased(page: Page, released: boolean) {
   return page.evaluate(
     ({ selector, release }) => {

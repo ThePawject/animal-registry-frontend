@@ -53,13 +53,10 @@ export default function Reports() {
   const { tab } = routeApi.useSearch()
   const navigate = useNavigate({ from: '/reports' })
   const { data: features, isLoading } = useShelterFeatures()
-  // Kept here because the tab content unmounts when another tab is open.
   const [selectedAnimals, setSelectedAnimals] = useState<SelectedAnimals>(
     new Map(),
   )
 
-  // Until the addon settings arrive, an addon tab asked for in the URL
-  // cannot be told apart from a disabled one.
   if (isLoading) {
     return <Skeleton className="h-40 w-full" />
   }

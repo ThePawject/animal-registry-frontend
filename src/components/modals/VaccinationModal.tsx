@@ -232,7 +232,6 @@ export default function VaccinationModal({
               )}
             />
 
-            {/* mb-0 like FormField itself, which opts out of space-y-4 */}
             <div className="mb-0 flex flex-col md:flex-row md:gap-4">
               <form.Field
                 name="administeredOn"

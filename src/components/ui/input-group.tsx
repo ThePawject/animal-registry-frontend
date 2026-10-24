@@ -69,7 +69,6 @@ function InputGroupAddon({
       className={cn(inputGroupAddonVariants({ align }), className)}
       onClick={(e) => {
         const target = e.target as HTMLElement
-        // React also bubbles clicks from portals (e.g. a popover opened here).
         if (!e.currentTarget.contains(target) || target.closest('button')) {
           return
         }

@@ -39,7 +39,6 @@ export default function SelectAnimalsModal({
   const [query, setQuery] = useState('')
   const [debouncedQuery] = useDebouncedValue(query, { wait: 300 })
   const [page, setPage] = useState(1)
-  // Back to page 1 when the debounced search changes, not on every keystroke.
   const [pageQuery, setPageQuery] = useState(debouncedQuery)
   if (pageQuery !== debouncedQuery) {
     setPageQuery(debouncedQuery)
@@ -98,8 +97,6 @@ export default function SelectAnimalsModal({
           className="bg-background"
         />
 
-        {/* Dimmed rows belong to the previous page or search, so they cannot
-            be picked until the new ones arrive. */}
         <div
           inert={isPlaceholderData}
           className={cn(

@@ -49,8 +49,6 @@ export default function AnimalPicker({
       value={value}
       onValueChange={(animal) => onChange(animal)}
       onInputValueChange={(inputValue, { reason }) => {
-        // input-clear also covers the input being emptied when it closes
-        // without a selection.
         if (reason === 'input-change' || reason === 'input-clear')
           setQuery(inputValue)
       }}

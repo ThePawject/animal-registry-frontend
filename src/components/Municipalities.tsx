@@ -24,8 +24,6 @@ export default function Municipalities() {
   const [editedMunicipality, setEditedMunicipality] =
     useState<Municipality | null>(null)
 
-  // Archived ones are always fetched, so adding or renaming can catch
-  // a duplicate of an archived municipality.
   const { data, isLoading, isError } = useMunicipalities(
     { includeArchived: true },
     isEnabled,
