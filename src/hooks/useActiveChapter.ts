@@ -18,9 +18,11 @@ export const useActiveChapter = () => {
       const isAtBottom =
         scrollContainer.clientHeight + scrollContainer.scrollTop >=
         scrollContainer.scrollHeight - 2
+      const containerTop = scrollContainer.getBoundingClientRect().top
       const passedHeadings = headings.filter(
         (heading) =>
-          heading.getBoundingClientRect().top <= ACTIVE_CHAPTER_OFFSET,
+          heading.getBoundingClientRect().top - containerTop <=
+          ACTIVE_CHAPTER_OFFSET,
       )
       const activeHeading = isAtBottom
         ? headings.at(-1)
