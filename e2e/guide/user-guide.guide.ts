@@ -993,7 +993,7 @@ test('Pochodzenie zwierzęcia', async ({
   await guide.step(
     page,
     'Zarządzaj listą gmin',
-    'Gminy są ułożone alfabetycznie. Każdą możesz zmienić przyciskiem **Edytuj** lub schować przyciskiem **Archiwizuj**. Zarchiwizowanej gminy nie da się wybrać w formularzu, ale zwierzęta, które jej dotyczą, zachowują wpis. Zaznacz **Pokaż zarchiwizowane**, aby ją zobaczyć i przywrócić.',
+    'Gminy są ułożone alfabetycznie. Każdą możesz zmienić przyciskiem **Edytuj** lub schować przyciskiem **Archiwizuj**. Zarchiwizowanej gminy nie da się wybrać w formularzu, ale zwierzęta, które jej dotyczą, zachowują wpis. Zaznacz **Pokaż zarchiwizowane**, aby ją zobaczyć i przywrócić. Nazwy zarchiwizowanej gminy nie da się użyć dla nowej ani zmienionej gminy, więc zamiast zakładać ją od nowa, przywróć ją.',
     { highlight: municipalities.showArchived, fullPage: true },
   )
 
