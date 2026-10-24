@@ -306,17 +306,6 @@ function AnimalTable() {
 
   return (
     <div className="space-y-4 mx-auto px-4 md:px-0 w-full pb-8">
-      <div className="flex gap-2 items-center flex-wrap justify-end">
-        <Button
-          asChild
-          className="bg-emerald-600 hover:bg-emerald-700 text-white"
-        >
-          <Link to="/create">
-            <Plus className="size-5" /> Dodaj zwierzę
-          </Link>
-        </Button>
-      </div>
-
       <div className="bg-muted/30 rounded-lg p-4 border">
         <div className="flex flex-col md:flex-row gap-3 items-start md:items-center w-full">
           <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -435,6 +424,15 @@ function AnimalTable() {
               <SelectItem value="false">Poza schroniskiem</SelectItem>
             </SelectContent>
           </Select>
+
+          <Button
+            asChild
+            className="w-full md:w-auto h-10 bg-emerald-600 hover:bg-emerald-700 text-white"
+          >
+            <Link to="/create">
+              <Plus className="size-5" /> Dodaj zwierzę
+            </Link>
+          </Button>
         </div>
       </div>
 
