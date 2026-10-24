@@ -45,7 +45,7 @@ export default function ExpiringVaccinations() {
   return (
     <Card>
       <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-4">
-        <CardTitle>Kończące się szczepienia</CardTitle>
+        <CardTitle>Terminy szczepień</CardTitle>
         <div className="flex flex-wrap items-center gap-6">
           <div className="flex items-center gap-2">
             <Label htmlFor="expires-in-days">Wygasają w ciągu (dni)</Label>

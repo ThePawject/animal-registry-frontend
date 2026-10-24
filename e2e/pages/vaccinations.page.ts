@@ -76,7 +76,7 @@ export class VaccinationsPage {
 
   async gotoExpiring() {
     await this.page.goto(VaccinationsPage.expiringPath)
-    await expect(this.page.getByText('Kończące się szczepienia')).toBeVisible()
+    await expect(this.page.getByText('Terminy szczepień')).toBeVisible()
   }
 
   async fill(values: VaccinationFormValues) {
