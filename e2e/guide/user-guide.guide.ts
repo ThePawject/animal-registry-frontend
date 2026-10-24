@@ -468,7 +468,7 @@ test('Dodawanie zwierzęcia', async ({ page, panel, animalForm }) => {
   await guide.step(
     page,
     'Kliknij „Dodaj zwierzę”',
-    'Przycisk **Dodaj zwierzę** znajduje się nad listą zwierząt.',
+    'Przycisk **Dodaj zwierzę** znajduje się po prawej stronie paska wyszukiwania i filtrów, nad listą zwierząt.',
     { highlight: panel.addAnimalLink },
   )
 

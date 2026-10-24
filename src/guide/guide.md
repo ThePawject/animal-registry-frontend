@@ -80,7 +80,7 @@ Nowe zwierzę dodajesz jednym formularzem. Obowiązkowe są tylko **Gatunek** i 
 
 ### Krok 1. Kliknij „Dodaj zwierzę”
 
-Przycisk **Dodaj zwierzę** znajduje się nad listą zwierząt.
+Przycisk **Dodaj zwierzę** znajduje się po prawej stronie paska wyszukiwania i filtrów, nad listą zwierząt.
 
 ![Kliknij „Dodaj zwierzę”](./img/03-dodawanie-zwierzecia-01.webp)
 
