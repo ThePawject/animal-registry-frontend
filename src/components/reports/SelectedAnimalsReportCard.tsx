@@ -9,8 +9,15 @@ import { createAndDownloadReport, genericErrorMessage } from '@/lib/utils'
 
 const PREVIEW_COUNT = 3
 
-export default function SelectedAnimalsReportCard() {
-  const [selected, setSelected] = useState<SelectedAnimals>(new Map())
+interface SelectedAnimalsReportCardProps {
+  selected: SelectedAnimals
+  onSelectedChange: (selected: SelectedAnimals) => void
+}
+
+export default function SelectedAnimalsReportCard({
+  selected,
+  onSelectedChange,
+}: SelectedAnimalsReportCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const { mutate, isPending, error } = useReportsBySelectedIds(
     ({ blob, filename }) => createAndDownloadReport(blob, filename),
@@ -53,7 +60,7 @@ export default function SelectedAnimalsReportCard() {
         <SelectAnimalsModal
           open
           selected={selected}
-          onSelectedChange={setSelected}
+          onSelectedChange={onSelectedChange}
           onClose={() => setIsModalOpen(false)}
         />
       )}

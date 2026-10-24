@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   Building2Icon,
   CalendarDaysIcon,
@@ -11,6 +12,7 @@ import EventReportCard from './reports/EventReportCard'
 import OriginReportCards from './reports/OriginReportCards'
 import SelectedAnimalsReportCard from './reports/SelectedAnimalsReportCard'
 import VaccinationReportCards from './reports/VaccinationReportCards'
+import type { SelectedAnimals } from './modals/SelectAnimalsModal'
 import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -40,6 +42,10 @@ export default function Reports() {
   const navigate = useNavigate({ from: '/reports' })
   const { isEnabled: isOriginEnabled } = useFeature('animal-origin')
   const { isEnabled: isVaccinationsEnabled } = useFeature('animal-vaccinations')
+  // Kept here because the tab content unmounts when another tab is open.
+  const [selectedAnimals, setSelectedAnimals] = useState<SelectedAnimals>(
+    new Map(),
+  )
 
   const availableTabs = REPORT_TABS.filter(
     ({ value }) =>
@@ -75,7 +81,10 @@ export default function Reports() {
       <TabsContent value="zwierzeta">
         <ReportsGrid>
           <AnimalsDumpReportCard />
-          <SelectedAnimalsReportCard />
+          <SelectedAnimalsReportCard
+            selected={selectedAnimals}
+            onSelectedChange={setSelectedAnimals}
+          />
         </ReportsGrid>
       </TabsContent>
       <TabsContent value="zdarzenia">
