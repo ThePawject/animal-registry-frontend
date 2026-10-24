@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { getAppScrollContainer } from '@/lib/navigation'
 
 const ACTIVE_CHAPTER_OFFSET = 120
 
@@ -10,12 +11,13 @@ export const useActiveChapter = () => {
     const headings = Array.from(
       articleRef.current?.querySelectorAll('h2') ?? [],
     )
-    if (headings.length === 0) return
+    const scrollContainer = getAppScrollContainer()
+    if (headings.length === 0 || !scrollContainer) return
 
     const updateActiveChapter = () => {
       const isAtBottom =
-        window.innerHeight + window.scrollY >=
-        document.documentElement.scrollHeight - 2
+        scrollContainer.clientHeight + scrollContainer.scrollTop >=
+        scrollContainer.scrollHeight - 2
       const passedHeadings = headings.filter(
         (heading) =>
           heading.getBoundingClientRect().top <= ACTIVE_CHAPTER_OFFSET,
@@ -27,11 +29,13 @@ export const useActiveChapter = () => {
     }
 
     updateActiveChapter()
-    window.addEventListener('scroll', updateActiveChapter, { passive: true })
+    scrollContainer.addEventListener('scroll', updateActiveChapter, {
+      passive: true,
+    })
     window.addEventListener('resize', updateActiveChapter)
 
     return () => {
-      window.removeEventListener('scroll', updateActiveChapter)
+      scrollContainer.removeEventListener('scroll', updateActiveChapter)
       window.removeEventListener('resize', updateActiveChapter)
     }
   }, [])

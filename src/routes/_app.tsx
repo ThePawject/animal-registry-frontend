@@ -10,6 +10,7 @@ import Header from '@/components/Header'
 import { AuthTransition } from '@/components/AuthTransition'
 import LoginModal from '@/components/LoginModal'
 import { getAuthorizationParams } from '@/lib/utils'
+import { APP_SCROLL_CONTAINER_ID } from '@/lib/navigation'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 export const Route = createFileRoute('/_app')({
@@ -44,12 +45,17 @@ function AppLayout() {
         <>
           {!userHasNoRoles && (
             <RolesContext.Provider value={roles}>
-              <div className="flex flex-col gap-8">
+              <div className="flex h-dvh flex-col">
                 <Header shelterName={shelterName} />
-                <div className="container mx-auto flex flex-col gap-8">
-                  <Breadcrumbs />
-                  <Outlet />
-                </div>
+                <main
+                  id={APP_SCROLL_CONTAINER_ID}
+                  className="relative flex-1 overflow-y-auto [scrollbar-gutter:stable]"
+                >
+                  <div className="container mx-auto flex flex-col gap-8 pt-8">
+                    <Breadcrumbs />
+                    <Outlet />
+                  </div>
+                </main>
               </div>
             </RolesContext.Provider>
           )}

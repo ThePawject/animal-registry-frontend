@@ -39,6 +39,7 @@ import {
   formatDate,
   pinnedCellClass,
 } from '@/lib/utils'
+import { getAppScrollContainer } from '@/lib/navigation'
 import { useHorizontalOverflow } from '@/hooks/useHorizontalOverflow'
 import { useReportsBySelectedIds } from '@/api/reports/queries'
 
@@ -606,7 +607,7 @@ function AnimalTable() {
             value={pageSize.toString()}
             onValueChange={(value) => {
               setSearch({ page: 1, pageSize: Number(value) as 10 | 20 | 50 })
-              window.scrollTo({ top: 0, behavior: 'instant' })
+              getAppScrollContainer()?.scrollTo({ top: 0, behavior: 'instant' })
             }}
           >
             <SelectTrigger
