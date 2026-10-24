@@ -49,7 +49,10 @@ export default function AnimalPicker({
       value={value}
       onValueChange={(animal) => onChange(animal)}
       onInputValueChange={(inputValue, { reason }) => {
-        if (reason === 'input-change') setQuery(inputValue)
+        // input-clear also covers the input being emptied when it closes
+        // without a selection.
+        if (reason === 'input-change' || reason === 'input-clear')
+          setQuery(inputValue)
       }}
       itemToStringLabel={animalLabel}
       isItemEqualToValue={(item, selected) => item.id === selected.id}
