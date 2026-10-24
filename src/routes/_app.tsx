@@ -45,11 +45,11 @@ function AppLayout() {
         <>
           {!userHasNoRoles && (
             <RolesContext.Provider value={roles}>
-              <div className="flex h-dvh flex-col">
+              <div className="flex h-dvh flex-col print:h-auto">
                 <Header shelterName={shelterName} />
                 <main
                   id={APP_SCROLL_CONTAINER_ID}
-                  className="relative flex-1 overflow-y-auto [scrollbar-gutter:stable]"
+                  className="relative flex-1 overflow-y-auto [scrollbar-gutter:stable] print:overflow-visible"
                 >
                   <div className="container mx-auto flex flex-col gap-8 pt-8">
                     <Breadcrumbs />
