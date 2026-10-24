@@ -98,7 +98,10 @@ export default function SelectAnimalsModal({
           className="bg-background"
         />
 
+        {/* Dimmed rows belong to the previous page or search, so they cannot
+            be picked until the new ones arrive. */}
         <div
+          inert={isPlaceholderData}
           className={cn(
             'min-h-0 flex-1 overflow-auto rounded-md border transition-opacity',
             isPlaceholderData && 'opacity-60',
