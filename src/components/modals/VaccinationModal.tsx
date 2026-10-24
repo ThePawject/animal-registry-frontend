@@ -12,6 +12,8 @@ import {
 } from 'lucide-react'
 import { useForm } from '@tanstack/react-form'
 import { FormField } from '../FormField'
+import QuickPicks from '../QuickPicks'
+import type { QuickPick } from '../QuickPicks'
 import type {
   AnimalVaccination,
   VaccinationFormData,
@@ -41,6 +43,7 @@ import {
 } from '@/components/ui/select'
 import { useSaveVaccination } from '@/api/vaccinations/queries'
 import {
+  addMonthsToIsoDate,
   formatDate,
   genericErrorMessage,
   isFutureDate,
@@ -48,6 +51,12 @@ import {
 } from '@/lib/utils'
 
 const NO_REPLACEMENT = 'none'
+
+const VALIDITY_PERIODS: Array<QuickPick<number>> = [
+  { label: '6 miesięcy', value: 6 },
+  { label: '1 rok', value: 12 },
+  { label: '2 lata', value: 24 },
+]
 
 const getDefaultFormData = (
   vaccination: AnimalVaccination | null,
@@ -146,7 +155,7 @@ export default function VaccinationModal({
         if (!openState) handleClose()
       }}
     >
-      <DialogContent className="p-0 bg-transparent shadow-none border-none max-w-lg">
+      <DialogContent className="p-0 bg-transparent shadow-none border-none max-w-3xl">
         <Card className="overflow-hidden py-0 gap-0 max-h-[90vh] overflow-y-auto">
           <div className="flex-1 p-4 shadow-md">
             <h2 className="text-2xl font-semibold">
@@ -193,7 +202,7 @@ export default function VaccinationModal({
               )}
             />
 
-            <div className="flex gap-4">
+            <div className="flex gap-4 mb-0">
               <form.Field
                 name="administeredOn"
                 validators={{
@@ -242,6 +251,33 @@ export default function VaccinationModal({
                       icon={Calendar}
                       label="Ważne do"
                       error={field.state.meta.errors[0]}
+                      labelAside={
+                        <form.Subscribe
+                          selector={(state) => state.values.administeredOn}
+                          children={(administeredOn) => (
+                            <QuickPicks
+                              label="Okres ważności od daty podania"
+                              options={VALIDITY_PERIODS}
+                              disabled={!administeredOn}
+                              selected={
+                                VALIDITY_PERIODS.find(
+                                  ({ value }) =>
+                                    administeredOn &&
+                                    addMonthsToIsoDate(
+                                      administeredOn,
+                                      value,
+                                    ) === field.state.value,
+                                )?.value
+                              }
+                              onSelect={(months) =>
+                                field.handleChange(
+                                  addMonthsToIsoDate(administeredOn, months),
+                                )
+                              }
+                            />
+                          )}
+                        />
+                      }
                     >
                       <Input
                         type="date"

@@ -77,11 +77,26 @@ export function getAuthorizationParams() {
   }
 }
 
+function toIsoDate(date: Date): string {
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${date.getFullYear()}-${month}-${day}`
+}
+
 export function todayIsoDate(): string {
-  const now = new Date()
-  const month = String(now.getMonth() + 1).padStart(2, '0')
-  const day = String(now.getDate()).padStart(2, '0')
-  return `${now.getFullYear()}-${month}-${day}`
+  return toIsoDate(new Date())
+}
+
+export function addMonthsToIsoDate(isoDate: string, months: number): string {
+  const [year, month, day] = isoDate.split('T')[0].split('-').map(Number)
+  const lastDayOfTargetMonth = new Date(
+    year,
+    month - 1 + months + 1,
+    0,
+  ).getDate()
+  return toIsoDate(
+    new Date(year, month - 1 + months, Math.min(day, lastDayOfTargetMonth)),
+  )
 }
 
 export function isFutureDate(isoDate: string): boolean {

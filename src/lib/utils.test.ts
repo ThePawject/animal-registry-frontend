@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  addMonthsToIsoDate,
   decodeJwt,
   getRoles,
   getShelterName,
@@ -81,5 +82,12 @@ describe('dates', () => {
   it('rejects tomorrow and far-future years', () => {
     expect(isFutureDate(daysFromNow(1))).toBe(true)
     expect(isFutureDate('12345-01-01')).toBe(true)
+  })
+
+  it('adds months and clamps to the end of a shorter month', () => {
+    expect(addMonthsToIsoDate('2026-03-15', 6)).toBe('2026-09-15')
+    expect(addMonthsToIsoDate('2026-10-24', 12)).toBe('2027-10-24')
+    expect(addMonthsToIsoDate('2026-08-31', 6)).toBe('2027-02-28')
+    expect(addMonthsToIsoDate('2027-02-29T00:00:00', 12)).toBe('2028-02-29')
   })
 })
