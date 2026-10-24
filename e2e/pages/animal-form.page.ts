@@ -23,6 +23,22 @@ export type AnimalFormValues = {
   birthDate?: string
 }
 
+export type AnimalOriginValues = {
+  admissionDate: string
+  admissionMethod: string
+  foundStreet: string
+  foundMunicipality: string
+  contractorMunicipality: string
+}
+
+export const ANIMAL_ORIGIN_ERRORS = {
+  admissionDate: 'Data przyjęcia jest wymagana',
+  admissionMethod: 'Sposób przyjęcia jest wymagany',
+  foundStreet: 'Miejsce znalezienia jest wymagane',
+  foundMunicipality: 'Gmina znalezienia jest wymagana',
+  contractorMunicipality: 'Gmina zlecająca jest wymagana',
+} as const
+
 export const SIGNATURE_PATTERN = /^\d{4}\/\d{4}$/
 
 export const ANIMAL_FORM_ERRORS = {
@@ -73,6 +89,14 @@ export class AnimalFormPage {
 
   readonly photos: PhotoManager
 
+  readonly originSection: Locator
+  readonly originNotice: Locator
+  readonly originAdmissionDate: FormFieldLocator
+  readonly originAdmissionMethod: FormFieldLocator
+  readonly originFoundStreet: FormFieldLocator
+  readonly originFoundMunicipality: FormFieldLocator
+  readonly originContractorMunicipality: FormFieldLocator
+
   constructor(readonly page: Page) {
     const form = page.locator('form')
 
@@ -113,6 +137,41 @@ export class AnimalFormPage {
     })
 
     this.photos = new PhotoManager(page, form)
+
+    this.originSection = form.getByRole('heading', {
+      name: 'Pochodzenie zwierzęcia',
+    })
+    this.originNotice = form
+      .getByRole('alert')
+      .filter({ hasText: 'Brak gmin – uzupełnij listę' })
+    this.originAdmissionDate = new FormFieldLocator(form, 'Data przyjęcia')
+    this.originAdmissionMethod = new FormFieldLocator(form, 'Sposób przyjęcia')
+    this.originFoundStreet = new FormFieldLocator(form, 'Miejsce znalezienia')
+    this.originFoundMunicipality = new FormFieldLocator(
+      form,
+      'Gmina znalezienia',
+    )
+    this.originContractorMunicipality = new FormFieldLocator(
+      form,
+      'Gmina zlecająca',
+    )
+  }
+
+  async fillOrigin(values: AnimalOriginValues) {
+    await this.originAdmissionDate.input.fill(values.admissionDate)
+    await chooseOption(
+      this.originAdmissionMethod.select,
+      values.admissionMethod,
+    )
+    await this.originFoundStreet.input.fill(values.foundStreet)
+    await chooseOption(
+      this.originFoundMunicipality.select,
+      values.foundMunicipality,
+    )
+    await chooseOption(
+      this.originContractorMunicipality.select,
+      values.contractorMunicipality,
+    )
   }
 
   async gotoCreate() {

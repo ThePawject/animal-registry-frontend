@@ -13,8 +13,14 @@ import { useForm, useStore } from '@tanstack/react-form'
 import { useRouter } from '@tanstack/react-router'
 import { InfoCard } from './InfoCard'
 import { FormField } from './FormField'
+import AnimalOriginFields, { validateAnimalOrigin } from './AnimalOriginFields'
 import type { AddAnimal, Sexes, Species } from '@/api/animals/types'
-import { SEX_MAP, SPECIES_MAP } from '@/api/animals/types'
+import {
+  SEX_MAP,
+  SPECIES_MAP,
+  emptyAnimalOriginForm,
+} from '@/api/animals/types'
+import { useFeature } from '@/api/features/queries'
 import { useAddAnimal, useAnimalSignature } from '@/api/animals/queries'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -52,6 +58,7 @@ const defaultAnimalFormData: AddAnimal = {
   signature: '',
   species: 0,
   transponderCode: '',
+  origin: emptyAnimalOriginForm,
 }
 
 interface ThumbnailImageProps {
@@ -95,6 +102,7 @@ function ThumbnailImage({
 
 export default function AddAnimalForm() {
   const { mutateAsync, isPending, error } = useAddAnimal()
+  const { isEnabled: isOriginEnabled } = useFeature('animal-origin')
 
   const router = useRouter()
   const isSignatureError = error?.message.toLowerCase().includes('signature')
@@ -175,7 +183,10 @@ export default function AddAnimalForm() {
   const form = useForm({
     defaultValues: defaultAnimalFormData,
     onSubmit: async ({ value }) => {
-      await mutateAsync(value)
+      await mutateAsync({
+        ...value,
+        origin: isOriginEnabled ? value.origin : null,
+      })
       cleanupFileUrls()
       form.reset()
       router.navigate({ to: '/panel' })
@@ -183,6 +194,10 @@ export default function AddAnimalForm() {
   })
 
   const currentSpecies = useStore(form.store, (state) => state.values.species)
+  const submissionAttempts = useStore(
+    form.store,
+    (state) => state.submissionAttempts,
+  )
   const images = useStore(form.store, (state) => state.values.photos)
   const mainPhotoIndex = useStore(
     form.store,
@@ -535,6 +550,27 @@ export default function AddAnimalForm() {
                 )
               }}
             />
+
+            {isOriginEnabled && (
+              <form.Field
+                name="origin"
+                validators={{
+                  onChange: ({ value }) =>
+                    value && Object.keys(validateAnimalOrigin(value)).length
+                      ? 'Uzupełnij dane pochodzenia zwierzęcia'
+                      : undefined,
+                }}
+                children={(field) => {
+                  return (
+                    <AnimalOriginFields
+                      value={field.state.value ?? emptyAnimalOriginForm}
+                      onChange={(origin) => field.handleChange(origin)}
+                      showAllErrors={submissionAttempts > 0}
+                    />
+                  )
+                }}
+              />
+            )}
           </div>
 
           <div className="flex flex-col items-center">

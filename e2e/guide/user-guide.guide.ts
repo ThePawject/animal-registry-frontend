@@ -797,38 +797,21 @@ test('Karty zdrowia', async ({ page, animalDetails, healthRecords }) => {
   await healthRecords.cancelEdit()
 })
 
-test('Raporty', async ({ page, panel, eventReport, dateRangeReport }) => {
+test('Raporty', async ({
+  page,
+  panel,
+  reportsPage,
+  animalsReport,
+  eventReport,
+  dateRangeReport,
+}) => {
   guide.chapter(
     'Raporty',
-    'Wszystkie raporty pobierają się jako pliki PDF gotowe do druku. Przyciski raportów znajdują się nad listą zwierząt.',
+    'Wszystkie raporty pobierają się jako pliki PDF gotowe do druku. Większość raportów znajdziesz na stronie **Raporty**, a raport z wybranych zwierząt przy liście zwierząt.',
   )
 
   await panel.goto()
   await expectImageLoaded(panel.row('Burek').photo)
-  await guide.step(
-    page,
-    'Znajdź przyciski raportów',
-    'Nad listą zwierząt są cztery raporty: **Raport zdarzeń**, **Raport wszystkie zwierzeta**, **Raport z wybranych zwierzat** oraz **Raport zdarzen w zakresie**. Po najechaniu kursorem na przycisk zobaczysz krótki opis raportu.',
-    {
-      highlight: [
-        panel.eventReportButton,
-        panel.allAnimalsReportButton,
-        panel.selectedAnimalsReportButton,
-        panel.dateRangeReportButton,
-      ],
-    },
-  )
-
-  await guide.step(
-    page,
-    'Pobierz raport wszystkich zwierząt',
-    'Kliknij **Raport wszystkie zwierzeta**, aby pobrać tekstowe zestawienie danych wszystkich zwierząt z rejestru (bez zdjęć). Plik zapisuje się od razu, bez dodatkowych pytań.',
-    {
-      highlight: panel.allAnimalsReportButton,
-      area: [panel.eventReportButton, panel.dateRangeReportButton],
-    },
-  )
-
   for (const name of ['Burek', 'Kora', 'Borys']) {
     await panel.row(name).checkbox.check()
   }
@@ -847,22 +830,31 @@ test('Raporty', async ({ page, panel, eventReport, dateRangeReport }) => {
     },
   )
 
-  await panel.eventReportButton.click()
-  await expect(eventReport.root).toBeVisible()
+  await reportsPage.goto()
+  await guide.step(
+    page,
+    'Otwórz stronę Raporty',
+    'Pozostałe raporty znajdziesz na stronie **Raporty**, dostępnej w menu pod nazwą schroniska. Raporty są podzielone na sekcje: **Zwierzęta** i **Zdarzenia**.',
+    { highlight: animalsReport.generateButton },
+  )
+
+  await guide.step(
+    page,
+    'Pobierz raport wszystkich zwierząt',
+    'W sekcji **Zwierzęta** kliknij **Generuj raport**, aby pobrać tekstowe zestawienie danych wszystkich zwierząt z rejestru (bez zdjęć). Plik zapisuje się od razu, bez dodatkowych pytań.',
+    { highlight: animalsReport.generateButton },
+  )
+
   await eventReport.period('Własny zakres dat').check()
   await eventReport.customStartDate.fill(daysAgo(60))
   await eventReport.customEndDate.fill(daysAgo(0))
   await guide.step(
     page,
     'Wygeneruj raport zdarzeń',
-    'Kliknij **Raport zdarzeń** i zaznacz okresy, które mają się znaleźć w zestawieniu: ostatni tydzień, miesiąc, kwartał lub **Własny zakres dat**. Przy własnym zakresie podaj datę początkową i końcową. Kliknij **Generuj raport**.',
+    'W karcie **Raport zdarzeń** zaznacz okresy, które mają się znaleźć w zestawieniu: ostatni tydzień, miesiąc, kwartał lub **Własny zakres dat**. Przy własnym zakresie podaj datę początkową i końcową. Kliknij **Generuj raport**.',
     { highlight: eventReport.generateButton },
   )
-  await eventReport.cancelButton.click()
-  await eventReport.expectClosed()
 
-  await panel.dateRangeReportButton.click()
-  await expect(dateRangeReport.root).toBeVisible()
   await dateRangeReport.setRange(daysAgo(60), daysAgo(0))
   await dateRangeReport.pick(dateRangeReport.speciesField, ['Psy'])
   await dateRangeReport.pick(dateRangeReport.eventTypeField, [
@@ -872,11 +864,9 @@ test('Raporty', async ({ page, panel, eventReport, dateRangeReport }) => {
   await guide.step(
     page,
     'Wygeneruj raport zdarzeń w zakresie dat',
-    'Kliknij **Raport zdarzen w zakresie** i podaj datę początkową oraz końcową. Opcjonalnie zawęź raport do wybranych typów zdarzeń i gatunków. Puste pola oznaczają „wszystkie”. Kliknij **Generuj raport**.',
+    'W karcie **Raport zdarzeń w zakresie** podaj datę początkową oraz końcową. Opcjonalnie zawęź raport do wybranych typów zdarzeń i gatunków. Puste pola oznaczają „wszystkie”. Kliknij **Generuj raport**.',
     { highlight: dateRangeReport.generateButton },
   )
-  await dateRangeReport.cancelButton.click()
-  await dateRangeReport.expectClosed()
 
   guide.note(
     'Pobrane raporty znajdziesz w folderze pobierania swojej przeglądarki, zwykle „Pobrane”.',

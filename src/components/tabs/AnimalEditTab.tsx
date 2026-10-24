@@ -13,6 +13,7 @@ import { useForm, useStore } from '@tanstack/react-form'
 import { useRouter } from '@tanstack/react-router'
 import { InfoCard } from '../InfoCard'
 import { FormField } from '../FormField'
+import AnimalOriginFields, { validateAnimalOrigin } from '../AnimalOriginFields'
 import type {
   AnimalById,
   EditAnimal,
@@ -21,7 +22,12 @@ import type {
   Sexes,
   Species,
 } from '@/api/animals/types'
-import { SEX_MAP, SPECIES_MAP } from '@/api/animals/types'
+import {
+  SEX_MAP,
+  SPECIES_MAP,
+  emptyAnimalOriginForm,
+} from '@/api/animals/types'
+import { useFeature } from '@/api/features/queries'
 import { useAnimalSignature, useEditAnimal } from '@/api/animals/queries'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -112,9 +118,19 @@ const formSnapshot = (values: EditAnimalForm) => {
 }
 
 const mapAnimalToFormData = (animal: AnimalById): EditAnimalForm => {
-  const { photos, mainPhotoId, birthDate, ...rest } = animal
+  const { photos, mainPhotoId, birthDate, origin, ...rest } = animal
 
   return {
+    origin:
+      origin?.isAssigned && origin.admissionDate
+        ? {
+            admissionDate: origin.admissionDate.split('T')[0],
+            admissionMethod: origin.admissionMethod,
+            foundStreet: origin.foundStreet,
+            foundMunicipalityId: origin.foundMunicipality.id ?? '',
+            contractorMunicipalityId: origin.contractorMunicipality.id ?? '',
+          }
+        : emptyAnimalOriginForm,
     photos: photos,
     birthDate: birthDate ? birthDate.split('T')[0] : null,
     mainPhotoId: mainPhotoId,
@@ -138,6 +154,7 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
   })
   const { mutate: getAnimalSignature, isPending: isGettingAnimalSignature } =
     useAnimalSignature()
+  const { isEnabled: isOriginEnabled } = useFeature('animal-origin')
   const isSignatureError = error?.message.toLowerCase().includes('signature')
 
   const fileUrlCacheRef = React.useRef<Map<File, string>>(new Map())
@@ -215,7 +232,8 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
     defaultValues: mapAnimalToFormData(animal),
 
     onSubmit: async ({ value }) => {
-      const { photos, name, transponderCode, birthDate, ...rest } = value
+      const { photos, name, transponderCode, birthDate, origin, ...rest } =
+        value
 
       const existingPhotosIds = photos
         .filter((p) => typeof p === 'object' && 'id' in p)
@@ -231,12 +249,17 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
         birthDate: birthDate ? new Date(birthDate).toISOString() : null,
         existingPhotoIds: existingPhotosIds,
         newPhotos: newPhotos,
+        origin: isOriginEnabled ? origin : null,
       }
       await mutateAsync({ animalId: value.id, data: payload })
     },
   })
 
   const currentSpecies = useStore(form.store, (state) => state.values.species)
+  const submissionAttempts = useStore(
+    form.store,
+    (state) => state.submissionAttempts,
+  )
   const values = useStore(form.store, (state) => state.values)
   const initialSnapshot = React.useMemo(
     () => formSnapshot(mapAnimalToFormData(animal)),
@@ -623,6 +646,27 @@ export function AnimalEditTab({ animal }: AnimalEditTabProps) {
                 )
               }}
             />
+
+            {isOriginEnabled && (
+              <form.Field
+                name="origin"
+                validators={{
+                  onChange: ({ value }) =>
+                    value && Object.keys(validateAnimalOrigin(value)).length
+                      ? 'Uzupełnij dane pochodzenia zwierzęcia'
+                      : undefined,
+                }}
+                children={(field) => {
+                  return (
+                    <AnimalOriginFields
+                      value={field.state.value ?? emptyAnimalOriginForm}
+                      onChange={(origin) => field.handleChange(origin)}
+                      showAllErrors={submissionAttempts > 0}
+                    />
+                  )
+                }}
+              />
+            )}
           </div>
 
           <div className="flex flex-col items-center">

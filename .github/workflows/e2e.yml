@@ -25,7 +25,7 @@ env:
   NODE_VERSION: '22'
   DOTNET_VERSION: '9.0.x'
   BACKEND_REPOSITORY: ThePawject/animal-registry-backend
-  BACKEND_REF: 18b05bd3d63a13b8c411f69b7628ba4fc613c1f2
+  BACKEND_REF: b2f3024d784a9105f71eeb18de769fb02cde1c0a
 
 jobs:
   e2e:

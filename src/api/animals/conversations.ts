@@ -63,6 +63,14 @@ export const animalsService = {
       formData.append('species', String(data.species))
       data.transponderCode &&
         formData.append('transponderCode', data.transponderCode)
+      data.origin &&
+        formData.append(
+          'origin',
+          JSON.stringify({
+            ...data.origin,
+            admissionDate: new Date(data.origin.admissionDate).toISOString(),
+          }),
+        )
 
       const response = await apiClient.post('animals', formData, {
         headers: {
@@ -110,6 +118,14 @@ export const animalsService = {
       formData.append('species', String(data.species))
       data.transponderCode &&
         formData.append('transponderCode', data.transponderCode)
+      data.origin &&
+        formData.append(
+          'origin',
+          JSON.stringify({
+            ...data.origin,
+            admissionDate: new Date(data.origin.admissionDate).toISOString(),
+          }),
+        )
 
       const response = await apiClient.put(`animals/${id}`, formData, {
         headers: {

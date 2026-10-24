@@ -18,3 +18,23 @@ export type EventReportParams = {
   customStartDate?: string
   customEndDate?: string
 }
+
+export type OriginMonthlyReportParams = {
+  year: number
+  month: number
+}
+
+export type OriginYearlyReportParams = {
+  year: number
+}
+
+export type VaccinationsReportParams = {
+  from: string
+  to: string
+}
+
+export type ExpiringVaccinationsReportParams = {
+  expiresInDays: number
+  includeExpired: boolean
+  inShelterOnly: boolean
+}

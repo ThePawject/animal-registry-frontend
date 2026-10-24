@@ -8,14 +8,10 @@ import {
   it,
   vi,
 } from 'vitest'
-import EventReportModal from './EventReportModal'
+import EventReportCard from './EventReportCard'
 import type { EventReportParams } from '@/api/reports/types'
 
 const mutateMock = vi.fn()
-
-vi.mock('../AnimalTable', () => ({
-  createAndDownloadReport: vi.fn(),
-}))
 
 vi.mock('@/api/reports/queries', () => ({
   useReports: vi.fn(() => ({
@@ -25,7 +21,7 @@ vi.mock('@/api/reports/queries', () => ({
   })),
 }))
 
-describe('EventReportModal', () => {
+describe('EventReportCard', () => {
   beforeAll(() => {
     vi.stubGlobal(
       'ResizeObserver',
@@ -46,7 +42,7 @@ describe('EventReportModal', () => {
   })
 
   it('submits selected default periods', () => {
-    render(<EventReportModal open onClose={vi.fn()} />)
+    render(<EventReportCard />)
 
     fireEvent.click(screen.getByRole('button', { name: 'Generuj raport' }))
 
@@ -58,7 +54,7 @@ describe('EventReportModal', () => {
   })
 
   it('requires at least one selected period', () => {
-    render(<EventReportModal open onClose={vi.fn()} />)
+    render(<EventReportCard />)
 
     fireEvent.click(screen.getByLabelText('Ostatni tydzień'))
     fireEvent.click(screen.getByLabelText('Ostatni miesiąc'))
@@ -72,7 +68,7 @@ describe('EventReportModal', () => {
   })
 
   it('requires dates for custom period', () => {
-    render(<EventReportModal open onClose={vi.fn()} />)
+    render(<EventReportCard />)
 
     fireEvent.click(screen.getByLabelText('Własny zakres dat'))
     fireEvent.click(screen.getByRole('button', { name: 'Generuj raport' }))
@@ -86,7 +82,7 @@ describe('EventReportModal', () => {
   })
 
   it('submits custom period with dates', () => {
-    render(<EventReportModal open onClose={vi.fn()} />)
+    render(<EventReportCard />)
 
     fireEvent.click(screen.getByLabelText('Własny zakres dat'))
     fireEvent.change(screen.getByLabelText('Data początkowa'), {
@@ -105,7 +101,7 @@ describe('EventReportModal', () => {
   })
 
   it('allows unchecking custom period after selecting dates', () => {
-    render(<EventReportModal open onClose={vi.fn()} />)
+    render(<EventReportCard />)
 
     fireEvent.click(screen.getByLabelText('Własny zakres dat'))
     fireEvent.change(screen.getByLabelText('Data początkowa'), {
