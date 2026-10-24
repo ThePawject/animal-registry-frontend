@@ -23,6 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from './ui/select'
+import AnimalPhotoThumbnail from './AnimalPhotoThumbnail'
+import AnimalShelterStatusBadge from './AnimalShelterStatusBadge'
 import { InfoCard } from './InfoCard'
 import type { IndexSearch } from '@/routes/_app/panel'
 import type { ColumnDef } from '@tanstack/react-table'
@@ -105,23 +107,7 @@ function AnimalTable() {
       {
         id: 'mainPhoto',
         header: 'Zdjęcie',
-        cell: (info) => {
-          const mainPhoto = info.row.original.mainPhoto
-          if (mainPhoto?.url) {
-            return (
-              <img
-                src={mainPhoto.url}
-                alt={info.row.original.name || 'Zdjęcie zwierzęcia'}
-                className="w-12 h-12 object-cover rounded-lg"
-              />
-            )
-          }
-          return (
-            <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 text-xs">
-              Brak
-            </div>
-          )
-        },
+        cell: (info) => <AnimalPhotoThumbnail animal={info.row.original} />,
         meta: {
           width: '100px',
         },
@@ -226,22 +212,13 @@ function AnimalTable() {
       {
         accessorKey: 'isInShelter',
         header: 'Status',
-        cell: (info) => {
-          const isInShelter = info.getValue() as boolean
-          return (
-            <div className="max-w-[120px] truncate">
-              <span
-                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  isInShelter
-                    ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
-                    : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
-                }`}
-              >
-                {isInShelter ? 'W schronisku' : 'Poza schroniskiem'}
-              </span>
-            </div>
-          )
-        },
+        cell: (info) => (
+          <div className="max-w-[120px] truncate">
+            <AnimalShelterStatusBadge
+              isInShelter={info.getValue() as boolean}
+            />
+          </div>
+        ),
         filterFn: 'includesString',
       },
       {

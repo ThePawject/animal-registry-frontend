@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useDebouncedValue } from '@tanstack/react-pacer'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { Animal } from '@/api/animals/types'
+import AnimalPhotoThumbnail from '@/components/AnimalPhotoThumbnail'
+import AnimalShelterStatusBadge from '@/components/AnimalShelterStatusBadge'
 import { SPECIES_MAP } from '@/api/animals/types'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -165,17 +167,10 @@ export default function SelectAnimalsModal({
                         />
                       </td>
                       <td className="px-4 py-2">
-                        {animal.mainPhoto?.url ? (
-                          <img
-                            src={animal.mainPhoto.url}
-                            alt={animal.name || 'Zdjęcie zwierzęcia'}
-                            className="size-10 rounded-lg object-cover"
-                          />
-                        ) : (
-                          <div className="flex size-10 items-center justify-center rounded-lg bg-gray-200 text-xs text-gray-400">
-                            Brak
-                          </div>
-                        )}
+                        <AnimalPhotoThumbnail
+                          animal={animal}
+                          className="size-10"
+                        />
                       </td>
                       <td className="px-4 py-2">{animal.signature}</td>
                       <td className="px-4 py-2">{animal.name || '-'}</td>
@@ -183,18 +178,9 @@ export default function SelectAnimalsModal({
                         {SPECIES_MAP[animal.species]}
                       </td>
                       <td className="px-4 py-2">
-                        <span
-                          className={cn(
-                            'rounded-full px-2 py-1 text-xs font-medium',
-                            animal.isInShelter
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800',
-                          )}
-                        >
-                          {animal.isInShelter
-                            ? 'W schronisku'
-                            : 'Poza schroniskiem'}
-                        </span>
+                        <AnimalShelterStatusBadge
+                          isInShelter={animal.isInShelter}
+                        />
                       </td>
                     </tr>
                   )
