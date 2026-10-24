@@ -5,15 +5,18 @@ import {
   FileText,
   Hash,
   LucideLoaderCircle,
+  PawPrint,
   RefreshCw,
   Stethoscope,
   Syringe,
 } from 'lucide-react'
 import { useForm } from '@tanstack/react-form'
+import AnimalPicker from '../AnimalPicker'
 import DocumentPicker from '../DocumentPicker'
 import { FormField } from '../FormField'
 import QuickPicks from '../QuickPicks'
 import type { QuickPick } from '../QuickPicks'
+import type { Animal } from '@/api/animals/types'
 import type {
   AnimalVaccination,
   VaccinationFormData,
@@ -37,7 +40,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useSaveVaccination } from '@/api/vaccinations/queries'
+import {
+  useAnimalVaccinations,
+  useSaveVaccination,
+} from '@/api/vaccinations/queries'
 import {
   addMonthsToIsoDate,
   formatDate,
@@ -73,10 +79,10 @@ const getDefaultFormData = (
 
 interface VaccinationModalProps {
   open: boolean
-  animalId: string
+  animalId?: string
   vaccination: AnimalVaccination | null
   renews: AnimalVaccination | null
-  animalVaccinations: Array<AnimalVaccination>
+  animalVaccinations?: Array<AnimalVaccination>
   onClose: () => void
 }
 
@@ -92,20 +98,32 @@ export default function VaccinationModal({
   const [file, setFile] = React.useState<File | null>(null)
   const [fileError, setFileError] = React.useState<string | null>(null)
   const [removeAttachment, setRemoveAttachment] = React.useState(false)
+  const [pickedAnimal, setPickedAnimal] = React.useState<Animal | null>(null)
+  const [animalError, setAnimalError] = React.useState<string | null>(null)
+  const cardRef = React.useRef<HTMLDivElement>(null)
+
+  const isPickingAnimal = !animalId
+  const targetAnimalId = animalId ?? pickedAnimal?.id
+  const { data: pickedAnimalVaccinations } = useAnimalVaccinations(
+    targetAnimalId ?? '',
+    isPickingAnimal && Boolean(targetAnimalId),
+  )
+  const knownVaccinations = animalVaccinations ?? pickedAnimalVaccinations ?? []
 
   const existingAttachment = removeAttachment ? null : vaccination?.attachment
   const isReplacedByOther = (item: AnimalVaccination) =>
     Boolean(item.replacedByVaccinationId) &&
     item.replacedByVaccinationId !== vaccination?.id
-  const replaceableVaccinations = animalVaccinations.filter(
+  const replaceableVaccinations = knownVaccinations.filter(
     (item) => item.id !== vaccination?.id,
   )
 
   const form = useForm({
     defaultValues: getDefaultFormData(vaccination, renews),
     onSubmit: async ({ value }) => {
+      if (!targetAnimalId) return
       await mutateAsync({
-        animalId,
+        animalId: targetAnimalId,
         vaccinationId: vaccination?.id,
         data: value,
         file: file ?? undefined,
@@ -121,6 +139,8 @@ export default function VaccinationModal({
     setFile(null)
     setFileError(null)
     setRemoveAttachment(false)
+    setPickedAnimal(null)
+    setAnimalError(null)
     onClose()
   }
 
@@ -147,7 +167,10 @@ export default function VaccinationModal({
       }}
     >
       <DialogContent className="p-0 bg-transparent shadow-none border-none max-w-3xl">
-        <Card className="overflow-hidden py-0 gap-0 max-h-[90vh] overflow-y-auto">
+        <Card
+          ref={cardRef}
+          className="overflow-hidden py-0 gap-0 max-h-[90vh] overflow-y-auto"
+        >
           <div className="flex-1 p-4 shadow-md">
             <h2 className="text-2xl font-semibold">
               {vaccination
@@ -162,10 +185,31 @@ export default function VaccinationModal({
             onSubmit={(e) => {
               e.preventDefault()
               e.stopPropagation()
+              if (!targetAnimalId) setAnimalError('Wybierz zwierzę')
               form.handleSubmit()
             }}
             className="p-6 space-y-4"
           >
+            {isPickingAnimal && (
+              <FormField
+                icon={PawPrint}
+                label="Zwierzę"
+                error={animalError ?? undefined}
+              >
+                <AnimalPicker
+                  id="Zwierzę"
+                  value={pickedAnimal}
+                  invalid={Boolean(animalError)}
+                  container={cardRef}
+                  onChange={(animal) => {
+                    setPickedAnimal(animal)
+                    setAnimalError(null)
+                    form.setFieldValue('replacesVaccinationId', '')
+                  }}
+                />
+              </FormField>
+            )}
+
             <form.Field
               name="vaccineName"
               validators={{

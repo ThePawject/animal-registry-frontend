@@ -1,8 +1,11 @@
 import { useRef, useState } from 'react'
 import { Link } from '@tanstack/react-router'
+import { Plus } from 'lucide-react'
+import VaccinationModal from './modals/VaccinationModal'
 import VaccinationStatusBadge from './VaccinationStatusBadge'
 import DisabledAddon from '@/components/DisabledAddon'
 import { SPECIES_MAP } from '@/api/animals/types'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -39,6 +42,7 @@ export default function ExpiringVaccinations() {
   const [isCustomPeriod, setIsCustomPeriod] = useState(false)
   const customDaysInputRef = useRef<HTMLInputElement>(null)
   const shouldFocusCustomDaysRef = useRef(false)
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [includeExpired, setIncludeExpired] = useState(false)
   const [inShelterOnly, setInShelterOnly] = useState(true)
 
@@ -132,6 +136,13 @@ export default function ExpiringVaccinations() {
               Tylko zwierzęta w schronisku
             </Label>
           </div>
+          <Button
+            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+            onClick={() => setIsAddModalOpen(true)}
+          >
+            <Plus />
+            Dodaj szczepienie
+          </Button>
         </div>
       </CardHeader>
       <CardContent role="list" className="flex flex-col gap-2">
@@ -175,6 +186,14 @@ export default function ExpiringVaccinations() {
             </div>
           ))}
       </CardContent>
+      {isAddModalOpen && (
+        <VaccinationModal
+          open
+          vaccination={null}
+          renews={null}
+          onClose={() => setIsAddModalOpen(false)}
+        />
+      )}
     </Card>
   )
 }
