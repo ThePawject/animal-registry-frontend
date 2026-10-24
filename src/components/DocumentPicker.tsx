@@ -27,11 +27,11 @@ export default function DocumentPicker({
             e.target.value = ''
             if (file) onSelect(file)
           }}
-          className="hidden"
+          className="peer sr-only"
         />
         <div
           className={cn(
-            'flex items-center justify-center w-full h-10 px-4 border-2 border-dashed rounded-lg transition-colors',
+            'flex items-center justify-center w-full h-10 px-4 border-2 border-dashed rounded-lg transition-colors peer-focus-visible:ring-[3px] peer-focus-visible:ring-ring/50',
             hasError
               ? 'border-red-500 bg-red-50'
               : 'border-gray-300 hover:border-gray-400',
