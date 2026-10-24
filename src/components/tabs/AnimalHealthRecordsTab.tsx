@@ -28,8 +28,7 @@ import type { ColumnDef, SortingFn, SortingState } from '@tanstack/react-table'
 import type { AnimalById, AnimalHealthRecord } from '@/api/animals/types'
 import {
   ALLOWED_DOCUMENT_EXTENSIONS,
-  ALLOWED_DOCUMENT_TYPES,
-  MAX_DOCUMENT_SIZE,
+  validateDocument,
 } from '@/api/animals/types'
 import {
   useDeleteAnimalHealthRecord,
@@ -193,15 +192,9 @@ export default function AnimalHealthRecordsTab({
 
     setEditingFileError(null)
 
-    if (!ALLOWED_DOCUMENT_TYPES.includes(file.type)) {
-      setEditingFileError(
-        'Niedozwolony typ pliku. Dozwolone: PDF, DOC, DOCX, JPEG, PNG, WEBP (max 10MB)',
-      )
-      return
-    }
-
-    if (file.size > MAX_DOCUMENT_SIZE) {
-      setEditingFileError('Plik jest za duży. Maksymalny rozmiar to 10MB')
+    const error = validateDocument(file)
+    if (error) {
+      setEditingFileError(error)
       return
     }
 

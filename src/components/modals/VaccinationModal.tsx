@@ -27,7 +27,7 @@ import {
   VACCINE_NAME_MAX_LENGTH,
   VETERINARIAN_MAX_LENGTH,
 } from '@/api/vaccinations/types'
-import { ALLOWED_DOCUMENT_TYPES, MAX_DOCUMENT_SIZE } from '@/api/animals/types'
+import { validateDocument } from '@/api/animals/types'
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -145,14 +145,9 @@ export default function VaccinationModal({
   }
 
   const handleFileSelect = (selected: File) => {
-    if (!ALLOWED_DOCUMENT_TYPES.includes(selected.type)) {
-      setFileError(
-        'Niedozwolony typ pliku. Dozwolone: PDF, DOC, DOCX, JPEG, PNG, WEBP (max 10MB)',
-      )
-      return
-    }
-    if (selected.size > MAX_DOCUMENT_SIZE) {
-      setFileError('Plik jest za duży. Maksymalny rozmiar to 10MB')
+    const validationError = validateDocument(selected)
+    if (validationError) {
+      setFileError(validationError)
       return
     }
     setFileError(null)

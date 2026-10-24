@@ -4,7 +4,7 @@ import DocumentPicker from '../DocumentPicker'
 import { FormField } from '../FormField'
 import { Textarea } from '../ui/textarea'
 import type { AnimalHealthRecord } from '@/api/animals/types'
-import { ALLOWED_DOCUMENT_TYPES, MAX_DOCUMENT_SIZE } from '@/api/animals/types'
+import { validateDocument } from '@/api/animals/types'
 import { useAddAnimalHealthRecord } from '@/api/animals/queries'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -141,15 +141,8 @@ export default function AnimalHealthRecordForm({
         <form.Field
           name="document"
           validators={{
-            onChange: ({ value }) => {
-              if (value && !ALLOWED_DOCUMENT_TYPES.includes(value.type)) {
-                return 'Niedozwolony typ pliku. Dozwolone: PDF, DOC, DOCX, JPEG, PNG, WEBP'
-              }
-              if (value && value.size > MAX_DOCUMENT_SIZE) {
-                return 'Plik jest za duży. Maksymalny rozmiar to 10MB'
-              }
-              return undefined
-            },
+            onChange: ({ value }) =>
+              value ? validateDocument(value) : undefined,
           }}
           children={(field) => {
             return (
