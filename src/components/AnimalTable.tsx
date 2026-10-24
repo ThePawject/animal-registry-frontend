@@ -305,7 +305,7 @@ function AnimalTable() {
   }
 
   return (
-    <div className="space-y-4 mx-auto px-4 md:px-0 w-full pb-8">
+    <div className="-mt-4 flex flex-col gap-4 mx-auto px-4 md:px-0 w-full pb-8">
       <div className="bg-muted/30 rounded-lg p-4 border">
         <div className="flex flex-col md:flex-row gap-3 items-start md:items-center w-full">
           <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -378,7 +378,7 @@ function AnimalTable() {
           >
             <SelectTrigger
               aria-label="Gatunek"
-              className="w-full md:w-[180px] h-10 bg-white"
+              className="w-full md:w-[180px] data-[size=default]:h-10 bg-white"
             >
               <SelectValue placeholder="Wszystkie gatunki">
                 {search.species !== undefined
@@ -408,7 +408,7 @@ function AnimalTable() {
           >
             <SelectTrigger
               aria-label="Status"
-              className="w-full md:w-[200px] h-10 bg-white"
+              className="w-full md:w-[200px] data-[size=default]:h-10 bg-white"
             >
               <SelectValue placeholder="Wszystkie statusy">
                 {search.isInShelter === undefined
