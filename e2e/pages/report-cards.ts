@@ -119,16 +119,95 @@ export class AnimalsReportCard extends ReportCard {
   }
 }
 
+export const REPORT_TABS = {
+  animals: { name: 'Zwierzęta', param: 'zwierzeta' },
+  events: { name: 'Zdarzenia', param: 'zdarzenia' },
+  vaccinations: { name: 'Szczepienia', param: 'szczepienia' },
+  origin: { name: 'Pochodzenie', param: 'pochodzenie' },
+} as const
+
+export type ReportTab = keyof typeof REPORT_TABS
+
 export class ReportsPage {
   static readonly path = '/reports'
 
-  constructor(readonly page: Page) {}
+  readonly tabs: Locator
 
-  async goto() {
-    await this.page.goto(ReportsPage.path)
-    await expect(
-      this.page.getByRole('heading', { name: 'Zwierzęta', level: 2 }),
-    ).toBeVisible({ timeout: TIMEOUTS.slow })
+  constructor(readonly page: Page) {
+    this.tabs = page.getByRole('tab')
+  }
+
+  tab(tab: ReportTab) {
+    return this.page.getByRole('tab', { name: REPORT_TABS[tab].name })
+  }
+
+  async goto(tab: ReportTab = 'animals') {
+    await this.page.goto(`${ReportsPage.path}?tab=${REPORT_TABS[tab].param}`)
+    await expect(this.tab(tab)).toHaveAttribute('aria-selected', 'true', {
+      timeout: TIMEOUTS.slow,
+    })
+  }
+
+  async open(tab: ReportTab) {
+    await this.tab(tab).click()
+    await expect(this.tab(tab)).toHaveAttribute('aria-selected', 'true')
+  }
+}
+
+export class SelectedAnimalsReportCard extends ReportCard {
+  readonly chooseButton: Locator
+  readonly summary: Locator
+  readonly dialog: Locator
+  readonly searchInput: Locator
+  readonly selectPageCheckbox: Locator
+  readonly selectedCount: Locator
+  readonly clearButton: Locator
+  readonly doneButton: Locator
+  readonly pageIndicator: Locator
+  readonly nextPageButton: Locator
+
+  constructor(page: Page) {
+    super(page, 'Wybrane zwierzęta')
+    this.chooseButton = this.root.getByRole('button', {
+      name: /^(Wybierz zwierzęta|Zmień wybór)$/,
+    })
+    this.summary = this.root.getByText(/^(Wybrano \d+:|Nie wybrano)/)
+    this.dialog = page.getByRole('dialog', {
+      name: 'Wybierz zwierzęta do raportu',
+    })
+    this.searchInput = this.dialog.getByPlaceholder(
+      'Szukaj po imieniu lub sygnaturze',
+    )
+    this.selectPageCheckbox = this.dialog.getByRole('checkbox', {
+      name: 'Zaznacz wszystkie na stronie',
+    })
+    this.selectedCount = this.dialog.getByText(/^Wybrano: \d+$/)
+    this.clearButton = this.dialog.getByRole('button', { name: 'Wyczyść' })
+    this.doneButton = this.dialog.getByRole('button', { name: 'Gotowe' })
+    this.pageIndicator = this.dialog.getByText(/^Strona \d+ z \d+$/)
+    this.nextPageButton = this.dialog.getByRole('button', {
+      name: 'Następna strona',
+    })
+  }
+
+  animalCheckbox(name: string) {
+    return this.dialog.getByRole('checkbox', { name: `Zaznacz ${name}` })
+  }
+
+  async search(query: string) {
+    await this.searchInput.fill(query)
+    await expect(this.dialog.locator('tbody tr').first()).toContainText(query)
+  }
+
+  async choose(names: Array<string>) {
+    await this.chooseButton.click()
+    await expect(this.dialog).toBeVisible()
+    for (const name of names) {
+      await this.search(name)
+      await this.animalCheckbox(name).check()
+    }
+    await this.doneButton.click()
+    await expect(this.dialog).toBeHidden()
   }
 }
 

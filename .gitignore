@@ -17,6 +17,7 @@ todos.json
 .idea
 *.md
 !README.md
+!CLAUDE.md
 !src/guide/*.md
 e2e/.artifacts
 e2e/.cache

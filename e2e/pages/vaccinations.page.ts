@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test'
-import { FormFieldLocator } from './components.ts'
+import { FormFieldLocator, chooseOption, escapeRegExp } from './components.ts'
 import type { Locator, Page } from '@playwright/test'
 import type { UploadFile } from '../support/files.ts'
 
@@ -23,7 +23,12 @@ export class VaccinationsPage {
   readonly batchNumberField: FormFieldLocator
   readonly saveButton: Locator
   readonly fileError: Locator
+  readonly removeFileButton: Locator
+  readonly animalField: FormFieldLocator
+  readonly validityPeriods: Locator
   readonly expiringEmpty: Locator
+  readonly expiryPeriod: Locator
+  readonly customExpiryDays: Locator
 
   constructor(readonly page: Page) {
     this.addButton = page.getByRole('button', { name: 'Dodaj szczepienie' })
@@ -42,6 +47,17 @@ export class VaccinationsPage {
     this.batchNumberField = new FormFieldLocator(this.dialog, 'Numer serii')
     this.saveButton = this.dialog.getByRole('button', { name: 'Zapisz' })
     this.fileError = new FormFieldLocator(this.dialog, 'Skan dokumentu').error
+    this.removeFileButton = this.dialog.getByRole('button', {
+      name: 'Usuń plik',
+    })
+    this.animalField = new FormFieldLocator(this.dialog, 'Zwierzę')
+    this.validityPeriods = this.dialog.getByRole('group', {
+      name: 'Okres ważności od daty podania',
+    })
+    this.expiryPeriod = page.getByRole('combobox', {
+      name: 'Wygasają w ciągu',
+    })
+    this.customExpiryDays = page.getByLabel('Wygasają w ciągu (dni)')
     this.expiringEmpty = page.getByText(
       'Brak szczepień spełniających kryteria.',
     )
@@ -76,7 +92,25 @@ export class VaccinationsPage {
 
   async gotoExpiring() {
     await this.page.goto(VaccinationsPage.expiringPath)
-    await expect(this.page.getByText('Kończące się szczepienia')).toBeVisible()
+    await expect(this.page.getByText('Terminy szczepień')).toBeVisible()
+  }
+
+  validityPeriod(label: '6 miesięcy' | '1 rok' | '2 lata') {
+    return this.validityPeriods.getByRole('button', { name: label })
+  }
+
+  async chooseAnimal(name: string) {
+    await this.animalField.input.fill(name)
+    await this.page
+      .getByRole('option', { name: new RegExp(`^${escapeRegExp(name)} `) })
+      .click()
+    await expect(this.animalField.input).toHaveValue(
+      new RegExp(`^${escapeRegExp(name)} `),
+    )
+  }
+
+  async setExpiryPeriod(label: string) {
+    await chooseOption(this.expiryPeriod, label)
   }
 
   async fill(values: VaccinationFormValues) {

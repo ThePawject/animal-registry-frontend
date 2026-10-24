@@ -1,17 +1,22 @@
 import React from 'react'
 import {
   Calendar,
-  ExternalLink,
+  FileIcon,
   FileText,
   Hash,
   LucideLoaderCircle,
+  PawPrint,
   RefreshCw,
   Stethoscope,
   Syringe,
-  Upload,
 } from 'lucide-react'
 import { useForm } from '@tanstack/react-form'
+import AnimalPicker from '../AnimalPicker'
+import DocumentPicker from '../DocumentPicker'
 import { FormField } from '../FormField'
+import QuickPicks from '../QuickPicks'
+import type { QuickPick } from '../QuickPicks'
+import type { Animal } from '@/api/animals/types'
 import type {
   AnimalVaccination,
   VaccinationFormData,
@@ -22,11 +27,7 @@ import {
   VACCINE_NAME_MAX_LENGTH,
   VETERINARIAN_MAX_LENGTH,
 } from '@/api/vaccinations/types'
-import {
-  ALLOWED_DOCUMENT_EXTENSIONS,
-  ALLOWED_DOCUMENT_TYPES,
-  MAX_DOCUMENT_SIZE,
-} from '@/api/animals/types'
+import { ALLOWED_DOCUMENT_TYPES, MAX_DOCUMENT_SIZE } from '@/api/animals/types'
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -39,8 +40,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useSaveVaccination } from '@/api/vaccinations/queries'
 import {
+  useAnimalVaccinations,
+  useSaveVaccination,
+} from '@/api/vaccinations/queries'
+import {
+  addMonthsToIsoDate,
   formatDate,
   genericErrorMessage,
   isFutureDate,
@@ -48,6 +53,12 @@ import {
 } from '@/lib/utils'
 
 const NO_REPLACEMENT = 'none'
+
+const VALIDITY_PERIODS: Array<QuickPick<number>> = [
+  { label: '6 miesięcy', value: 6 },
+  { label: '1 rok', value: 12 },
+  { label: '2 lata', value: 24 },
+]
 
 const getDefaultFormData = (
   vaccination: AnimalVaccination | null,
@@ -68,10 +79,10 @@ const getDefaultFormData = (
 
 interface VaccinationModalProps {
   open: boolean
-  animalId: string
+  animalId?: string
   vaccination: AnimalVaccination | null
   renews: AnimalVaccination | null
-  animalVaccinations: Array<AnimalVaccination>
+  animalVaccinations?: Array<AnimalVaccination>
   onClose: () => void
 }
 
@@ -87,21 +98,32 @@ export default function VaccinationModal({
   const [file, setFile] = React.useState<File | null>(null)
   const [fileError, setFileError] = React.useState<string | null>(null)
   const [removeAttachment, setRemoveAttachment] = React.useState(false)
-  const fileInputRef = React.useRef<HTMLInputElement>(null)
+  const [pickedAnimal, setPickedAnimal] = React.useState<Animal | null>(null)
+  const [animalError, setAnimalError] = React.useState<string | null>(null)
+  const cardRef = React.useRef<HTMLDivElement>(null)
+
+  const isPickingAnimal = !animalId
+  const targetAnimalId = animalId ?? pickedAnimal?.id
+  const { data: pickedAnimalVaccinations } = useAnimalVaccinations(
+    targetAnimalId ?? '',
+    isPickingAnimal && Boolean(targetAnimalId),
+  )
+  const knownVaccinations = animalVaccinations ?? pickedAnimalVaccinations ?? []
 
   const existingAttachment = removeAttachment ? null : vaccination?.attachment
   const isReplacedByOther = (item: AnimalVaccination) =>
     Boolean(item.replacedByVaccinationId) &&
     item.replacedByVaccinationId !== vaccination?.id
-  const replaceableVaccinations = animalVaccinations.filter(
+  const replaceableVaccinations = knownVaccinations.filter(
     (item) => item.id !== vaccination?.id,
   )
 
   const form = useForm({
     defaultValues: getDefaultFormData(vaccination, renews),
     onSubmit: async ({ value }) => {
+      if (!targetAnimalId) return
       await mutateAsync({
-        animalId,
+        animalId: targetAnimalId,
         vaccinationId: vaccination?.id,
         data: value,
         file: file ?? undefined,
@@ -117,14 +139,12 @@ export default function VaccinationModal({
     setFile(null)
     setFileError(null)
     setRemoveAttachment(false)
+    setPickedAnimal(null)
+    setAnimalError(null)
     onClose()
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0]
-    e.target.value = ''
-    if (!selected) return
-
+  const handleFileSelect = (selected: File) => {
     if (!ALLOWED_DOCUMENT_TYPES.includes(selected.type)) {
       setFileError(
         'Niedozwolony typ pliku. Dozwolone: PDF, DOC, DOCX, JPEG, PNG, WEBP (max 10MB)',
@@ -146,8 +166,11 @@ export default function VaccinationModal({
         if (!openState) handleClose()
       }}
     >
-      <DialogContent className="p-0 bg-transparent shadow-none border-none max-w-lg">
-        <Card className="overflow-hidden py-0 gap-0 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="p-0 bg-transparent shadow-none border-none max-w-3xl">
+        <Card
+          ref={cardRef}
+          className="overflow-hidden py-0 gap-0 max-h-[90vh] overflow-y-auto"
+        >
           <div className="flex-1 p-4 shadow-md">
             <h2 className="text-2xl font-semibold">
               {vaccination
@@ -162,10 +185,31 @@ export default function VaccinationModal({
             onSubmit={(e) => {
               e.preventDefault()
               e.stopPropagation()
+              if (!targetAnimalId) setAnimalError('Wybierz zwierzę')
               form.handleSubmit()
             }}
             className="p-6 space-y-4"
           >
+            {isPickingAnimal && (
+              <FormField
+                icon={PawPrint}
+                label="Zwierzę"
+                error={animalError ?? undefined}
+              >
+                <AnimalPicker
+                  id="Zwierzę"
+                  value={pickedAnimal}
+                  invalid={Boolean(animalError)}
+                  container={cardRef}
+                  onChange={(animal) => {
+                    setPickedAnimal(animal)
+                    setAnimalError(null)
+                    form.setFieldValue('replacesVaccinationId', '')
+                  }}
+                />
+              </FormField>
+            )}
+
             <form.Field
               name="vaccineName"
               validators={{
@@ -193,7 +237,8 @@ export default function VaccinationModal({
               )}
             />
 
-            <div className="flex gap-4">
+            {/* mb-0 like FormField itself, which opts out of space-y-4 */}
+            <div className="mb-0 flex flex-col md:flex-row md:gap-4">
               <form.Field
                 name="administeredOn"
                 validators={{
@@ -242,6 +287,33 @@ export default function VaccinationModal({
                       icon={Calendar}
                       label="Ważne do"
                       error={field.state.meta.errors[0]}
+                      labelAside={
+                        <form.Subscribe
+                          selector={(state) => state.values.administeredOn}
+                          children={(administeredOn) => (
+                            <QuickPicks
+                              label="Okres ważności od daty podania"
+                              options={VALIDITY_PERIODS}
+                              disabled={!administeredOn}
+                              selected={
+                                VALIDITY_PERIODS.find(
+                                  ({ value }) =>
+                                    administeredOn &&
+                                    addMonthsToIsoDate(
+                                      administeredOn,
+                                      value,
+                                    ) === field.state.value,
+                                )?.value
+                              }
+                              onSelect={(months) =>
+                                field.handleChange(
+                                  addMonthsToIsoDate(administeredOn, months),
+                                )
+                              }
+                            />
+                          )}
+                        />
+                      }
                     >
                       <Input
                         type="date"
@@ -385,60 +457,20 @@ export default function VaccinationModal({
             />
 
             <FormField
-              icon={Upload}
+              icon={FileIcon}
               label="Skan dokumentu"
               error={fileError ?? undefined}
             >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept={ALLOWED_DOCUMENT_EXTENSIONS}
-                onChange={handleFileChange}
-                className="hidden"
+              <DocumentPicker
+                fileName={file?.name ?? existingAttachment?.fileName ?? null}
+                hasError={Boolean(fileError)}
+                onSelect={handleFileSelect}
+                onClear={() => {
+                  setFile(null)
+                  setFileError(null)
+                  setRemoveAttachment(true)
+                }}
               />
-              {file || existingAttachment ? (
-                <div className="flex flex-col gap-2">
-                  <div className="text-sm font-medium flex items-center gap-1 text-gray-600">
-                    <ExternalLink className="w-4 h-4 shrink-0" />
-                    <span className="truncate">
-                      {file?.name ?? existingAttachment?.fileName}
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      Zmień plik
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600 hover:border-red-300"
-                      onClick={() => {
-                        setFile(null)
-                        setFileError(null)
-                        setRemoveAttachment(true)
-                      }}
-                    >
-                      Usuń
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Upload />
-                  Wybierz plik
-                </Button>
-              )}
             </FormField>
 
             {error && (

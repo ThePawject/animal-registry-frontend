@@ -28,11 +28,7 @@ export class AnimalRow {
   constructor(readonly root: Locator) {}
 
   cell(column: AnimalColumn) {
-    return this.root.locator('td').nth(ANIMAL_TABLE_COLUMNS.indexOf(column) + 1)
-  }
-
-  get checkbox() {
-    return this.root.getByRole('checkbox', { name: 'Select row' })
+    return this.root.locator('td').nth(ANIMAL_TABLE_COLUMNS.indexOf(column))
   }
 
   get detailsLink() {
@@ -65,9 +61,6 @@ export class PanelPage {
   readonly previousPageButton: Locator
   readonly nextPageButton: Locator
   readonly lastPageButton: Locator
-  readonly selectAllCheckbox: Locator
-
-  readonly selectedAnimalsReportButton: Locator
 
   private readonly skeletons: Locator
   private readonly tableWrapper: Locator
@@ -98,9 +91,6 @@ export class PanelPage {
       has: page.getByRole('link', { name: 'Szczegóły' }),
     })
     this.emptyState = this.table.getByText('Brak wyników.')
-    this.selectAllCheckbox = this.table.getByRole('checkbox', {
-      name: 'Select all rows',
-    })
 
     this.pageIndicator = page.getByText(/^Strona \d+ z \d+$/)
     this.firstPageButton = page.getByRole('button', { name: 'Pierwsza strona' })
@@ -109,10 +99,6 @@ export class PanelPage {
     })
     this.nextPageButton = page.getByRole('button', { name: 'Następna strona' })
     this.lastPageButton = page.getByRole('button', { name: 'Ostatnia strona' })
-
-    this.selectedAnimalsReportButton = page.getByTitle(
-      'PDF zawierający dane i zdjęcia wybranych zwierząt (siatka zdjęć).',
-    )
   }
 
   async goto(search: Record<string, string | number | boolean> = {}) {
@@ -135,14 +121,14 @@ export class PanelPage {
   }
 
   async expectColumn(column: AnimalColumn, values: Array<string>) {
-    const index = ANIMAL_TABLE_COLUMNS.indexOf(column) + 2
+    const index = ANIMAL_TABLE_COLUMNS.indexOf(column) + 1
     await expect(this.rows.locator(`td:nth-child(${index})`)).toHaveText(values)
   }
 
   async columnValues(column: AnimalColumn) {
     await this.expectLoaded()
     const index = ANIMAL_TABLE_COLUMNS.indexOf(column) + 1
-    const cells = await this.rows.locator(`td:nth-child(${index + 1})`).all()
+    const cells = await this.rows.locator(`td:nth-child(${index})`).all()
     return Promise.all(
       cells.map(async (cell) => (await cell.innerText()).trim()),
     )

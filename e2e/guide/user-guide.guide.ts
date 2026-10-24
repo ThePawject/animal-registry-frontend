@@ -468,7 +468,7 @@ test('Dodawanie zwierzęcia', async ({ page, panel, animalForm }) => {
   await guide.step(
     page,
     'Kliknij „Dodaj zwierzę”',
-    'Przycisk **Dodaj zwierzę** znajduje się nad listą zwierząt.',
+    'Przycisk **Dodaj zwierzę** znajduje się po prawej stronie paska wyszukiwania i filtrów, nad listą zwierząt.',
     { highlight: panel.addAnimalLink },
   )
 
@@ -811,60 +811,74 @@ test('Karty zdrowia', async ({ page, animalDetails, healthRecords }) => {
 
 test('Raporty', async ({
   page,
-  panel,
   addons,
   reportsPage,
   animalsReport,
+  selectedAnimalsReport,
   eventReport,
   dateRangeReport,
 }) => {
   guide.chapter(
     'Raporty',
-    'Wszystkie raporty pobierają się jako pliki PDF gotowe do druku. Większość raportów znajdziesz w zakładce **Raporty**, a raport z wybranych zwierząt przy liście zwierząt.',
-  )
-
-  await panel.goto()
-  await expectImageLoaded(panel.row('Burek').photo)
-  for (const name of ['Burek', 'Kora', 'Borys']) {
-    await panel.row(name).checkbox.check()
-  }
-  await expect(panel.selectedAnimalsReportButton).toBeEnabled()
-  await guide.step(
-    page,
-    'Pobierz raport wybranych zwierząt',
-    'Zaznacz pola wyboru przy zwierzętach, które mają trafić do raportu. Przycisk **Raport z wybranych zwierzat** staje się wtedy aktywny i pokazuje w nawiasie liczbę zaznaczonych zwierząt. Raport zawiera dane i zdjęcia wybranych zwierząt. Zaznaczenie jest pamiętane także po przejściu na kolejną stronę listy.',
-    {
-      highlight: [
-        panel.row('Burek').checkbox,
-        panel.row('Kora').checkbox,
-        panel.row('Borys').checkbox,
-        panel.selectedAnimalsReportButton,
-      ],
-    },
+    'Wszystkie raporty pobierają się jako pliki PDF gotowe do druku. Znajdziesz je w zakładce **Raporty**, podzielone na grupy.',
   )
 
   await reportsPage.goto()
   await guide.step(
     page,
     'Otwórz zakładkę Raporty',
-    'Pozostałe raporty znajdziesz w zakładce **Raporty** w menu. Raporty są podzielone na sekcje: **Zwierzęta** i **Zdarzenia**. Po włączeniu dodatków pojawiają się kolejne sekcje.',
-    { highlight: addons.navLink('Raporty') },
+    'Kliknij **Raporty** w menu. U góry strony wybierasz grupę raportów: **Zwierzęta** albo **Zdarzenia**. Po włączeniu dodatków pojawiają się kolejne grupy. Wybrana grupa zostaje zapamiętana w adresie strony.',
+    { highlight: [addons.navLink('Raporty'), reportsPage.tabs.first()] },
   )
 
   await guide.step(
     page,
     'Pobierz raport wszystkich zwierząt',
-    'W sekcji **Zwierzęta** kliknij **Generuj raport**, aby pobrać tekstowe zestawienie danych wszystkich zwierząt z rejestru (bez zdjęć). Plik zapisuje się od razu, bez dodatkowych pytań.',
+    'W grupie **Zwierzęta**, w karcie **Wszystkie zwierzęta**, kliknij **Generuj raport**, aby pobrać tekstowe zestawienie danych wszystkich zwierząt z rejestru (bez zdjęć). Plik zapisuje się od razu, bez dodatkowych pytań.',
     { highlight: animalsReport.generateButton },
   )
 
+  await selectedAnimalsReport.chooseButton.click()
+  for (const name of ['Burek', 'Kora', 'Borys']) {
+    await selectedAnimalsReport.animalCheckbox(name).check()
+  }
+  await guide.step(
+    page,
+    'Wybierz zwierzęta do raportu',
+    'Raport **Wybrane zwierzęta** zawiera dane i zdjęcia tylko tych zwierząt, które wskażesz. Kliknij **Wybierz zwierzęta**. W oknie zaznacz zwierzęta na liście albo wyszukaj je po imieniu lub sygnaturze. Zaznaczenie zostaje przy zmianie strony i wyszukiwaniu, a liczbę wybranych widzisz na dole. Kliknij **Gotowe**.',
+    {
+      highlight: [
+        selectedAnimalsReport.animalCheckbox('Burek'),
+        selectedAnimalsReport.animalCheckbox('Kora'),
+        selectedAnimalsReport.animalCheckbox('Borys'),
+        selectedAnimalsReport.doneButton,
+      ],
+    },
+  )
+  await selectedAnimalsReport.doneButton.click()
+  await expect(selectedAnimalsReport.dialog).toBeHidden()
+
+  await expect(selectedAnimalsReport.generateButton).toBeEnabled()
+  await guide.step(
+    page,
+    'Pobierz raport wybranych zwierząt',
+    'Karta pokazuje, ile i które zwierzęta wybrałeś. Kliknij **Generuj raport**, aby pobrać PDF. Wybór możesz poprawić przyciskiem **Zmień wybór**.',
+    {
+      highlight: [
+        selectedAnimalsReport.summary,
+        selectedAnimalsReport.generateButton,
+      ],
+    },
+  )
+
+  await reportsPage.open('events')
   await eventReport.period('Własny zakres dat').check()
   await eventReport.customStartDate.fill(daysAgo(60))
   await eventReport.customEndDate.fill(daysAgo(0))
   await guide.step(
     page,
     'Wygeneruj raport zdarzeń',
-    'W karcie **Raport zdarzeń** zaznacz okresy, które mają się znaleźć w zestawieniu: ostatni tydzień, miesiąc, kwartał lub **Własny zakres dat**. Przy własnym zakresie podaj datę początkową i końcową. Kliknij **Generuj raport**.',
+    'Przejdź do grupy **Zdarzenia**. W karcie **Raport zdarzeń** zaznacz okresy, które mają się znaleźć w zestawieniu: ostatni tydzień, miesiąc, kwartał lub **Własny zakres dat**. Przy własnym zakresie podaj datę początkową i końcową. Kliknij **Generuj raport**.',
     { highlight: eventReport.generateButton },
   )
 
@@ -955,25 +969,23 @@ test('Pochodzenie zwierzęcia', async ({
   await guide.step(
     page,
     'Najpierw uzupełnij listę gmin',
-    'Zanim dodasz lub zmienisz zwierzę, na liście muszą być gminy. Dopóki jest pusta, formularz zwierzęcia nie da się zapisać. Kliknij **Dodaj pierwszą gminę**.',
+    'Zanim dodasz lub zmienisz zwierzę, na liście muszą być gminy. Dopóki jest pusta, formularza zwierzęcia nie da się zapisać. Gminy dodajesz w polu **Dodaj gminę** nad listą.',
     {
-      highlight: municipalities.emptyNotice.getByRole('button', {
-        name: 'Dodaj pierwszą gminę',
-      }),
-      area: municipalities.emptyNotice,
+      highlight: municipalities.addForm,
+      area: [municipalities.addForm, municipalities.emptyNotice],
     },
   )
 
-  await municipalities.addButton.click()
-  await municipalities.nameField.input.fill('Gmina Ząbki')
+  await municipalities.add('Gmina Ząbki')
   await guide.step(
     page,
-    'Wpisz nazwę gminy',
-    'Wpisz nazwę gminy i kliknij **Zapisz**. W ten sam sposób dodajesz kolejne gminy, z którymi współpracuje schronisko.',
-    { highlight: municipalities.saveButton },
+    'Dodaj gminy',
+    'Wpisz nazwę gminy i kliknij **Dodaj** albo naciśnij Enter. Pod polem pojawi się potwierdzenie, a pole zostanie wyczyszczone, więc od razu możesz wpisać kolejną gminę, z którą współpracuje schronisko.',
+    {
+      highlight: municipalities.addedMessage,
+      area: [municipalities.addForm, municipalities.row('Gmina Ząbki')],
+    },
   )
-  await municipalities.saveButton.click()
-  await expect(municipalities.dialog).toBeHidden()
   await api.createMunicipality('Gmina Marki')
   await api.createMunicipality('Gmina Wołomin')
   await municipalities.goto()
@@ -981,7 +993,7 @@ test('Pochodzenie zwierzęcia', async ({
   await guide.step(
     page,
     'Zarządzaj listą gmin',
-    'Każdą gminę możesz zmienić przyciskiem **Edytuj** lub schować przyciskiem **Archiwizuj**. Zarchiwizowanej gminy nie da się wybrać w formularzu, ale zwierzęta, które jej dotyczą, zachowują wpis. Zaznacz **Pokaż zarchiwizowane**, aby ją zobaczyć i przywrócić.',
+    'Gminy są ułożone alfabetycznie. Każdą możesz zmienić przyciskiem **Edytuj** lub schować przyciskiem **Archiwizuj**. Zarchiwizowanej gminy nie da się wybrać w formularzu, ale zwierzęta, które jej dotyczą, zachowują wpis. Zaznacz **Pokaż zarchiwizowane**, aby ją zobaczyć i przywrócić.',
     { highlight: municipalities.showArchived, fullPage: true },
   )
 
@@ -1022,15 +1034,12 @@ test('Pochodzenie zwierzęcia', async ({
     { highlight: origin, fullPage: true },
   )
 
-  await reportsPage.goto()
+  await reportsPage.goto('origin')
   await guide.step(
     page,
     'Pobierz zestawienia dla gmin',
-    'W zakładce **Raporty** pojawia się sekcja **Pochodzenie**. **Zestawienie miesięczne** pokazuje zwierzęta przyjęte w wybranym miesiącu, pogrupowane według gminy zlecającej, a **Zestawienie roczne** liczbę przyjętych zwierząt w każdym miesiącu. Wybierz miesiąc lub rok i kliknij **Generuj raport**.',
-    {
-      highlight: page.getByRole('heading', { name: 'Pochodzenie', level: 2 }),
-      fullPage: true,
-    },
+    'W zakładce **Raporty** pojawia się grupa **Pochodzenie**. **Zestawienie miesięczne** pokazuje zwierzęta przyjęte w wybranym miesiącu, pogrupowane według gminy zlecającej, a **Zestawienie roczne** liczbę przyjętych zwierząt w każdym miesiącu. Wybierz miesiąc lub rok i kliknij **Generuj raport**.',
+    { highlight: reportsPage.tab('origin'), fullPage: true },
   )
 })
 
@@ -1063,8 +1072,8 @@ test('Szczepienia', async ({
   await vaccinations.fill({
     vaccineName: 'Nobivac Rabies',
     administeredOn: daysAgo(340),
-    validUntil: daysAgo(-25),
   })
+  await vaccinations.validityPeriod('1 rok').click()
   await vaccinations.veterinarianField.input.fill('lek. wet. Anna Nowak')
   await vaccinations.batchNumberField.input.fill('A1234')
   await vaccinations.attach(pdfDocument('swiadectwo-szczepienia.pdf'))
@@ -1072,8 +1081,11 @@ test('Szczepienia', async ({
   await guide.step(
     page,
     'Dodaj szczepienie',
-    'Kliknij **Dodaj szczepienie**. Obowiązkowe są tylko nazwa szczepionki i data podania. Możesz też wpisać termin ważności (**Ważne do**), lekarza, numer serii, notatkę i dołączyć skan dokumentu: PDF, DOC, DOCX lub zdjęcie do 10 MB. Zatwierdź przyciskiem **Zapisz**.',
-    { highlight: vaccinations.saveButton, area: vaccinations.dialog },
+    'Kliknij **Dodaj szczepienie**. Obowiązkowe są tylko nazwa szczepionki i data podania. Termin ważności (**Ważne do**) ustawisz jednym kliknięciem: **6 miesięcy**, **1 rok** albo **2 lata** od daty podania, albo wybierzesz datę ręcznie. Możesz też wpisać lekarza, numer serii, notatkę i dołączyć skan dokumentu: PDF, DOC, DOCX lub zdjęcie do 10 MB. Zatwierdź przyciskiem **Zapisz**.',
+    {
+      highlight: [vaccinations.validityPeriods, vaccinations.saveButton],
+      area: vaccinations.dialog,
+    },
   )
   await vaccinations.save()
 
@@ -1133,21 +1145,34 @@ test('Szczepienia', async ({
   await expect(vaccinations.expiringRows.first()).toBeVisible()
   await guide.step(
     page,
-    'Zobacz, które szczepienia się kończą',
-    'Zakładka **Szczepienia** w menu pokazuje szczepienia wszystkich zwierząt, których ważność kończy się w podanej liczbie dni (domyślnie 30), od najbliższego terminu. Możesz zmienić liczbę dni, pokazać już wygasłe i wybrać, czy pokazywać tylko zwierzęta przebywające w schronisku. Kliknięcie zwierzęcia otwiera jego szczepienia.',
-    { highlight: vaccinations.expiringRows.first(), fullPage: true },
+    'Sprawdź terminy szczepień',
+    'Zakładka **Szczepienia** w menu otwiera **Terminy szczepień**: szczepienia wszystkich zwierząt, których ważność wkrótce się kończy, od najbliższego terminu. W polu **Wygasają w ciągu** wybierz okres, domyślnie miesiąc, albo **wybór dni**, aby wpisać dowolną liczbę dni. Możesz też pokazać już wygasłe i wybrać, czy pokazywać tylko zwierzęta przebywające w schronisku. Kliknięcie zwierzęcia otwiera jego szczepienia.',
+    {
+      highlight: [vaccinations.expiryPeriod, vaccinations.expiringRows.first()],
+      fullPage: true,
+    },
   )
 
-  await reportsPage.goto()
+  await vaccinations.addButton.click()
+  await vaccinations.animalField.input.fill('Kor')
+  await expect(page.getByRole('option', { name: /^Kora / })).toBeVisible()
+  await guide.step(
+    page,
+    'Dodaj szczepienie bez wchodzenia na kartę zwierzęcia',
+    'Szczepienie dodasz też prosto z **Terminów szczepień**: kliknij **Dodaj szczepienie** i w polu **Zwierzę** wyszukaj zwierzę po imieniu lub sygnaturze. Dalej wypełniasz formularz tak samo jak na karcie zwierzęcia.',
+    { highlight: vaccinations.animalField.root, area: vaccinations.dialog },
+  )
+  await page.keyboard.press('Escape')
+  await page.keyboard.press('Escape')
+  await expect(vaccinations.dialog).toBeHidden()
+
+  await reportsPage.goto('vaccinations')
   await vaccinationsReport.setRange(daysAgo(30), daysAgo(0))
   await guide.step(
     page,
     'Pobierz raporty szczepień',
-    'W zakładce **Raporty** pojawia się sekcja **Szczepienia** z dwoma raportami: **Szczepienia w okresie** (podane szczepienia w wybranym zakresie dat) i **Kończące się szczepienia** (te, których ważność kończy się w podanej liczbie dni). Kliknij **Generuj raport**, aby pobrać PDF.',
-    {
-      highlight: page.getByRole('heading', { name: 'Szczepienia', level: 2 }),
-      fullPage: true,
-    },
+    'W zakładce **Raporty** pojawia się grupa **Szczepienia** z dwoma raportami: **Szczepienia w okresie** (podane szczepienia w wybranym zakresie dat) i **Kończące się szczepienia** (te, których ważność kończy się w podanej liczbie dni). Kliknij **Generuj raport**, aby pobrać PDF.',
+    { highlight: reportsPage.tab('vaccinations'), fullPage: true },
   )
 
   guide.note(

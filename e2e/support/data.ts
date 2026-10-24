@@ -45,6 +45,14 @@ export function daysAgo(days: number) {
 
 export const tomorrow = () => daysAgo(-1)
 
+export function monthsAfter(isoDate: string, months: number) {
+  const [year, month, day] = isoDate.split('-').map(Number)
+  const lastDay = new Date(Date.UTC(year, month + months, 0)).getUTCDate()
+  return new Date(Date.UTC(year, month - 1 + months, Math.min(day, lastDay)))
+    .toISOString()
+    .slice(0, 10)
+}
+
 export const currentYear = () => new Date().getUTCFullYear()
 
 function formatIsoDate(isoDate: string, options: Intl.DateTimeFormatOptions) {

@@ -31,7 +31,7 @@ export default function Header({ shelterName }: HeaderProps) {
 
   return (
     <>
-      <header>
+      <header className="shrink-0">
         <div className="bg-emerald-800 text-white">
           <div className="container mx-auto flex items-center gap-4 px-4 py-2 w-full">
             <h1 className="min-w-0 text-base sm:text-lg font-semibold">

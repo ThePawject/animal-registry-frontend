@@ -1,3 +1,5 @@
+export const MUNICIPALITY_NAME_MAX_LENGTH = 200
+
 export type Municipality = {
   id: string
   name: string
