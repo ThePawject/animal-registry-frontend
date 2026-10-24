@@ -31,7 +31,7 @@ function VaccinationsAddon() {
           </Link>
         </Button>
         <Button asChild variant="outline">
-          <Link to="/reports">
+          <Link to="/reports" search={{ tab: 'szczepienia' }}>
             <FileTextIcon />
             Raporty szczepień
           </Link>
