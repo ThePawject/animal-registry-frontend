@@ -15,18 +15,30 @@ import VaccinationReportCards from './reports/VaccinationReportCards'
 import type { SelectedAnimals } from './modals/SelectAnimalsModal'
 import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useFeature } from '@/api/features/queries'
+import { useShelterFeatures } from '@/api/features/queries'
 
 export const REPORT_TABS = [
   { value: 'zwierzeta', label: 'Zwierzęta', icon: PawPrintIcon },
   { value: 'zdarzenia', label: 'Zdarzenia', icon: CalendarDaysIcon },
-  { value: 'szczepienia', label: 'Szczepienia', icon: SyringeIcon },
-  { value: 'pochodzenie', label: 'Pochodzenie', icon: Building2Icon },
+  {
+    value: 'szczepienia',
+    label: 'Szczepienia',
+    icon: SyringeIcon,
+    feature: 'animal-vaccinations',
+  },
+  {
+    value: 'pochodzenie',
+    label: 'Pochodzenie',
+    icon: Building2Icon,
+    feature: 'animal-origin',
+  },
 ] as const satisfies ReadonlyArray<{
   value: string
   label: string
   icon: LucideIcon
+  feature?: string
 }>
 
 export type ReportTab = (typeof REPORT_TABS)[number]['value']
@@ -40,20 +52,47 @@ function ReportsGrid({ children }: { children: ReactNode }) {
 export default function Reports() {
   const { tab } = routeApi.useSearch()
   const navigate = useNavigate({ from: '/reports' })
-  const { isEnabled: isOriginEnabled } = useFeature('animal-origin')
-  const { isEnabled: isVaccinationsEnabled } = useFeature('animal-vaccinations')
+  const { data: features, isLoading } = useShelterFeatures()
   // Kept here because the tab content unmounts when another tab is open.
   const [selectedAnimals, setSelectedAnimals] = useState<SelectedAnimals>(
     new Map(),
   )
 
+  // Until the addon settings arrive, an addon tab asked for in the URL
+  // cannot be told apart from a disabled one.
+  if (isLoading) {
+    return <Skeleton className="h-40 w-full" />
+  }
+
   const availableTabs = REPORT_TABS.filter(
-    ({ value }) =>
-      (value !== 'szczepienia' || isVaccinationsEnabled) &&
-      (value !== 'pochodzenie' || isOriginEnabled),
+    (reportTab) =>
+      !('feature' in reportTab) ||
+      features?.some(
+        ({ key, isEnabled }) => key === reportTab.feature && isEnabled,
+      ),
   )
   const activeTab =
     availableTabs.find(({ value }) => value === tab)?.value ?? 'zwierzeta'
+
+  const tabContent: Record<ReportTab, ReactNode> = {
+    zwierzeta: (
+      <>
+        <AnimalsDumpReportCard />
+        <SelectedAnimalsReportCard
+          selected={selectedAnimals}
+          onSelectedChange={setSelectedAnimals}
+        />
+      </>
+    ),
+    zdarzenia: (
+      <>
+        <EventReportCard />
+        <DateRangeReportCard />
+      </>
+    ),
+    szczepienia: <VaccinationReportCards />,
+    pochodzenie: <OriginReportCards />,
+  }
 
   return (
     <Tabs
@@ -78,35 +117,11 @@ export default function Reports() {
           </TabsTrigger>
         ))}
       </TabsList>
-      <TabsContent value="zwierzeta">
-        <ReportsGrid>
-          <AnimalsDumpReportCard />
-          <SelectedAnimalsReportCard
-            selected={selectedAnimals}
-            onSelectedChange={setSelectedAnimals}
-          />
-        </ReportsGrid>
-      </TabsContent>
-      <TabsContent value="zdarzenia">
-        <ReportsGrid>
-          <EventReportCard />
-          <DateRangeReportCard />
-        </ReportsGrid>
-      </TabsContent>
-      {isVaccinationsEnabled && (
-        <TabsContent value="szczepienia">
-          <ReportsGrid>
-            <VaccinationReportCards />
-          </ReportsGrid>
+      {availableTabs.map(({ value }) => (
+        <TabsContent key={value} value={value}>
+          <ReportsGrid>{tabContent[value]}</ReportsGrid>
         </TabsContent>
-      )}
-      {isOriginEnabled && (
-        <TabsContent value="pochodzenie">
-          <ReportsGrid>
-            <OriginReportCards />
-          </ReportsGrid>
-        </TabsContent>
-      )}
+      ))}
     </Tabs>
   )
 }
