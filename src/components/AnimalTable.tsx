@@ -8,8 +8,10 @@ import {
   ChevronFirst,
   ChevronLeft,
   ChevronRight,
+  CircleHelp,
   Eye,
   Plus,
+  Search,
 } from 'lucide-react'
 import { useDebouncedValue } from '@tanstack/react-pacer'
 import { Link, getRouteApi, useNavigate } from '@tanstack/react-router'
@@ -28,7 +30,11 @@ import type { Animal, Species } from '@/api/animals/types'
 import { SPECIES_MAP } from '@/api/animals/types'
 
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '@/components/ui/input-group'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAnimals } from '@/api/animals/queries'
 import { cn, formatDate, pinnedCellClass } from '@/lib/utils'
@@ -309,59 +315,74 @@ function AnimalTable() {
       <div className="bg-muted/30 rounded-lg p-4 border">
         <div className="flex flex-col md:flex-row gap-3 items-start md:items-center w-full">
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <Input
-              placeholder="Szukaj zwierząt..."
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onFocus={handleInputFocus}
-              className="h-10 flex-1 bg-white"
-            />
-            <InfoCard infoOpen={infoOpen} setInfoOpen={setInfoOpen}>
-              <div className="space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <h4 className="font-semibold">Jak działa wyszukiwanie?</h4>
-                </div>
-                <div className="text-sm text-muted-foreground space-y-2">
-                  <p>Możesz szukać zwierząt po następujących polach:</p>
-                  <ul className="list-disc list-inside space-y-1">
-                    <li>
-                      <strong>Oznaczenie</strong> - np. 2026/0017
-                    </li>
-                    <li>
-                      <strong>Numer chipa</strong> - np. 616093900000000
-                    </li>
-                    <li>
-                      <strong>Imię</strong> - np. Mariusz
-                    </li>
-                    <li>
-                      <strong>Umaszczenie</strong> - np. czarny
-                    </li>
-                    <li>
-                      <strong>Rasa</strong> - np. mieszaniec
-                    </li>
-                    <li>
-                      <strong>Znaki Szczególne</strong> - np. brak ogona, białe
-                      łapy
-                    </li>
-
-                    <li>
-                      <strong>Wydarzenia</strong> - opis lub kto wykonał
-                    </li>
-                  </ul>
-                  <p className="text-xs italic">
-                    Wpisz fragment tekstu, a wyniki pojawią się automatycznie.
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDismiss}
-                  className="w-full mt-2"
+            <InputGroup className="h-10 bg-white">
+              <InputGroupInput
+                placeholder="Szukaj zwierząt..."
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onFocus={handleInputFocus}
+              />
+              <InputGroupAddon>
+                <Search />
+              </InputGroupAddon>
+              <InputGroupAddon align="inline-end">
+                <InfoCard
+                  infoOpen={infoOpen}
+                  setInfoOpen={setInfoOpen}
+                  icon={CircleHelp}
+                  className="p-1"
+                  iconClassName="size-4 text-muted-foreground hover:text-foreground"
                 >
-                  Nie pokazuj ponownie
-                </Button>
-              </div>
-            </InfoCard>
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <h4 className="font-semibold">
+                        Jak działa wyszukiwanie?
+                      </h4>
+                    </div>
+                    <div className="text-sm text-muted-foreground space-y-2">
+                      <p>Możesz szukać zwierząt po następujących polach:</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        <li>
+                          <strong>Oznaczenie</strong> - np. 2026/0017
+                        </li>
+                        <li>
+                          <strong>Numer chipa</strong> - np. 616093900000000
+                        </li>
+                        <li>
+                          <strong>Imię</strong> - np. Mariusz
+                        </li>
+                        <li>
+                          <strong>Umaszczenie</strong> - np. czarny
+                        </li>
+                        <li>
+                          <strong>Rasa</strong> - np. mieszaniec
+                        </li>
+                        <li>
+                          <strong>Znaki Szczególne</strong> - np. brak ogona,
+                          białe łapy
+                        </li>
+
+                        <li>
+                          <strong>Wydarzenia</strong> - opis lub kto wykonał
+                        </li>
+                      </ul>
+                      <p className="text-xs italic">
+                        Wpisz fragment tekstu, a wyniki pojawią się
+                        automatycznie.
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDismiss}
+                      className="w-full mt-2"
+                    >
+                      Nie pokazuj ponownie
+                    </Button>
+                  </div>
+                </InfoCard>
+              </InputGroupAddon>
+            </InputGroup>
           </div>
 
           <Select

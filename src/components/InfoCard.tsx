@@ -1,5 +1,6 @@
 import { Info } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
+import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
@@ -8,6 +9,7 @@ type InfoCardProps = {
   setInfoOpen?: (open: boolean) => void
   className?: string
   iconClassName?: string
+  icon?: LucideIcon
   children: ReactNode
 }
 
@@ -16,6 +18,7 @@ export function InfoCard({
   setInfoOpen,
   className,
   iconClassName,
+  icon: Icon = Info,
   children,
 }: InfoCardProps) {
   return (
@@ -29,7 +32,7 @@ export function InfoCard({
           )}
           aria-label="Dodatkowe informacje"
         >
-          <Info className={cn('size-8 text-blue-600', iconClassName)} />
+          <Icon className={cn('size-8 text-blue-600', iconClassName)} />
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-96" side="right" align="start">
