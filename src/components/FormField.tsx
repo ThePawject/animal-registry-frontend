@@ -26,13 +26,13 @@ export function FormField({
       <div className="flex-shrink-0 mt-2">
         <Icon className="size-5" />
       </div>
-      <div className="relative flex-1 min-w-0 space-y-1">
-        <Label htmlFor={label} className="text-sm">
-          {label}
-        </Label>
-        {labelAside && (
-          <div className="absolute top-0 right-0">{labelAside}</div>
-        )}
+      <div className="flex-1 min-w-0 space-y-1">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+          <Label htmlFor={label} className="text-sm">
+            {label}
+          </Label>
+          {labelAside}
+        </div>
         <div className={className}>{children}</div>
         {error && (
           <p role="alert" className="text-sm text-red-500 font-medium">
