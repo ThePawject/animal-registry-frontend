@@ -20,8 +20,8 @@
     "height": 950
   },
   "02-lista-zwierzat-02.webp": {
-    "width": 1531,
-    "height": 383
+    "width": 959,
+    "height": 420
   },
   "02-lista-zwierzat-03.webp": {
     "width": 1680,
@@ -163,6 +163,10 @@
     "width": 1680,
     "height": 950
   },
+  "08-raporty-06.webp": {
+    "width": 1680,
+    "height": 950
+  },
   "09-dodatki-01.webp": {
     "width": 1680,
     "height": 950
@@ -181,11 +185,11 @@
   },
   "10-pochodzenie-zwierzecia-01.webp": {
     "width": 1534,
-    "height": 254
+    "height": 314
   },
   "10-pochodzenie-zwierzecia-02.webp": {
-    "width": 1680,
-    "height": 950
+    "width": 1534,
+    "height": 242
   },
   "10-pochodzenie-zwierzecia-03.webp": {
     "width": 1680,
@@ -201,23 +205,23 @@
   },
   "10-pochodzenie-zwierzecia-06.webp": {
     "width": 1680,
-    "height": 1985
+    "height": 950
   },
   "11-szczepienia-01.webp": {
     "width": 1680,
     "height": 950
   },
   "11-szczepienia-02.webp": {
-    "width": 560,
-    "height": 882
+    "width": 816,
+    "height": 846
   },
   "11-szczepienia-03.webp": {
     "width": 1518,
     "height": 214
   },
   "11-szczepienia-04.webp": {
-    "width": 560,
-    "height": 854
+    "width": 816,
+    "height": 846
   },
   "11-szczepienia-05.webp": {
     "width": 1680,
@@ -228,7 +232,11 @@
     "height": 950
   },
   "11-szczepienia-07.webp": {
+    "width": 816,
+    "height": 903
+  },
+  "11-szczepienia-08.webp": {
     "width": 1680,
-    "height": 1985
+    "height": 950
   }
 }

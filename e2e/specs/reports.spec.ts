@@ -56,58 +56,52 @@ test.describe('Report of all animals', () => {
 test.describe('Report of selected animals', () => {
   test('is only available once animals are selected', async ({
     api,
-    panel,
+    reportsPage,
+    selectedAnimalsReport,
   }) => {
     const [first, second] = await api.createAnimals([
       buildAnimal(),
       buildAnimal(),
     ])
-    await panel.goto()
+    await reportsPage.goto()
 
-    await expect(panel.selectedAnimalsReportButton).toBeDisabled()
-    await expect(panel.selectedAnimalsReportButton).toHaveText(
-      'Raport z wybranych zwierzat',
-    )
-    await expect(panel.selectAllCheckbox).toBeHidden()
-
-    await panel.row(first.name!).checkbox.check()
-    await expect(panel.selectedAnimalsReportButton).toBeEnabled()
-    await expect(panel.selectedAnimalsReportButton).toHaveText(
-      'Raport z wybranych zwierzat (1)',
+    await expect(selectedAnimalsReport.generateButton).toBeDisabled()
+    await expect(selectedAnimalsReport.summary).toHaveText(
+      'Nie wybrano jeszcze żadnego zwierzęcia.',
     )
 
-    await panel.row(second.name!).checkbox.check()
-    await expect(panel.selectedAnimalsReportButton).toHaveText(
-      'Raport z wybranych zwierzat (2)',
+    await selectedAnimalsReport.choose([first.name!, second.name!])
+    await expect(selectedAnimalsReport.generateButton).toBeEnabled()
+    await expect(selectedAnimalsReport.summary).toHaveText(
+      `Wybrano 2: ${first.name}, ${second.name}`,
     )
 
-    await test.step('unchecking a row removes it from the selection', async () => {
-      await panel.row(first.name!).checkbox.uncheck()
-      await expect(panel.selectedAnimalsReportButton).toHaveText(
-        'Raport z wybranych zwierzat (1)',
-      )
-    })
-
-    await test.step('the header checkbox clears the whole selection', async () => {
-      await panel.selectAllCheckbox.click()
-      await expect(panel.selectedAnimalsReportButton).toBeDisabled()
-      await expect(panel.row(second.name!).checkbox).not.toBeChecked()
+    await test.step('clearing the selection disables the report', async () => {
+      await selectedAnimalsReport.chooseButton.click()
+      await selectedAnimalsReport.clearButton.click()
+      await expect(selectedAnimalsReport.selectedCount).toHaveText('Wybrano: 0')
+      await selectedAnimalsReport.doneButton.click()
+      await expect(selectedAnimalsReport.generateButton).toBeDisabled()
     })
   })
 
-  test('covers exactly the selected animals', async ({ api, panel, page }) => {
+  test('covers exactly the selected animals', async ({
+    api,
+    reportsPage,
+    selectedAnimalsReport,
+    page,
+  }) => {
     const [first, skipped, third] = await api.createAnimals([
       buildAnimal(),
       buildAnimal(),
       buildAnimal(),
     ])
-    await panel.goto()
-    await panel.row(first.name!).checkbox.check()
-    await panel.row(third.name!).checkbox.check()
+    await reportsPage.goto()
+    await selectedAnimalsReport.choose([first.name!, third.name!])
 
     const reportRequest = waitForBackendRequest(page, REPORT.selected)
     const download = await captureDownload(page, () =>
-      panel.selectedAnimalsReportButton.click(),
+      selectedAnimalsReport.generateButton.click(),
     )
 
     const text = await expectPdfDownload(download)
@@ -119,32 +113,92 @@ test.describe('Report of selected animals', () => {
     )
   })
 
-  test('remembers the selection while paging through the register', async ({
+  test('keeps the selection across pages and searches', async ({
     api,
-    panel,
+    reportsPage,
+    selectedAnimalsReport,
+  }) => {
+    const animals = await api.createAnimals(buildAnimals(22, unique('Wybor')))
+    const newest = animals.at(-1)!
+    const oldest = animals[0]
+    await reportsPage.goto()
+    await selectedAnimalsReport.chooseButton.click()
+
+    await selectedAnimalsReport.animalCheckbox(newest.name!).check()
+    await selectedAnimalsReport.nextPageButton.click()
+    await expect(selectedAnimalsReport.pageIndicator).toHaveText('Strona 2 z 2')
+    await selectedAnimalsReport.animalCheckbox(oldest.name!).check()
+    await expect(selectedAnimalsReport.selectedCount).toHaveText('Wybrano: 2')
+
+    await selectedAnimalsReport.search(newest.name!)
+    await expect(
+      selectedAnimalsReport.animalCheckbox(newest.name!),
+    ).toBeChecked()
+
+    await test.step('the header checkbox selects the whole page', async () => {
+      await selectedAnimalsReport.searchInput.fill('')
+      await expect(selectedAnimalsReport.pageIndicator).toHaveText(
+        'Strona 1 z 2',
+      )
+      await selectedAnimalsReport.selectPageCheckbox.check()
+      await expect(selectedAnimalsReport.selectedCount).toHaveText(
+        'Wybrano: 21',
+      )
+    })
+  })
+
+  test('is no longer offered on the animal list', async ({ api, panel }) => {
+    await api.createAnimal(buildAnimal())
+    await panel.goto()
+
+    await expect(panel.table.getByRole('checkbox')).toHaveCount(0)
+    await expect(
+      panel.page.getByRole('button', { name: /Raport z wybranych/ }),
+    ).toHaveCount(0)
+  })
+})
+
+test.describe('Reports page', () => {
+  test.use({ admin: true })
+
+  test('groups the reports in tabs and remembers the open one', async ({
+    reportsPage,
+    animalsReport,
+    eventReport,
     page,
   }) => {
-    const animals = await api.createAnimals(buildAnimals(12, unique('Wybor')))
-    const onFirstPage = animals.at(-1)!
-    const onSecondPage = animals[0]
+    await reportsPage.goto()
 
-    await panel.goto({ pageSize: 10 })
-    await panel.row(onFirstPage.name!).checkbox.check()
-    await panel.nextPageButton.click()
-    await panel.expectPage(2, 2)
-    await panel.row(onSecondPage.name!).checkbox.check()
+    await expect(reportsPage.tabs).toHaveText(['Zwierzęta', 'Zdarzenia'])
+    await expect(animalsReport.root).toBeVisible()
+    await expect(eventReport.root).toBeHidden()
 
-    await expect(panel.selectedAnimalsReportButton).toHaveText(
-      'Raport z wybranych zwierzat (2)',
+    await reportsPage.open('events')
+    await expect(eventReport.root).toBeVisible()
+    await expect(animalsReport.root).toBeHidden()
+    await expect(page).toHaveURL(/[?&]tab=zdarzenia/)
+
+    await page.reload()
+    await expect(reportsPage.tab('events')).toHaveAttribute(
+      'aria-selected',
+      'true',
     )
+  })
 
-    const download = await captureDownload(page, () =>
-      panel.selectedAnimalsReportButton.click(),
-    )
-    const text = await expectPdfDownload(download)
-    expect(text).toContain(onFirstPage.name)
-    expect(text).toContain(onSecondPage.name)
-    expect(text).not.toContain(animals[5].name)
+  test('shows addon tabs only when the addons are on', async ({
+    api,
+    reportsPage,
+  }) => {
+    await api.setFeature('animal-vaccinations', true)
+    await api.setFeature('animal-origin', true)
+    await reportsPage.goto()
+
+    await expect(reportsPage.tabs).toHaveText([
+      'Zwierzęta',
+      'Zdarzenia',
+      'Szczepienia',
+      'Pochodzenie',
+    ])
   })
 })
 
@@ -164,7 +218,7 @@ test.describe('Event report', () => {
       occurredOn: daysAgo(20),
       description: 'Wazenie do raportu',
     })
-    await reportsPage.goto()
+    await reportsPage.goto('events')
   })
 
   test('covers the last week, month and quarter by default', async ({
@@ -322,7 +376,7 @@ test.describe('Date range report', () => {
       occurredOn: daysAgo(2),
       description: 'Wazenie w zakresie',
     })
-    await reportsPage.goto()
+    await reportsPage.goto('events')
   })
 
   test('requires a start and an end date, in that order', async ({

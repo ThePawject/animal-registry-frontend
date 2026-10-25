@@ -1,49 +1,124 @@
+import { useState } from 'react'
+import {
+  Building2Icon,
+  CalendarDaysIcon,
+  PawPrintIcon,
+  SyringeIcon,
+} from 'lucide-react'
+import { getRouteApi, useNavigate } from '@tanstack/react-router'
 import AnimalsDumpReportCard from './reports/AnimalsDumpReportCard'
 import DateRangeReportCard from './reports/DateRangeReportCard'
 import EventReportCard from './reports/EventReportCard'
 import OriginReportCards from './reports/OriginReportCards'
+import SelectedAnimalsReportCard from './reports/SelectedAnimalsReportCard'
 import VaccinationReportCards from './reports/VaccinationReportCards'
+import type { SelectedAnimals } from './modals/SelectAnimalsModal'
+import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { useFeature } from '@/api/features/queries'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useShelterFeatures } from '@/api/features/queries'
 
-function ReportsSection({
-  title,
-  children,
-}: {
-  title: string
-  children: ReactNode
-}) {
-  return (
-    <section className="flex flex-col gap-4">
-      <h2 className="text-2xl font-semibold">{title}</h2>
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">{children}</div>
-    </section>
-  )
+export const REPORT_TABS = [
+  { value: 'zwierzeta', label: 'Zwierzęta', icon: PawPrintIcon },
+  { value: 'zdarzenia', label: 'Zdarzenia', icon: CalendarDaysIcon },
+  {
+    value: 'szczepienia',
+    label: 'Szczepienia',
+    icon: SyringeIcon,
+    feature: 'animal-vaccinations',
+  },
+  {
+    value: 'pochodzenie',
+    label: 'Pochodzenie',
+    icon: Building2Icon,
+    feature: 'animal-origin',
+  },
+] as const satisfies ReadonlyArray<{
+  value: string
+  label: string
+  icon: LucideIcon
+  feature?: string
+}>
+
+export type ReportTab = (typeof REPORT_TABS)[number]['value']
+
+const routeApi = getRouteApi('/_app/reports')
+
+function ReportsGrid({ children }: { children: ReactNode }) {
+  return <div className="grid grid-cols-1 gap-6 md:grid-cols-2">{children}</div>
 }
 
 export default function Reports() {
-  const { isEnabled: isOriginEnabled } = useFeature('animal-origin')
-  const { isEnabled: isVaccinationsEnabled } = useFeature('animal-vaccinations')
+  const { tab } = routeApi.useSearch()
+  const navigate = useNavigate({ from: '/reports' })
+  const { data: features, isLoading } = useShelterFeatures()
+  const [selectedAnimals, setSelectedAnimals] = useState<SelectedAnimals>(
+    new Map(),
+  )
 
-  return (
-    <div className="flex flex-col gap-8 px-8 md:px-0 pb-8">
-      <ReportsSection title="Zwierzęta">
+  if (isLoading) {
+    return <Skeleton className="h-40 w-full" />
+  }
+
+  const availableTabs = REPORT_TABS.filter(
+    (reportTab) =>
+      !('feature' in reportTab) ||
+      features?.some(
+        ({ key, isEnabled }) => key === reportTab.feature && isEnabled,
+      ),
+  )
+  const activeTab =
+    availableTabs.find(({ value }) => value === tab)?.value ?? 'zwierzeta'
+
+  const tabContent: Record<ReportTab, ReactNode> = {
+    zwierzeta: (
+      <>
         <AnimalsDumpReportCard />
-      </ReportsSection>
-      <ReportsSection title="Zdarzenia">
+        <SelectedAnimalsReportCard
+          selected={selectedAnimals}
+          onSelectedChange={setSelectedAnimals}
+        />
+      </>
+    ),
+    zdarzenia: (
+      <>
         <EventReportCard />
         <DateRangeReportCard />
-      </ReportsSection>
-      {isVaccinationsEnabled && (
-        <ReportsSection title="Szczepienia">
-          <VaccinationReportCards />
-        </ReportsSection>
-      )}
-      {isOriginEnabled && (
-        <ReportsSection title="Pochodzenie">
-          <OriginReportCards />
-        </ReportsSection>
-      )}
-    </div>
+      </>
+    ),
+    szczepienia: <VaccinationReportCards />,
+    pochodzenie: <OriginReportCards />,
+  }
+
+  return (
+    <Tabs
+      value={activeTab}
+      onValueChange={(value) =>
+        navigate({
+          search: { tab: value as ReportTab },
+          replace: true,
+        })
+      }
+      className="gap-6 px-8 md:px-0 pb-8"
+    >
+      <TabsList className="h-auto flex-wrap justify-start">
+        {availableTabs.map(({ value, label, icon: Icon }) => (
+          <TabsTrigger
+            key={value}
+            value={value}
+            className="flex-none px-4 py-1.5 text-base"
+          >
+            <Icon />
+            {label}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+      {availableTabs.map(({ value }) => (
+        <TabsContent key={value} value={value}>
+          <ReportsGrid>{tabContent[value]}</ReportsGrid>
+        </TabsContent>
+      ))}
+    </Tabs>
   )
 }

@@ -18,13 +18,61 @@ test.describe('Municipalities', () => {
     await expect(municipalities.emptyNotice).toBeVisible()
 
     const name = unique('Gmina')
-    await municipalities.emptyNotice
-      .getByRole('button', { name: 'Dodaj pierwszą gminę' })
-      .click()
-    await municipalities.save(name)
+    await municipalities.add(name)
 
     await expect(municipalities.row(name)).toBeVisible()
     await expect(municipalities.emptyNotice).toBeHidden()
+  })
+
+  test('are added one after another above the list', async ({
+    municipalities,
+  }) => {
+    const prefix = unique('Gmina')
+    await municipalities.goto()
+
+    await municipalities.add(`${prefix} Wola`)
+    await expect(municipalities.newNameInput).toHaveValue('')
+    await expect(municipalities.newNameInput).toBeFocused()
+    await municipalities.add(`${prefix} Bielany`)
+
+    await expect(municipalities.rows).toHaveText(
+      [`${prefix} Bielany`, `${prefix} Wola`].map(
+        (name) => new RegExp(`^${name}`),
+      ),
+    )
+    await expect(municipalities.dialog).toBeHidden()
+
+    await test.step('typing again hides the confirmation', async () => {
+      await municipalities.newNameInput.fill('M')
+      await expect(municipalities.addedMessage).toBeHidden()
+    })
+  })
+
+  test('reject an empty or duplicate name', async ({
+    api,
+    municipalities,
+    page,
+  }) => {
+    const name = unique('Gmina')
+    await api.createMunicipality(name)
+    await municipalities.goto()
+    const backend = await forbidBackendRequests(page, {
+      method: 'POST',
+      pathname: '/municipalities',
+    })
+
+    await municipalities.addButton.click()
+    await expect(municipalities.addError).toHaveText(
+      'Nazwa gminy jest wymagana',
+    )
+
+    await municipalities.newNameInput.fill(name.toUpperCase())
+    await municipalities.addButton.click()
+    await expect(municipalities.addError).toHaveText(
+      `Gmina „${name.toUpperCase()}” jest już na liście`,
+    )
+    await expect(municipalities.rows).toHaveCount(1)
+    await backend.expectNoneSent()
   })
 
   test('can be renamed, archived and restored', async ({

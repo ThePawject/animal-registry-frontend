@@ -17,6 +17,7 @@ import {
   EventReportCard,
   ExpiringVaccinationsReportCard,
   ReportsPage,
+  SelectedAnimalsReportCard,
   VaccinationsReportCard,
 } from '../pages/report-cards.ts'
 import { VaccinationsPage } from '../pages/vaccinations.page.ts'
@@ -52,6 +53,7 @@ type TestFixtures = {
   municipalities: MunicipalitiesPage
   reportsPage: ReportsPage
   animalsReport: AnimalsReportCard
+  selectedAnimalsReport: SelectedAnimalsReportCard
   eventReport: EventReportCard
   dateRangeReport: DateRangeReportCard
   vaccinationsReport: VaccinationsReportCard
@@ -172,6 +174,8 @@ export const test = base.extend<TestFixtures & Options, WorkerFixtures>({
   municipalities: async ({ page }, use) => use(new MunicipalitiesPage(page)),
   reportsPage: async ({ page }, use) => use(new ReportsPage(page)),
   animalsReport: async ({ page }, use) => use(new AnimalsReportCard(page)),
+  selectedAnimalsReport: async ({ page }, use) =>
+    use(new SelectedAnimalsReportCard(page)),
   eventReport: async ({ page }, use) => use(new EventReportCard(page)),
   dateRangeReport: async ({ page }, use) => use(new DateRangeReportCard(page)),
   vaccinationsReport: async ({ page }, use) =>

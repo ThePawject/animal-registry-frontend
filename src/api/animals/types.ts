@@ -216,3 +216,11 @@ export const ALLOWED_DOCUMENT_EXTENSIONS =
   '.pdf,.doc,.docx,.jpg,.jpeg,.png,.webp'
 
 export const MAX_DOCUMENT_SIZE = 10 * 1024 * 1024
+
+export function validateDocument(file: File): string | undefined {
+  if (!ALLOWED_DOCUMENT_TYPES.includes(file.type))
+    return 'Niedozwolony typ pliku. Dozwolone: PDF, DOC, DOCX, JPEG, PNG, WEBP'
+  if (file.size > MAX_DOCUMENT_SIZE)
+    return 'Plik jest za duży. Maksymalny rozmiar to 10MB'
+  return undefined
+}

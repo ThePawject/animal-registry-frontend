@@ -297,7 +297,9 @@ export class AnimalHealthRecordsPage extends RecordsTab {
       'Dokument (opcjonalnie)',
     )
     this.documentInput = this.addForm.locator('input[type="file"]')
-    this.clearDocumentButton = this.documentField.root.getByRole('button')
+    this.clearDocumentButton = this.documentField.root.getByRole('button', {
+      name: 'Usuń plik',
+    })
     this.saveButton = this.addForm.getByRole('button', { name: 'Zapisz' })
     this.cancelButton = this.addForm.getByRole('button', { name: 'Anuluj' })
   }

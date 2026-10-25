@@ -80,7 +80,7 @@ Nowe zwierzę dodajesz jednym formularzem. Obowiązkowe są tylko **Gatunek** i 
 
 ### Krok 1. Kliknij „Dodaj zwierzę”
 
-Przycisk **Dodaj zwierzę** znajduje się nad listą zwierząt.
+Przycisk **Dodaj zwierzę** znajduje się po prawej stronie paska wyszukiwania i filtrów, nad listą zwierząt.
 
 ![Kliknij „Dodaj zwierzę”](./img/03-dodawanie-zwierzecia-01.webp)
 
@@ -254,37 +254,43 @@ Kliknij **Edytuj** w wierszu. Możesz zmienić datę i opis, a w kolumnie **Doku
 
 ## 8. Raporty
 
-Wszystkie raporty pobierają się jako pliki PDF gotowe do druku. Większość raportów znajdziesz w zakładce **Raporty**, a raport z wybranych zwierząt przy liście zwierząt.
+Wszystkie raporty pobierają się jako pliki PDF gotowe do druku. Znajdziesz je w zakładce **Raporty**, podzielone na grupy.
 
-### Krok 1. Pobierz raport wybranych zwierząt
+### Krok 1. Otwórz zakładkę Raporty
 
-Zaznacz pola wyboru przy zwierzętach, które mają trafić do raportu. Przycisk **Raport z wybranych zwierzat** staje się wtedy aktywny i pokazuje w nawiasie liczbę zaznaczonych zwierząt. Raport zawiera dane i zdjęcia wybranych zwierząt. Zaznaczenie jest pamiętane także po przejściu na kolejną stronę listy.
+Kliknij **Raporty** w menu. U góry strony wybierasz grupę raportów: **Zwierzęta** albo **Zdarzenia**. Po włączeniu dodatków pojawiają się kolejne grupy. Wybrana grupa zostaje zapamiętana w adresie strony.
 
-![Pobierz raport wybranych zwierząt](./img/08-raporty-01.webp)
+![Otwórz zakładkę Raporty](./img/08-raporty-01.webp)
 
-### Krok 2. Otwórz zakładkę Raporty
+### Krok 2. Pobierz raport wszystkich zwierząt
 
-Pozostałe raporty znajdziesz w zakładce **Raporty** w menu. Raporty są podzielone na sekcje: **Zwierzęta** i **Zdarzenia**. Po włączeniu dodatków pojawiają się kolejne sekcje.
+W grupie **Zwierzęta**, w karcie **Wszystkie zwierzęta**, kliknij **Generuj raport**, aby pobrać tekstowe zestawienie danych wszystkich zwierząt z rejestru (bez zdjęć). Plik zapisuje się od razu, bez dodatkowych pytań.
 
-![Otwórz zakładkę Raporty](./img/08-raporty-02.webp)
+![Pobierz raport wszystkich zwierząt](./img/08-raporty-02.webp)
 
-### Krok 3. Pobierz raport wszystkich zwierząt
+### Krok 3. Wybierz zwierzęta do raportu
 
-W sekcji **Zwierzęta** kliknij **Generuj raport**, aby pobrać tekstowe zestawienie danych wszystkich zwierząt z rejestru (bez zdjęć). Plik zapisuje się od razu, bez dodatkowych pytań.
+Raport **Wybrane zwierzęta** zawiera dane i zdjęcia tylko tych zwierząt, które wskażesz. Kliknij **Wybierz zwierzęta**. W oknie zaznacz zwierzęta na liście albo wyszukaj je po imieniu lub sygnaturze. Zaznaczenie zostaje przy zmianie strony i wyszukiwaniu, a liczbę wybranych widzisz na dole. Kliknij **Gotowe**.
 
-![Pobierz raport wszystkich zwierząt](./img/08-raporty-03.webp)
+![Wybierz zwierzęta do raportu](./img/08-raporty-03.webp)
 
-### Krok 4. Wygeneruj raport zdarzeń
+### Krok 4. Pobierz raport wybranych zwierząt
 
-W karcie **Raport zdarzeń** zaznacz okresy, które mają się znaleźć w zestawieniu: ostatni tydzień, miesiąc, kwartał lub **Własny zakres dat**. Przy własnym zakresie podaj datę początkową i końcową. Kliknij **Generuj raport**.
+Karta pokazuje, ile i które zwierzęta wybrałeś. Kliknij **Generuj raport**, aby pobrać PDF. Wybór możesz poprawić przyciskiem **Zmień wybór**.
 
-![Wygeneruj raport zdarzeń](./img/08-raporty-04.webp)
+![Pobierz raport wybranych zwierząt](./img/08-raporty-04.webp)
 
-### Krok 5. Wygeneruj raport zdarzeń w zakresie dat
+### Krok 5. Wygeneruj raport zdarzeń
+
+Przejdź do grupy **Zdarzenia**. W karcie **Raport zdarzeń** zaznacz okresy, które mają się znaleźć w zestawieniu: ostatni tydzień, miesiąc, kwartał lub **Własny zakres dat**. Przy własnym zakresie podaj datę początkową i końcową. Kliknij **Generuj raport**.
+
+![Wygeneruj raport zdarzeń](./img/08-raporty-05.webp)
+
+### Krok 6. Wygeneruj raport zdarzeń w zakresie dat
 
 W karcie **Raport zdarzeń w zakresie** podaj datę początkową oraz końcową. Opcjonalnie zawęź raport do wybranych typów zdarzeń i gatunków. Puste pola oznaczają „wszystkie”. Kliknij **Generuj raport**.
 
-![Wygeneruj raport zdarzeń w zakresie dat](./img/08-raporty-05.webp)
+![Wygeneruj raport zdarzeń w zakresie dat](./img/08-raporty-06.webp)
 
 > **Wskazówka:** Pobrane raporty znajdziesz w folderze pobierania swojej przeglądarki, zwykle „Pobrane”.
 
@@ -324,19 +330,19 @@ Dodatek **Pochodzenie zwierzęcia** zapisuje, skąd i w jaki sposób zwierzę tr
 
 ### Krok 1. Najpierw uzupełnij listę gmin
 
-Zanim dodasz lub zmienisz zwierzę, na liście muszą być gminy. Dopóki jest pusta, formularz zwierzęcia nie da się zapisać. Kliknij **Dodaj pierwszą gminę**.
+Zanim dodasz lub zmienisz zwierzę, na liście muszą być gminy. Dopóki jest pusta, formularza zwierzęcia nie da się zapisać. Gminy dodajesz w polu **Dodaj gminę** nad listą.
 
 ![Najpierw uzupełnij listę gmin](./img/10-pochodzenie-zwierzecia-01.webp)
 
-### Krok 2. Wpisz nazwę gminy
+### Krok 2. Dodaj gminy
 
-Wpisz nazwę gminy i kliknij **Zapisz**. W ten sam sposób dodajesz kolejne gminy, z którymi współpracuje schronisko.
+Wpisz nazwę gminy i kliknij **Dodaj** albo naciśnij Enter. Pod polem pojawi się potwierdzenie, a pole zostanie wyczyszczone, więc od razu możesz wpisać kolejną gminę, z którą współpracuje schronisko.
 
-![Wpisz nazwę gminy](./img/10-pochodzenie-zwierzecia-02.webp)
+![Dodaj gminy](./img/10-pochodzenie-zwierzecia-02.webp)
 
 ### Krok 3. Zarządzaj listą gmin
 
-Każdą gminę możesz zmienić przyciskiem **Edytuj** lub schować przyciskiem **Archiwizuj**. Zarchiwizowanej gminy nie da się wybrać w formularzu, ale zwierzęta, które jej dotyczą, zachowują wpis. Zaznacz **Pokaż zarchiwizowane**, aby ją zobaczyć i przywrócić.
+Gminy są ułożone alfabetycznie. Każdą możesz zmienić przyciskiem **Edytuj** lub schować przyciskiem **Archiwizuj**. Zarchiwizowanej gminy nie da się wybrać w formularzu, ale zwierzęta, które jej dotyczą, zachowują wpis. Zaznacz **Pokaż zarchiwizowane**, aby ją zobaczyć i przywrócić. Nazwy zarchiwizowanej gminy nie da się użyć dla nowej ani zmienionej gminy, więc zamiast zakładać ją od nowa, przywróć ją.
 
 ![Zarządzaj listą gmin](./img/10-pochodzenie-zwierzecia-03.webp)
 
@@ -354,7 +360,7 @@ Zapisane dane widać na karcie zwierzęcia w sekcji **Pochodzenie**. U zwierząt
 
 ### Krok 6. Pobierz zestawienia dla gmin
 
-W zakładce **Raporty** pojawia się sekcja **Pochodzenie**. **Zestawienie miesięczne** pokazuje zwierzęta przyjęte w wybranym miesiącu, pogrupowane według gminy zlecającej, a **Zestawienie roczne** liczbę przyjętych zwierząt w każdym miesiącu. Wybierz miesiąc lub rok i kliknij **Generuj raport**.
+W zakładce **Raporty** pojawia się grupa **Pochodzenie**. **Zestawienie miesięczne** pokazuje zwierzęta przyjęte w wybranym miesiącu, pogrupowane według gminy zlecającej, a **Zestawienie roczne** liczbę przyjętych zwierząt w każdym miesiącu. Wybierz miesiąc lub rok i kliknij **Generuj raport**.
 
 ![Pobierz zestawienia dla gmin](./img/10-pochodzenie-zwierzecia-06.webp)
 
@@ -370,7 +376,7 @@ Na karcie zwierzęcia kliknij **Szczepienia**. Przycisk jest widoczny tylko wted
 
 ### Krok 2. Dodaj szczepienie
 
-Kliknij **Dodaj szczepienie**. Obowiązkowe są tylko nazwa szczepionki i data podania. Możesz też wpisać termin ważności (**Ważne do**), lekarza, numer serii, notatkę i dołączyć skan dokumentu: PDF, DOC, DOCX lub zdjęcie do 10 MB. Zatwierdź przyciskiem **Zapisz**.
+Kliknij **Dodaj szczepienie**. Obowiązkowe są tylko nazwa szczepionki i data podania. Termin ważności (**Ważne do**) ustawisz jednym kliknięciem: **6 miesięcy**, **1 rok** albo **2 lata** od daty podania, albo wybierzesz datę ręcznie. Możesz też wpisać lekarza, numer serii, notatkę i dołączyć skan dokumentu: PDF, DOC, DOCX lub zdjęcie do 10 MB. Zatwierdź przyciskiem **Zapisz**.
 
 ![Dodaj szczepienie](./img/11-szczepienia-02.webp)
 
@@ -392,16 +398,22 @@ Poprzednie szczepienie dostaje status **Zastąpione nowszym** i przestaje być w
 
 ![Zobacz zastąpione szczepienie](./img/11-szczepienia-05.webp)
 
-### Krok 6. Zobacz, które szczepienia się kończą
+### Krok 6. Sprawdź terminy szczepień
 
-Zakładka **Szczepienia** w menu pokazuje szczepienia wszystkich zwierząt, których ważność kończy się w podanej liczbie dni (domyślnie 30), od najbliższego terminu. Możesz zmienić liczbę dni, pokazać już wygasłe i wybrać, czy pokazywać tylko zwierzęta przebywające w schronisku. Kliknięcie zwierzęcia otwiera jego szczepienia.
+Zakładka **Szczepienia** w menu otwiera **Terminy szczepień**: szczepienia wszystkich zwierząt, których ważność wkrótce się kończy, od najbliższego terminu. W polu **Wygasają w ciągu** wybierz okres, domyślnie miesiąc, albo **wybór dni**, aby wpisać dowolną liczbę dni. Możesz też pokazać już wygasłe i wybrać, czy pokazywać tylko zwierzęta przebywające w schronisku. Kliknięcie zwierzęcia otwiera jego szczepienia.
 
-![Zobacz, które szczepienia się kończą](./img/11-szczepienia-06.webp)
+![Sprawdź terminy szczepień](./img/11-szczepienia-06.webp)
 
-### Krok 7. Pobierz raporty szczepień
+### Krok 7. Dodaj szczepienie bez wchodzenia na kartę zwierzęcia
 
-W zakładce **Raporty** pojawia się sekcja **Szczepienia** z dwoma raportami: **Szczepienia w okresie** (podane szczepienia w wybranym zakresie dat) i **Kończące się szczepienia** (te, których ważność kończy się w podanej liczbie dni). Kliknij **Generuj raport**, aby pobrać PDF.
+Szczepienie dodasz też prosto z **Terminów szczepień**: kliknij **Dodaj szczepienie** i w polu **Zwierzę** wyszukaj zwierzę po imieniu lub sygnaturze. Dalej wypełniasz formularz tak samo jak na karcie zwierzęcia.
 
-![Pobierz raporty szczepień](./img/11-szczepienia-07.webp)
+![Dodaj szczepienie bez wchodzenia na kartę zwierzęcia](./img/11-szczepienia-07.webp)
+
+### Krok 8. Pobierz raporty szczepień
+
+W zakładce **Raporty** pojawia się grupa **Szczepienia** z dwoma raportami: **Szczepienia w okresie** (podane szczepienia w wybranym zakresie dat) i **Kończące się szczepienia** (te, których ważność kończy się w podanej liczbie dni). Kliknij **Generuj raport**, aby pobrać PDF.
+
+![Pobierz raporty szczepień](./img/11-szczepienia-08.webp)
 
 > **Wskazówka:** Szczepienie możesz też poprawić przyciskiem **Edytuj** lub usunąć przyciskiem **Usuń**. Po usunięciu szczepienia, które zastąpiło inne, poprzednie znów jest traktowane jako ważne albo wygasłe.

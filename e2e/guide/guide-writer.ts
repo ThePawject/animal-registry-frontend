@@ -47,6 +47,31 @@ function slug(text: string) {
 const asArray = <T>(value: T | Array<T> | undefined) =>
   value === undefined ? [] : Array.isArray(value) ? value : [value]
 
+const APP_SCROLL_CONTAINER = '#app-scroll-container'
+
+function setAppScrollReleased(page: Page, released: boolean) {
+  return page.evaluate(
+    ({ selector, release }) => {
+      const container = document.querySelector<HTMLElement>(selector)
+      const layout = container?.parentElement
+      if (!container || !layout) return
+      if (release) {
+        const scrollTop = container.scrollTop
+        layout.style.height = 'auto'
+        container.style.overflow = 'visible'
+        window.scrollTo(0, scrollTop)
+      } else {
+        const scrollTop = window.scrollY
+        layout.style.height = ''
+        container.style.overflow = ''
+        window.scrollTo(0, 0)
+        container.scrollTop = scrollTop
+      }
+    },
+    { selector: APP_SCROLL_CONTAINER, release: released },
+  )
+}
+
 function documentBoxOf(locator: Locator): Promise<Box> {
   return locator.evaluate((element) => {
     const rect = element.getBoundingClientRect()
@@ -175,7 +200,23 @@ export class GuideWriter {
   private async screenshot(page: Page, image: string, options: StepOptions) {
     const highlights = asArray(options.highlight)
     const areas = asArray(options.area)
+    const fullPage = options.fullPage ?? false
 
+    if (fullPage) await setAppScrollReleased(page, true)
+    try {
+      await this.capture(page, image, highlights, areas, fullPage)
+    } finally {
+      if (fullPage) await setAppScrollReleased(page, false)
+    }
+  }
+
+  private async capture(
+    page: Page,
+    image: string,
+    highlights: Array<Locator>,
+    areas: Array<Locator>,
+    fullPage: boolean,
+  ) {
     for (const locator of [...highlights, ...areas].slice(0, 1)) {
       await locator.scrollIntoViewIfNeeded()
     }
@@ -212,7 +253,6 @@ export class GuideWriter {
     )
 
     try {
-      const fullPage = options.fullPage ?? false
       const visible = await page.evaluate((whole) => {
         const root = document.documentElement
         return whole

@@ -1,22 +1,14 @@
-import { Calendar, File, FileText, Upload, X } from 'lucide-react'
+import { Calendar, File, FileText } from 'lucide-react'
 import { useForm } from '@tanstack/react-form'
+import DocumentPicker from '../DocumentPicker'
 import { FormField } from '../FormField'
 import { Textarea } from '../ui/textarea'
 import type { AnimalHealthRecord } from '@/api/animals/types'
-import {
-  ALLOWED_DOCUMENT_EXTENSIONS,
-  ALLOWED_DOCUMENT_TYPES,
-  MAX_DOCUMENT_SIZE,
-} from '@/api/animals/types'
+import { validateDocument } from '@/api/animals/types'
 import { useAddAnimalHealthRecord } from '@/api/animals/queries'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  cn,
-  genericErrorMessage,
-  isFutureDate,
-  todayIsoDate,
-} from '@/lib/utils'
+import { genericErrorMessage, isFutureDate, todayIsoDate } from '@/lib/utils'
 
 type AnimalHealthRecordFormData = {
   occurredOn: string
@@ -149,15 +141,8 @@ export default function AnimalHealthRecordForm({
         <form.Field
           name="document"
           validators={{
-            onChange: ({ value }) => {
-              if (value && !ALLOWED_DOCUMENT_TYPES.includes(value.type)) {
-                return 'Niedozwolony typ pliku. Dozwolone: PDF, DOC, DOCX, JPEG, PNG, WEBP'
-              }
-              if (value && value.size > MAX_DOCUMENT_SIZE) {
-                return 'Plik jest za duży. Maksymalny rozmiar to 10MB'
-              }
-              return undefined
-            },
+            onChange: ({ value }) =>
+              value ? validateDocument(value) : undefined,
           }}
           children={(field) => {
             return (
@@ -166,54 +151,12 @@ export default function AnimalHealthRecordForm({
                 label="Dokument (opcjonalnie)"
                 error={field.state.meta.errors[0]}
               >
-                <div className="flex items-center gap-2">
-                  <label className="flex-1 cursor-pointer">
-                    <input
-                      type="file"
-                      accept={ALLOWED_DOCUMENT_EXTENSIONS}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        if (file) {
-                          field.handleChange(file)
-                        }
-                      }}
-                      className="hidden"
-                    />
-                    <div
-                      className={cn(
-                        'flex items-center justify-center w-full h-10 px-4 border-2 border-dashed rounded-lg transition-colors',
-                        field.state.meta.errors.length > 0
-                          ? 'border-red-500 bg-red-50'
-                          : 'border-gray-300 hover:border-gray-400',
-                      )}
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      <span
-                        className={cn(
-                          'text-sm',
-                          field.state.meta.errors.length > 0
-                            ? 'text-red-600'
-                            : 'text-gray-500',
-                        )}
-                      >
-                        {field.state.value
-                          ? field.state.value.name
-                          : 'Wybierz plik (PDF, DOC, DOCX, JPEG, PNG, WEBP - max 10MB)'}
-                      </span>
-                    </div>
-                  </label>
-                  {field.state.value && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="h-10 w-10 p-0 bg-red-500 hover:bg-red-600 text-white border-red-500 hover:border-red-600"
-                      onClick={() => field.handleChange(null)}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  )}
-                </div>
+                <DocumentPicker
+                  fileName={field.state.value?.name ?? null}
+                  hasError={field.state.meta.errors.length > 0}
+                  onSelect={(file) => field.handleChange(file)}
+                  onClear={() => field.handleChange(null)}
+                />
               </FormField>
             )
           }}
