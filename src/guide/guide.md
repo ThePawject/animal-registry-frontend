@@ -400,13 +400,13 @@ Poprzednie szczepienie dostaje status **Zastąpione nowszym** i przestaje być w
 
 ### Krok 6. Sprawdź terminy szczepień
 
-Zakładka **Szczepienia** w menu otwiera **Terminy szczepień**: szczepienia wszystkich zwierząt, których ważność wkrótce się kończy, od najbliższego terminu. W polu **Wygasają w ciągu** wybierz okres, domyślnie miesiąc, albo **wybór dni**, aby wpisać dowolną liczbę dni. Możesz też pokazać już wygasłe i wybrać, czy pokazywać tylko zwierzęta przebywające w schronisku. Kliknięcie zwierzęcia otwiera jego szczepienia.
+Zakładka **Szczepienia** w menu otwiera listę szczepień wszystkich zwierząt, od najbliższego terminu ważności. Domyślnie widzisz wszystkie szczepienia, także te bez terminu. Lista **Ważność** zawęża je do **Wygasających** albo **Przeterminowanych**. Przy **Wygasających** pole **Wygasają w ciągu** ustawia okres (domyślnie miesiąc, albo **wybór dni**, aby wpisać dowolną liczbę dni). Pod tabelą zmieniasz liczbę wierszy na stronę i przechodzisz między stronami. Przycisk **Szczegóły** otwiera szczepienia zwierzęcia.
 
 ![Sprawdź terminy szczepień](./img/11-szczepienia-06.webp)
 
 ### Krok 7. Dodaj szczepienie bez wchodzenia na kartę zwierzęcia
 
-Szczepienie dodasz też prosto z **Terminów szczepień**: kliknij **Dodaj szczepienie** i w polu **Zwierzę** wyszukaj zwierzę po imieniu lub sygnaturze. Dalej wypełniasz formularz tak samo jak na karcie zwierzęcia.
+Szczepienie dodasz też prosto z listy **Szczepienia**: kliknij **Dodaj szczepienie** i w polu **Zwierzę** wyszukaj zwierzę po imieniu lub sygnaturze. Dalej wypełniasz formularz tak samo jak na karcie zwierzęcia.
 
 ![Dodaj szczepienie bez wchodzenia na kartę zwierzęcia](./img/11-szczepienia-07.webp)
 
