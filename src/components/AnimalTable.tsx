@@ -1,30 +1,19 @@
 import React from 'react'
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from '@tanstack/react-table'
-import {
-  ChevronFirst,
-  ChevronLeft,
-  ChevronRight,
-  CircleHelp,
-  Eye,
-  Plus,
-  Search,
-} from 'lucide-react'
+import { getCoreRowModel, useReactTable } from '@tanstack/react-table'
+import { CircleHelp, Eye, Plus, Search } from 'lucide-react'
 import { useDebouncedValue } from '@tanstack/react-pacer'
 import { Link, getRouteApi, useNavigate } from '@tanstack/react-router'
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from './ui/select'
 import AnimalPhotoThumbnail from './AnimalPhotoThumbnail'
 import AnimalShelterStatusBadge from './AnimalShelterStatusBadge'
+import DataTable from './DataTable'
+import TablePagination from './TablePagination'
 import { InfoCard } from './InfoCard'
 import type { IndexSearch } from '@/routes/_app/panel'
 import type { ColumnDef } from '@tanstack/react-table'
@@ -37,11 +26,9 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from '@/components/ui/input-group'
-import { Skeleton } from '@/components/ui/skeleton'
 import { useAnimals } from '@/api/animals/queries'
-import { cn, formatDate, pinnedCellClass } from '@/lib/utils'
+import { formatDate } from '@/lib/utils'
 import { getAppScrollContainer } from '@/lib/navigation'
-import { useHorizontalOverflow } from '@/hooks/useHorizontalOverflow'
 
 const SEARCH_INFO_KEY = 'animal-search-info-dismissed'
 
@@ -98,9 +85,6 @@ function AnimalTable() {
       })
     }
   }, [animalsPage, isPlaceholderData, page, totalPages])
-
-  const { ref: scrollRef, hasOverflow } =
-    useHorizontalOverflow<HTMLDivElement>()
 
   const columns = React.useMemo<Array<ColumnDef<Animal, any>>>(
     () => [
@@ -437,157 +421,25 @@ function AnimalTable() {
         </div>
       </div>
 
-      <div
-        ref={scrollRef}
-        aria-busy={isPending || isPlaceholderData}
-        className={cn(
-          'rounded-md border w-full overflow-x-auto transition-opacity',
-          isPlaceholderData && 'opacity-60',
-        )}
-      >
-        <table className="w-full">
-          <thead>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="bg-muted">
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className={cn(
-                      'border-b bg-inherit px-4 py-3 text-left font-medium text-sm',
-                      pinnedCellClass(header.column.id, hasOverflow),
-                    )}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {isPending ? (
-              Array.from({ length: pageSize }).map((_, index) => (
-                <tr
-                  key={`skeleton-${index}`}
-                  className="border-b bg-background"
-                >
-                  {columns.map((column, colIndex) => (
-                    <td
-                      key={`skeleton-cell-${colIndex}`}
-                      className={cn(
-                        'px-4 py-3',
-                        pinnedCellClass(column.id, hasOverflow),
-                      )}
-                    >
-                      <Skeleton className="h-10 w-full" />
-                    </td>
-                  ))}
-                </tr>
-              ))
-            ) : table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className="border-b bg-background transition-colors hover:bg-muted"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td
-                      key={cell.id}
-                      className={cn(
-                        'px-4 py-3 align-middle',
-                        pinnedCellClass(cell.column.id, hasOverflow),
-                      )}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={columns.length} className="h-24 text-center">
-                  Brak wyników.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        table={table}
+        columns={columns}
+        isPending={isPending}
+        isPlaceholderData={isPlaceholderData}
+        pageSize={pageSize}
+      />
 
-      <div className="flex items-center justify-end space-x-2 py-2">
-        <div className="flex items-center gap-4 flex-wrap">
-          <label className="text-sm font-semibold">Wierszy na stronę:</label>
-          <Select
-            value={pageSize.toString()}
-            onValueChange={(value) => {
-              setSearch({ page: 1, pageSize: Number(value) as 10 | 20 | 50 })
-              getAppScrollContainer()?.scrollTo({ top: 0, behavior: 'instant' })
-            }}
-          >
-            <SelectTrigger
-              aria-label="Wierszy na stronę"
-              className="w-[80px] bg-white"
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="10">10</SelectItem>
-                <SelectItem value="20">20</SelectItem>
-                <SelectItem value="50">50</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-          <span className="text-sm font-semibold">
-            Strona {page} z {totalPages}
-          </span>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1 || isPending || isPlaceholderData}
-              aria-label="Pierwsza strona"
-              onClick={() => setSearch({ page: 1 })}
-            >
-              <ChevronFirst className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              aria-label="Poprzednia strona"
-              onClick={() => setSearch({ page: Math.max(1, page - 1) })}
-              disabled={page <= 1 || isPending || isPlaceholderData}
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              aria-label="Następna strona"
-              onClick={() => setSearch({ page: page + 1 })}
-              disabled={page >= totalPages || isPending || isPlaceholderData}
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              aria-label="Ostatnia strona"
-              onClick={() => setSearch({ page: totalPages })}
-              disabled={page >= totalPages || isPending || isPlaceholderData}
-            >
-              <ChevronFirst className="w-4 h-4 rotate-180" />
-            </Button>
-          </div>
-        </div>
-      </div>
+      <TablePagination
+        page={page}
+        pageSize={pageSize}
+        totalPages={totalPages}
+        disabled={isPending || isPlaceholderData}
+        onPageChange={(nextPage) => setSearch({ page: nextPage })}
+        onPageSizeChange={(nextPageSize) => {
+          setSearch({ page: 1, pageSize: nextPageSize })
+          getAppScrollContainer()?.scrollTo({ top: 0, behavior: 'instant' })
+        }}
+      />
     </div>
   )
 }
