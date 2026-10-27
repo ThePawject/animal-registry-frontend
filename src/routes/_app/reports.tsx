@@ -12,7 +12,7 @@ export const Route = createFileRoute('/_app/reports')({
     tab: REPORT_TABS.find(({ value }) => value === search.tab)?.value,
   }),
   loader: () => {
-    return { title: 'Raporty' }
+    return { title: 'Raporty', hideBreadcrumbs: true }
   },
 })
 

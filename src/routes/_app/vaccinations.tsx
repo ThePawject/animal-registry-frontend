@@ -4,7 +4,7 @@ import ExpiringVaccinations from '@/components/ExpiringVaccinations'
 export const Route = createFileRoute('/_app/vaccinations')({
   component: RouteComponent,
   loader: () => {
-    return { title: 'Szczepienia' }
+    return { title: 'Szczepienia', hideBreadcrumbs: true }
   },
 })
 

@@ -11,6 +11,10 @@ import {
 export const Breadcrumbs = () => {
   const matches = useMatches()
 
+  const isHidden = matches.some(
+    ({ loaderData }) => loaderData && 'hideBreadcrumbs' in loaderData,
+  )
+
   const breadcrumbItems = matches
     .filter((match) => match.loaderData?.title)
     .map(({ pathname, loaderData }) => ({
@@ -18,7 +22,7 @@ export const Breadcrumbs = () => {
       label: loaderData?.title,
     }))
 
-  if (breadcrumbItems.length < 2) {
+  if (isHidden || breadcrumbItems.length < 2) {
     return null
   }
   return (
