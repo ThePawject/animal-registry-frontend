@@ -27,6 +27,9 @@ export class VaccinationsPage {
   readonly animalField: FormFieldLocator
   readonly validityPeriods: Locator
   readonly expiringEmpty: Locator
+  readonly validityFilter: Locator
+  readonly pageSize: Locator
+  readonly nextPageButton: Locator
   readonly expiryPeriod: Locator
   readonly customExpiryDays: Locator
 
@@ -54,13 +57,14 @@ export class VaccinationsPage {
     this.validityPeriods = this.dialog.getByRole('group', {
       name: 'Okres ważności od daty podania',
     })
+    this.validityFilter = page.getByRole('combobox', { name: 'Ważność' })
+    this.pageSize = page.getByRole('combobox', { name: 'Wierszy na stronę' })
+    this.nextPageButton = page.getByRole('button', { name: 'Następna strona' })
     this.expiryPeriod = page.getByRole('combobox', {
       name: 'Wygasają w ciągu',
     })
     this.customExpiryDays = page.getByLabel('Wygasają w ciągu (dni)')
-    this.expiringEmpty = page.getByText(
-      'Brak szczepień spełniających kryteria.',
-    )
+    this.expiringEmpty = page.locator('table').getByText('Brak wyników.')
   }
 
   row(vaccineName: string) {
@@ -70,7 +74,9 @@ export class VaccinationsPage {
   }
 
   get expiringRows() {
-    return this.page.locator('[data-slot="card-content"]').getByRole('listitem')
+    return this.page.locator('tbody tr').filter({
+      has: this.page.getByRole('link', { name: 'Szczegóły' }),
+    })
   }
 
   expiringRow(animalName: string) {
@@ -92,7 +98,12 @@ export class VaccinationsPage {
 
   async gotoExpiring() {
     await this.page.goto(VaccinationsPage.expiringPath)
-    await expect(this.page.getByText('Terminy szczepień')).toBeVisible()
+    await expect(this.validityFilter).toBeVisible()
+  }
+
+  async gotoExpiringOnly() {
+    await this.gotoExpiring()
+    await this.setValidity('Wygasające')
   }
 
   validityPeriod(label: '6 miesięcy' | '1 rok' | '2 lata') {
@@ -107,6 +118,14 @@ export class VaccinationsPage {
     await expect(this.animalField.input).toHaveValue(
       new RegExp(`^${escapeRegExp(name)} `),
     )
+  }
+
+  async setValidity(label: 'Wszystkie' | 'Wygasające' | 'Przeterminowane') {
+    await chooseOption(this.validityFilter, label)
+  }
+
+  async setPageSize(label: '10' | '20' | '50') {
+    await chooseOption(this.pageSize, label)
   }
 
   async setExpiryPeriod(label: string) {

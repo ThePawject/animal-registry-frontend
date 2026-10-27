@@ -60,10 +60,27 @@ export type SaveVaccination = {
   deleteAttachment?: boolean
 }
 
+export const VALIDITY_FILTER_MAP = {
+  All: 'Wszystkie',
+  Expiring: 'Wygasające',
+  Expired: 'Przeterminowane',
+} as const
+
+export type ValidityFilter = keyof typeof VALIDITY_FILTER_MAP
+
 export type ExpiringVaccinationsParams = {
+  validity: ValidityFilter
   expiresInDays: number
-  includeExpired: boolean
   inShelterOnly: boolean
+  page: number
+  pageSize: number
+}
+
+export type VaccinationsPage = {
+  items: Array<VaccinationWithAnimal>
+  totalCount: number
+  page: number
+  pageSize: number
 }
 
 export const VACCINE_NAME_MAX_LENGTH = 200

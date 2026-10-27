@@ -5,7 +5,7 @@ import type {
   ExpiringVaccinationsParams,
   SaveVaccination,
   VaccinationFormData,
-  VaccinationWithAnimal,
+  VaccinationsPage,
 } from './types'
 
 const toPayload = (data: VaccinationFormData) => ({
@@ -36,12 +36,11 @@ export const vaccinationsService = {
   },
   async getExpiringVaccinations(
     params: ExpiringVaccinationsParams,
-  ): Promise<Array<VaccinationWithAnimal>> {
+  ): Promise<VaccinationsPage> {
     try {
-      const response = await apiClient.get<Array<VaccinationWithAnimal>>(
-        'vaccinations',
-        { params },
-      )
+      const response = await apiClient.get<VaccinationsPage>('vaccinations', {
+        params,
+      })
       return response.data
     } catch (error) {
       if (axios.isAxiosError(error)) {
