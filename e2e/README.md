@@ -119,11 +119,10 @@ test('the card shows the breed', async ({ api, animalDetails }) => {
 
 `.github/workflows/e2e.yml` runs the same `pnpm e2e` on a GitHub-hosted
 runner for every pull request and every push to `main`. It checks the
-backend repository out next to this one at the commit pinned in
-`BACKEND_REF` (another ref can be chosen when starting the workflow by
-hand) and uploads the HTML report, plus traces of failed tests, as
-artifacts. Bump `BACKEND_REF` when the frontend should be tested against
-a newer backend. The container images are pinned by digest in
+backend repository out next to this one at its `main` branch (another
+ref can be chosen when starting the workflow by hand) and uploads the HTML
+report, plus traces of failed tests, as artifacts. Merge backend changes
+before the frontend changes that need them. The container images are pinned by digest in
 `docker-compose.yml`.
 
 ## Useful switches
