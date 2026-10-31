@@ -27,7 +27,7 @@ function VaccinationsAddon() {
         >
           <Link to="/vaccinations">
             <SyringeIcon />
-            Terminy szczepień
+            Lista szczepień
           </Link>
         </Button>
         <Button asChild variant="outline">

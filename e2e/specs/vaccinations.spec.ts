@@ -563,7 +563,7 @@ test.describe('Expiring vaccinations', () => {
       validUntil: daysAgo(-5),
     })
 
-    await vaccinations.gotoExpiring()
+    await vaccinations.gotoExpiringOnly()
 
     await expect(vaccinations.expiringRows).toHaveCount(1)
     await expect(vaccinations.expiringRow(dueAnimal.name!)).toContainText(
@@ -590,7 +590,7 @@ test.describe('Expiring vaccinations', () => {
       administeredOn: daysAgo(300),
       validUntil: daysAgo(-60),
     })
-    await vaccinations.gotoExpiring()
+    await vaccinations.gotoExpiringOnly()
 
     await expect(vaccinations.expiryPeriod).toHaveText('miesiąca')
     await expect(vaccinations.expiringRows).toHaveCount(1)
@@ -611,6 +611,84 @@ test.describe('Expiring vaccinations', () => {
       await vaccinations.customExpiryDays.fill('61')
       await expect(vaccinations.expiringRows).toHaveCount(2)
     })
+  })
+
+  test('show every vaccination by default and can be narrowed by validity', async ({
+    api,
+    vaccinations,
+  }) => {
+    const [expiredAnimal, soonAnimal, laterAnimal, openEndedAnimal] =
+      await api.createAnimals([
+        buildAnimal(),
+        buildAnimal(),
+        buildAnimal(),
+        buildAnimal(),
+      ])
+    await api.createVaccination(expiredAnimal.id, {
+      vaccineName: unique('Po terminie'),
+      administeredOn: daysAgo(400),
+      validUntil: daysAgo(1),
+    })
+    await api.createVaccination(soonAnimal.id, {
+      vaccineName: unique('Wkrotce'),
+      administeredOn: daysAgo(300),
+      validUntil: daysAgo(-3),
+    })
+    await api.createVaccination(laterAnimal.id, {
+      vaccineName: unique('Za rok'),
+      administeredOn: daysAgo(10),
+      validUntil: daysAgo(-355),
+    })
+    await api.createVaccination(openEndedAnimal.id, {
+      vaccineName: unique('Bez terminu'),
+      administeredOn: daysAgo(10),
+    })
+
+    await vaccinations.gotoExpiring()
+
+    await expect(vaccinations.validityFilter).toHaveText('Wszystkie')
+    await expect(vaccinations.expiringRows).toHaveCount(4)
+    await expect(vaccinations.expiringRows.first()).toContainText(
+      expiredAnimal.name!,
+    )
+    await expect(vaccinations.expiringRows.last()).toContainText(
+      openEndedAnimal.name!,
+    )
+
+    await vaccinations.setValidity('Wygasające')
+    await expect(vaccinations.expiringRows).toHaveCount(1)
+    await expect(vaccinations.expiringRow(soonAnimal.name!)).toBeVisible()
+
+    await vaccinations.setValidity('Przeterminowane')
+    await expect(vaccinations.expiringRows).toHaveCount(1)
+    await expect(vaccinations.expiringRow(expiredAnimal.name!)).toContainText(
+      'Wygasło',
+    )
+    await expect(vaccinations.expiryPeriod).toBeHidden()
+  })
+
+  test('are split into pages', async ({ api, vaccinations }) => {
+    const animals = await api.createAnimals(
+      Array.from({ length: 11 }, () => buildAnimal()),
+    )
+    for (const animal of animals) {
+      await api.createVaccination(animal.id, {
+        vaccineName: unique('Nobivac'),
+        administeredOn: daysAgo(10),
+        validUntil: daysAgo(-300),
+      })
+    }
+    await vaccinations.gotoExpiring()
+
+    await expect(vaccinations.expiringRows).toHaveCount(11)
+
+    await vaccinations.setPageSize('10')
+    await expect(vaccinations.expiringRows).toHaveCount(10)
+    await expect(vaccinations.page.getByText('Strona 1 z 2')).toBeVisible()
+
+    await vaccinations.nextPageButton.click()
+    await expect(vaccinations.expiringRows).toHaveCount(1)
+    await expect(vaccinations.page.getByText('Strona 2 z 2')).toBeVisible()
   })
 
   test('accept a new vaccination for any animal', async ({
